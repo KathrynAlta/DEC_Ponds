@@ -36,7 +36,7 @@
     #   install.packages("geoR")
     #   install.packages("gstat")
     #   install.packages("maps")
-    install.packages("GDAL")
+   # install.packages("GDAL")
 
 
 # Start Adam Set up 
@@ -51,56 +51,70 @@ library(gstat)
 library(maps)
 
 #read in Lac Tourangeau polygon shapefile
-getwd()
-getinfo.shape("Spatial_Data/torangeauNEW.shp")
-getinfo.shape("Spatial_Data/tourangeaupoly.shp")
-
-#convert to ShaePoly object
-lake.points <- readShapePoints("torangeauNEW.shp")
-lake.poly <- readShapePoly("tourangeaupoly.shp")
+    getwd()
+    getinfo.shape("Spatial_Data/torangeauNEW.shp")
+    getinfo.shape("Spatial_Data/tourangeaupoly.shp")
+    
+    #convert to ShaePoly object
+    st_read
+    lake.points <- st_read("Spatial_Data/torangeauNEW.shp")
+    lake.poly <- st_read("Spatial_Data/tourangeaupoly.shp")
 
 #custom function for a scalebar 
-scalebar <- function(loc,length,unit="km",division.cex=.8,...) {
-if(missing(loc)) stop("loc is missing")
-if(missing(length)) stop("length is missing")
-x <- c(0,length/c(4,2,4/3,1),length*1.1)+loc[1]
-y <- c(0,length/(10*3:1))+loc[2]
-cols <- rep(c("black","white"),2)
-for (i in 1:4) rect(x[i],y[1],x[i+1],y[2],col=cols[i])
-for (i in 1:5) segments(x[i],y[2],x[i],y[3])
-labels <- x[c(1,3)]-loc[1]
-labels <- append(labels,paste(x[5]-loc[1],unit))
-text(x[c(1,3,5)],y[4],labels=labels,adj=.5,cex=division.cex)
-}
+  scalebar <- function(loc,length,unit="km",division.cex=.8,...) {
+    if(missing(loc)) stop("loc is missing")
+    if(missing(length)) stop("length is missing")
+    x <- c(0,length/c(4,2,4/3,1),length*1.1)+loc[1]
+    y <- c(0,length/(10*3:1))+loc[2]
+    cols <- rep(c("black","white"),2)
+    for (i in 1:4) rect(x[i],y[1],x[i+1],y[2],col=cols[i])
+    for (i in 1:5) segments(x[i],y[2],x[i],y[3])
+    labels <- x[c(1,3)]-loc[1]
+    labels <- append(labels,paste(x[5]-loc[1],unit))
+    text(x[c(1,3,5)],y[4],labels=labels,adj=.5,cex=division.cex)
+  }
 
 #custom function for a north arrow
-northarrow <- function(loc,size,bearing=0,cols,cex=1,...) {
-# checking arguments
-if(missing(loc)) stop("loc is missing")
-if(missing(size)) stop("size is missing")
-# default colors are white and black
-if(missing(cols)) cols <- rep(c("white","black"),8)
-# calculating coordinates of polygons
-radii <- rep(size/c(1,4,2,4),4)
-x <- radii[(0:15)+1]*cos((0:15)*pi/8+bearing)+loc[1]
-y <- radii[(0:15)+1]*sin((0:15)*pi/8+bearing)+loc[2]
-# drawing polygons
-for (i in 1:15) {
-x1 <- c(x[i],x[i+1],loc[1])
-y1 <- c(y[i],y[i+1],loc[2])
-polygon(x1,y1,col=cols[i])
-}
-# drawing the last polygon
-polygon(c(x[16],x[1],loc[1]),c(y[16],y[1],loc[2]),col=cols[16])
-# drawing letters
-b <- c("E","N","W","S")
-for (i in 0:3) text((size+par("cxy")[1])*cos(bearing+i*pi/2)+loc[1],
-(size+par("cxy")[2])*sin(bearing+i*pi/2)+loc[2],b[i+1],
-cex=cex)
-}
+    northarrow <- function(loc,size,bearing=0,cols,cex=1,...) {
+        
+      # checking arguments
+        if(missing(loc)) stop("loc is missing")
+        if(missing(size)) stop("size is missing")
+        # default colors are white and black
+        if(missing(cols)) cols <- rep(c("white","black"),8)
+        
+        # calculating coordinates of polygons
+        radii <- rep(size/c(1,4,2,4),4)
+        x <- radii[(0:15)+1]*cos((0:15)*pi/8+bearing)+loc[1]
+        y <- radii[(0:15)+1]*sin((0:15)*pi/8+bearing)+loc[2]
+        
+        # drawing polygons
+        for (i in 1:15) {
+            x1 <- c(x[i],x[i+1],loc[1])
+            y1 <- c(y[i],y[i+1],loc[2])
+            polygon(x1,y1,col=cols[i])
+          }
+        
+        # drawing the last polygon
+        polygon(c(x[16],x[1],loc[1]),c(y[16],y[1],loc[2]),col=cols[16])
+       
+        # drawing letters
+        b <- c("E","N","W","S")
+        for (i in 0:3) text((size+par("cxy")[1])*cos(bearing+i*pi/2)+loc[1],
+        (size+par("cxy")[2])*sin(bearing+i*pi/2)+loc[2],b[i+1],
+        cex=cex)
+    }
 
+# **************************************************************************************
+    # Here is where we run into problems, I think that it is because I ended up bringin in the shape files using st_read instead of "readShapePoints"
+    #    and "readShapePoly" that Adam used (I couldn't get them to play nice with my version of R) and so the formatting is off 
+    #    - KG 010923 
+    
+    
+    
 #plots of measured locations
 spplot(lake.points, "z")
+plot(lake.points, "z")
 bubble(lake.points, "z", maxsize=2, pch=1, col=1, main="Observed Lake Depth")
 
 #create grid
