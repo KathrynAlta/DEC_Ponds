@@ -38,6 +38,17 @@
       install.packages("spDataLarge", repos = "https://nowosad.r-universe.dev")
       remotes::install_github("geocompr/geocompkg")
       remotes::install_github("geocompr/geocompkg", dependencies = TRUE)
+      
+      
+# Updating R 
+      # installing/loading the package:
+      if(!require(installr)) {
+        install.packages("installr"); 
+        require(installr)
+      } #load / install+load installr
+      library(installr)
+      # using the package:
+      updateR()
 
 #__________________________________________________________________________________________________
 # 2.2.1 An Introduction to Simple Features 
