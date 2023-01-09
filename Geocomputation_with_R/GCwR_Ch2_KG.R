@@ -33,11 +33,11 @@
     
     
     # Install software packages 
-      install.packages("terra")
-      install.packages("spData")
-      install.packages("spDataLarge", repos = "https://nowosad.r-universe.dev")
-      remotes::install_github("geocompr/geocompkg")
-      remotes::install_github("geocompr/geocompkg", dependencies = TRUE)
+      #   install.packages("terra")
+      #   install.packages("spData")
+      #   install.packages("spDataLarge", repos = "https://nowosad.r-universe.dev")
+      #   remotes::install_github("geocompr/geocompkg")
+      #   remotes::install_github("geocompr/geocompkg", dependencies = TRUE)
       
       
 # Updating R 
