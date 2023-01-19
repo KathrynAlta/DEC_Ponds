@@ -67,8 +67,10 @@ library(maps)
     getinfo.shape("Spatial_Data/Ellens_Pond_Depths.shp")
     getinfo.shape("Spatial_Data/Ellens_Pond_Polygon.shp")
     
-    lake.points <- readShapePoints("Spatial_Data/Ellens_Pond_Depths.shp")
+    lake.points <- readShapePoints("Spatial_Data/Ellens_Pond_Sed_Depths_Partial.shp")
     lake.poly <- readShapePoly("Spatial_Data/Ellens_Pond_Polygon.shp")
+
+    
 
 #custom function for a scalebar 
   scalebar <- function(loc,length,unit="km",division.cex=.8,...) {
@@ -187,6 +189,7 @@ contours <- c(seq(0, max(tour.k@data$var1.pred), 0.5))
 
 #contour plot
 plot(lake.poly) 
+  plot(lake.points)
 contour(tour.k["var1.pred"], col=cols(length(contours)),levels=contours, add=T)
 axis(side=1)
 axis(side=2)
