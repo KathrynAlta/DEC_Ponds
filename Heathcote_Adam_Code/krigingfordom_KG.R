@@ -2,7 +2,7 @@
 
 # KG R environment set up 
     # Set working directory 
-    setwd("~/Sediment_Mapping_DEC/Heathcote_Adam_Code") # Desktop 
+    setwd("~/Sediment_Mapping_DEC") # Desktop 
     getwd()
     
     # Load standard packages 
@@ -51,14 +51,24 @@ library(gstat)
 library(maps)
 
 #read in Lac Tourangeau polygon shapefile
+    setwd("~/Sediment_Mapping_DEC/Heathcote_Adam_Code")
     getwd()
-    getinfo.shape("Spatial_Data/torangeauNEW.shp")
-    getinfo.shape("Spatial_Data/tourangeaupoly.shp")
+    getinfo.shape("Data_files_for_Meredith/Data_Files_for_Meredith_notmac/torangeauNEW.shp")
+    getinfo.shape("Data_files_for_Meredith/Data_Files_for_Meredith_notmac/tourangeaupoly.shp")
+    getinfo.shape("Data_files_for_Meredith/Data_Files_for_Meredith_notmac/tourangeaupoly.shp")
     
     #convert to ShaePoly object
     st_read
-    lake.points <- st_read("Spatial_Data/torangeauNEW.shp")
-    lake.poly <- st_read("Spatial_Data/tourangeaupoly.shp")
+    lake.points <- readShapePoints("Data_files_for_Meredith/Data_Files_for_Meredith_notmac/torangeauNEW.shp")
+    lake.poly <- readShapePoly("Data_files_for_Meredith/Data_Files_for_Meredith_notmac/tourangeaupoly.shp")
+    
+    # Try with the polygon and shape file you made in ArcGIS 
+    setwd("~/Sediment_Mapping_DEC")
+    getinfo.shape("Spatial_Data/Ellens_Pond_Depths.shp")
+    getinfo.shape("Spatial_Data/Ellens_Pond_Polygon.shp")
+    
+    lake.points <- readShapePoints("Spatial_Data/Ellens_Pond_Depths.shp")
+    lake.poly <- readShapePoly("Spatial_Data/Ellens_Pond_Polygon.shp")
 
 #custom function for a scalebar 
   scalebar <- function(loc,length,unit="km",division.cex=.8,...) {
@@ -104,17 +114,9 @@ library(maps)
         (size+par("cxy")[2])*sin(bearing+i*pi/2)+loc[2],b[i+1],
         cex=cex)
     }
-
-# **************************************************************************************
-    # Here is where we run into problems, I think that it is because I ended up bringin in the shape files using st_read instead of "readShapePoints"
-    #    and "readShapePoly" that Adam used (I couldn't get them to play nice with my version of R) and so the formatting is off 
-    #    - KG 010923 
-    
-    
     
 #plots of measured locations
 spplot(lake.points, "z")
-plot(lake.points, "z")
 bubble(lake.points, "z", maxsize=2, pch=1, col=1, main="Observed Lake Depth")
 
 #create grid
@@ -140,7 +142,7 @@ dep.Exp <- fit.variogram(lav.vc, vgm(psill=6, range=600, model="Exp", nugget=0.8
 dep.Whi <- fit.variogram(lav.vc, vgm(psill=6, range=600, model="Mat", nugget=0.8, kappa=1))
 dep.Mat <- fit.variogram(lav.vc, vgm(psill=6, range=600, model="Mat", nugget=0.8, kappa=1.9))
 
-#plot various models onto of empirical variogram
+#plot various models onto of empirical variogram - models for kringing (I think - KG 1/19)
 par(mar=c(5,5,3,1))
 plot(lav.vc$dist, lav.vc$gamma, ylim=c(0, max(lav.vc$gamma)), pch=19, lwd.ticks=4, xlab="h", ylab=expression(paste(gamma)), cex.lab=2, font=2, cex=1.5, main="Semi-variogram for Z with cutoff of 800")
 box(lwd=4)
@@ -194,3 +196,6 @@ northarrow(loc=c(334000, 5312250), size=100, cex=0.0001)
 
 #contours alone
 contour(tour.k["var1.pred"], col=1,add=F)
+
+
+

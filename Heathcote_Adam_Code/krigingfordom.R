@@ -56,7 +56,7 @@ cex=cex)
 }
 
 #plots of measured locations
-spplot(lake.points, "z")
+spplot(lake.points, "x")
 bubble(lake.points, "z", maxsize=2, pch=1, col=1, main="Observed Lake Depth")
 
 #create grid
@@ -136,3 +136,5 @@ northarrow(loc=c(334000, 5312250), size=100, cex=0.0001)
 
 #contours alone
 contour(tour.k["var1.pred"], col=1,add=F)
+
+
