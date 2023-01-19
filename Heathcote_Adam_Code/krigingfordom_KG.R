@@ -67,7 +67,7 @@ library(maps)
     getinfo.shape("Spatial_Data/Ellens_Pond_Depths.shp")
     getinfo.shape("Spatial_Data/Ellens_Pond_Polygon.shp")
     
-    lake.points <- readShapePoints("Spatial_Data/Ellens_Pond_Sed_Depths_Partial.shp")
+    lake.points <- readShapePoints("Spatial_Data/Ellens_Pond_Depths_Partial.shp")
     lake.poly <- readShapePoly("Spatial_Data/Ellens_Pond_Polygon.shp")
 
     
