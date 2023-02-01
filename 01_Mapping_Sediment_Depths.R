@@ -113,104 +113,136 @@
     }
     
 # 2. plots of measured locations
-    spplot(lake.points.heath, "z")
-    bubble(lake.points.heath, "z", maxsize=2, pch=1, col=1, main="Observed Lake Depth")
-      
-        # Sediment thickness for DEC Data 
-          bubble(lake.points.hol, "Sediment_T", maxsize=2, pch=1, col=1, main="Observed Sediment Depth")
+    
+    #Heathcote 
+      spplot(lake.points.heath, "z")
+      bubble(lake.points.heath, "z", maxsize=2, pch=1, col=1, main="Observed Lake Depth")
+        
+    # Holgerson
+      spplot(lake.points.hol, "Sediment_T")
+      bubble(lake.points.hol, "Sediment_T", maxsize=2, pch=1, col=1, main="Observed Sediment Depth")
 
 # 3. Create grid
-    grid.lav <- polygrid(xgrid=seq(min(lake.points@coords[,1]), max(lake.points@coords[,1]), 10), ygrid=seq(min(lake.points@coords[,2]), max(lake.points@coords[,2]), 10), borders=lake.poly, vec.inout = FALSE)
-    plot(grid.lav, pch=19)
-    
+          
+  # Heathcote Data 
+      grid.lav.heath <- polygrid(xgrid=seq(min(lake.points.heath@coords[,1]), max(lake.points.heath@coords[,1]), 10), ygrid=seq(min(lake.points.heath@coords[,2]), max(lake.points.heath@coords[,2]), 10), borders=lake.poly.heath, vec.inout = FALSE)
+      plot(grid.lav.heath, pch=19)
+      plot(lake.poly.heath)
+      
+      #convert to gridded spatial object
+      grid.sp.heath <- na.omit(grid.lav.heath)
+      coordinates(grid.sp.heath) <-c("x", "y")
+      gridded(grid.sp.heath) <- T
+      
+      #plot grid
+      plot(grid.sp.heath, col="black")
+      
+  # Holgerson Date 
+      grid.lav.hol <- polygrid(xgrid=seq(min(lake.points.hol@coords[,1]), max(lake.points.hol@coords[,1]), 0.00001), ygrid=seq(min(lake.points.hol@coords[,2]), max(lake.points.hol@coords[,2]), 0.00001), borders=lake.poly.hol, vec.inout = FALSE)
+      plot(grid.lav.hol, pch=19)
+      plot(lake.poly.hol)
+      
+      #convert to gridded spatial object
+      grid.sp.hol <- na.omit(grid.lav.hol)
+      coordinates(grid.sp.hol) <-c("x", "y")
+      gridded(grid.sp.hol) <- T
+      
+      #plot grid
+      plot(grid.sp.hol, col="black")
+      
 
-    
-# START: Katie Pulling apart grid Code to figure it out 020123 *************************************************************************
-    lake.points@coords[,1]  # this is the x value of all of the coordinates in lake.points 
-    min(lake.points.hol@coords[,1])  # So you can take the minimum of that 
-    min(lake.points.heath@coords[,1])  # So you can take the minimum of that <-- Holgerson shps using diff coordinate system 
-    max(lake.points@coords[,1])  # Or thr maximum of that 
-    max(lake.points.hol@coords[,1])
-    
-    head(lake.points.heath@coords) # Top 5 rows of coordinate 
-    head(lake.points.hol@coords)  # Convert our coodinate system? 
-    
-    # Try with Holgerson Data 
-    grid.lav <- polygrid(xgrid=seq(min(lake.points@coords[,1]), max(lake.points@coords[,1]), 10), ygrid=seq(min(lake.points@coords[,2]), max(lake.points@coords[,2]), 10), borders=lake.poly, vec.inout = FALSE)
-    plot(grid.lav, pch=19)
-    
-    grid.lav.hol <- polygrid(xgrid=seq(min(lake.points.hol@coords[,1]), max(lake.points.hol@coords[,1]), 0.00001), ygrid=seq(min(lake.points.hol@coords[,2]), max(lake.points.hol@coords[,2]), 0.00001), borders=lake.poly.hol, vec.inout = FALSE)
-    plot(grid.lav.hol, pch=19)
-    
-        # Peice by peice 
-        min(lake.points.hol@coords[,1])
-        max(lake.points.hol@coords[,1])
-        seq(min(lake.points.hol@coords[,1]), max(lake.points.hol@coords[,1]), 0.00001)
-    
-    #convert to gridded spatial object
-    grid.sp.hol <- na.omit(grid.lav.hol)
-    coordinates(grid.sp.hol) <-c("x", "y")
-    gridded(grid.sp.hol) <- T
-    
-    #plot grid
-    plot(grid.sp.hol, col="black")
-    
-    
-    
-    
-    
-# END : Katie Pulling apart grid Code to figure it out 020123 *************************************************************************
-    
-    #convert to gridded spatial object
-    grid.sp <- na.omit(grid.lav)
-    coordinates(grid.sp) <-c("x", "y")
-    gridded(grid.sp) <- T
-    
-    #plot grid
-    plot(grid.sp, col="black")
+# 4. create variogram with Cressie-Hawkins estimator
+      
+      # Heathcote 
+        lav.vc.heath <- variogram(z ~1, lake.points.heath, cressie=T)
+        plot(lav.vc.heath, main = "Variogram Heathcote Data")
+        
+      # Holgerson 
+        names(lake.points.hol@data)[names(lake.points.hol@data) == "Sediment_T"] <- "z"  # change the column name for sediment thickness to z so that this function can find it 
+        lav.vc.hol <- variogram(z ~1, lake.points.hol, cressie=T)
+        plot(lav.vc.hol, main = "Variogram Holgerson Data")   # need to change the names to make sediment thickness names z 
+        
+  
+# KG Has it working to here! 020123  <--------------------------   
+                    
+#5. fit spherical, exponential, Whittle, and Matern k=1.9 (pseudo-normal) functions to variogram 
+        
+  # Heathcote 
+  dep.Sph.heath <- fit.variogram(lav.vc.heath, vgm(psill=6, range=600, model="Sph", nugget=0.8))
+  dep.Exp.heath <- fit.variogram(lav.vc.heath, vgm(psill=6, range=600, model="Exp", nugget=0.8))
+  dep.Whi.heath <- fit.variogram(lav.vc.heath, vgm(psill=6, range=600, model="Mat", nugget=0.8, kappa=1))
+  dep.Mat.heath <- fit.variogram(lav.vc.heath, vgm(psill=6, range=600, model="Mat", nugget=0.8, kappa=1.9))
+  
+  # Holgerson   
+    # Giving errors that make me think that we don't have enough data to run these kinds of models --> take a look at bathymetry code from Nick
+  dep.Sph.hol <- fit.variogram(lav.vc.hol, vgm(psill=6, range=600, model="Sph", nugget=0.8))
+  dep.Exp.hol <- fit.variogram(lav.vc.hol, vgm(psill=6, range=600, model="Exp", nugget=0.8))
+  dep.Whi.hol <- fit.variogram(lav.vc.hol, vgm(psill=6, range=600, model="Mat", nugget=0.8, kappa=1))
+  dep.Mat.hol <- fit.variogram(lav.vc.hol, vgm(psill=6, range=600, model="Mat", nugget=0.8, kappa=1.9))
 
-#create variogram with Cressie-Hawkins estimator
-lav.vc <- variogram(z ~1, lake.points, cressie=T)
-plot(lav.vc)
+# 6. plot various models onto of empirical variogram - models for kringing (I think - KG 1/19)
+  
+  # Heathcote 
+  par(mar=c(5,5,3,1))
+  plot(lav.vc.heath$dist, lav.vc.heath$gamma, ylim=c(0, max(lav.vc.heath$gamma)), pch=19, lwd.ticks=4, xlab="h", ylab=expression(paste(gamma)), cex.lab=2, font=2, cex=1.5, main="Semi-variogram for Z with cutoff of 800")
+  box(lwd=4)
+  lines(variogramLine(dep.Sph.heath, 800), lwd=4)
+  lines(variogramLine(dep.Exp.heath, 800), col=2, lwd=4)
+  lines(variogramLine(dep.Whi.heath, 800), col=3, lwd=4)
+  lines(variogramLine(dep.Mat.heath, 800), col=4, lwd=4)
+  legend("bottomright", lwd=4, col=c(1:4), legend=c("Sph", "Exp", "Whi", "Mat"), bty="n", cex=2)
+  
+  # Holgerson 
+  # No point in doing this step on our little ponds because there is only the one model that works for us 
+      par(mar=c(5,5,3,1))
+      plot(lav.vc.hol$dist, lav.vc.hol$gamma, ylim=c(0, max(lav.vc.hol$gamma)), pch=19, lwd.ticks=4, xlab="h", ylab=expression(paste(gamma)), cex.lab=2, font=2, cex=1.5, main="Semi-variogram for Z with cutoff of 800")
+      box(lwd=4)
+      lines(variogramLine(dep.Sph.hol, 800), lwd=4)
+      lines(variogramLine(dep.Exp.hol, 800), col=2, lwd=4)
+      lines(variogramLine(dep.Whi.hol, 800), col=3, lwd=4)
+      lines(variogramLine(dep.Mat.hol, 800), col=4, lwd=4)
+      legend("bottomright", lwd=4, col=c(1:4), legend=c("Sph", "Exp", "Whi", "Mat"), bty="n", cex=2)
+      
 
+# 7. quantify sum of squared error for each model
+      
+  # Heathcote 
+  attr(dep.Sph.heath, "SSErr")
+  attr(dep.Exp.heath, "SSErr")
+  attr(dep.Whi.heath, "SSErr")
+  attr(dep.Mat.heath, "SSErr")
+  
+  # Holgerson 
+  attr(dep.Sph.hol, "SSErr")
+  attr(dep.Exp.hol, "SSErr")
+  attr(dep.Whi.hol, "SSErr")
+  attr(dep.Mat.hol, "SSErr")
 
-#fit spherical, exponential, Whittle, and Matern k=1.9 (pseudo-normal) functions to variogram 
-dep.Sph <- fit.variogram(lav.vc, vgm(psill=6, range=600, model="Sph", nugget=0.8))
-dep.Exp <- fit.variogram(lav.vc, vgm(psill=6, range=600, model="Exp", nugget=0.8))
-dep.Whi <- fit.variogram(lav.vc, vgm(psill=6, range=600, model="Mat", nugget=0.8, kappa=1))
-dep.Mat <- fit.variogram(lav.vc, vgm(psill=6, range=600, model="Mat", nugget=0.8, kappa=1.9))
+  #print variogram model parameters
+    dep.Sph.heath
+    dep.Whi.heath
+    
+    dep.Sph.hol
+    dep.Whi.hol
 
-#plot various models onto of empirical variogram - models for kringing (I think - KG 1/19)
-par(mar=c(5,5,3,1))
-plot(lav.vc$dist, lav.vc$gamma, ylim=c(0, max(lav.vc$gamma)), pch=19, lwd.ticks=4, xlab="h", ylab=expression(paste(gamma)), cex.lab=2, font=2, cex=1.5, main="Semi-variogram for Z with cutoff of 800")
-box(lwd=4)
-lines(variogramLine(dep.Sph, 800), lwd=4)
-lines(variogramLine(dep.Exp, 800), col=2, lwd=4)
-lines(variogramLine(dep.Whi, 800), col=3, lwd=4)
-lines(variogramLine(dep.Mat, 800), col=4, lwd=4)
-legend("bottomright", lwd=4, col=c(1:4), legend=c("Sph", "Exp", "Whi", "Mat"), bty="n", cex=2)
+# 8. use ordinary kriging with constant mean and Whittle model (smallest error)
+  tour.k.heath <- krige(z ~ 1, lake.points.heath, grid.sp.heath, dep.Whi.heath)
+  tour.k.hol <- krige(z ~ 1, lake.points.hol, grid.sp.hol, dep.Sph.hol)
 
-#quantify sum of squared error for each model
-attr(dep.Sph, "SSErr")
-attr(dep.Exp, "SSErr")
-attr(dep.Whi, "SSErr")
-attr(dep.Mat, "SSErr")
+# 9. replace kriged estimated of < 0 with very small positive value (0.001)
+  tour.k.heath@data$var1.pred[tour.k.heath@data$var1.pred < 0] <- 0.001
+  tour.k.hol@data$var1.pred[tour.k.hol@data$var1.pred < 0] <- 0.001
 
-#print variogram model parameters
-dep.Sph
-dep.Whi
-
-#use ordinary kriging with constant mean and Whittle model (smallest error)
-tour.k <- krige(z ~ 1, lake.points, grid.sp, dep.Whi)
-
-#replace kriged estimated of < 0 with very small positive value (0.001)
-tour.k@data$var1.pred[tour.k@data$var1.pred < 0] <- 0.001
-
-#create custom color ramp
-cols <- colorRampPalette(colors=c("cadetblue1", "navyblue"))
-contours <- c(seq(0, 2, 0.2))
-
-spplot(tour.k, "var1.pred", col.regions=cols, contour=F, par.settings = list(axis.line = list(col =  'transparent')))
+# 10. create custom color ramp
+    cols <- colorRampPalette(colors=c("cadetblue1", "navyblue"))
+    contours <- c(seq(0, 2, 0.2))
+    
+# 11. Plot depth 
+  spplot(tour.k.heath, "var1.pred", col.regions=cols, contour=F, par.settings = list(axis.line = list(col =  'transparent')))
+  spplot(tour.k.hol, "var1.pred", col.regions=cols, contour=F, par.settings = list(axis.line = list(col =  'transparent')))
+    # this model just pulls everything to the mean -- try other modeling methods 
+    mean(lake.points.hol@data$z)
+  
 
 #variance plot (as standard deviations)
 tour.k@data$var1.sd <- sqrt(tour.k@data$var1.var)
