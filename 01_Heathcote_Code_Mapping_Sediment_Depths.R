@@ -45,6 +45,11 @@
       library(geoR)
       library(gstat)
       library(maps)
+    
+    install.packages("interp")
+   # library(fields)
+    library(interp)
+   # library(leaflet)
 
     #read in Shape Files from Adam 
         getwd()
@@ -269,4 +274,6 @@ northarrow(loc=c(334000, 5312250), size=100, cex=0.0001)
 contour(tour.k["var1.pred"], col=1,add=F)
 
 
+
+        
 
