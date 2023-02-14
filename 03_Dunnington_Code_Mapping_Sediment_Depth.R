@@ -292,15 +292,15 @@
        volume = mean(IDW) * boundary_area
      )
    
-   # Holgerson Data 
+   # Holgerson Data TPRS IDW
    pond_boundary_area <- st_area(pond_boundary) %>% 
      as.numeric()
    
    pond_grid %>% 
      st_set_geometry(NULL) %>% 
      summarise(
-       mean_depth = mean(IDW_sed_depth),
-       volume = mean(IDW_sed_depth) * pond_boundary_area
+       mean_depth = mean(TPRS_sed_depth),
+       volume = mean(TPRS_sed_depth) * pond_boundary_area
      )
     
 # 11. Contouring 
@@ -391,4 +391,7 @@
     ggsave("Output_Figures/ellens_sed_depth_IDW_0214.png", ellens_sed_depth_IDW)
     ggsave("Output_Figures/ellens_water_depth_TPRS_0214.png", ellens_water_depth_TPRS)
     ggsave("Output_Figures/ellens_sed_depth_TPRS_0214.png", ellens_sed_depth_TPRS)
+    
+# Averages 
+    mean(pond_depths$sed_depth)
     
