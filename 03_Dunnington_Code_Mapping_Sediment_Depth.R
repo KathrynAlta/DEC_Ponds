@@ -34,13 +34,13 @@
     # install.packages("gstat")
     library(gstat)
     
-    install.packages("mgcv")
+    # install.packages("mgcv")
     library(mgcv)
     
     # Not compatible wiht this version of R 
-    install.packages("Rtools")
-    install.packages("interpp")
-    library(interpp)
+          # install.packages("Rtools")
+          # install.packages("interpp")
+          # library(interpp)
     
     
 # 1. Measured Depths 
@@ -58,8 +58,10 @@
     
   # Holgerson Lab Data
    pond_depths <- read_sf("Spatial_Data/Ellens_Pond_020123/Ellens_Pond_Depths_1129.shp")   %>%   # Pull in shape file
-     transmute(source = "measured", pond = Pond_Name, water_depth = Depth_top_ , sed_depth = Sediment_T) %>% # Subset to only columns that you need 
+     transmute(source = "measured", pond = Pond_Name, water_depth_cm = Depth_top_ , sed_depth_cm = Sediment_T) %>% # Subset to only columns that you need 
      st_transform(26920) # Transform or convert coordinates of simple feature 
+   pond_depths$water_depth <- pond_depths$water_depth_cm / 100
+   pond_depths$sed_depth <- pond_depths$sed_depth_cm / 100
 
    pond_depths
     
@@ -120,6 +122,7 @@
    pond_boundary
    pond_boundary_points <- st_cast(pond_boundary, "POINT")
    pond_boundary_points
+   
    # Format pond boundary points 
      pond_name <- pond_depths[[1, "pond"]]
      formatted_pond_boundary_points <- pond_boundary_points %>% transmute(source = "boundary", pond = pond_name, water_depth = 0, sed_depth = 0)
@@ -129,6 +132,7 @@
    # Bind together boundary and depth 
      formatted_pond_boundary_points
      pond_depths
+     pond_depths <- subset(pond_depths, select = c("source", "pond", "water_depth", "sed_depth", "geometry"))
    full_pond_depths <- rbind(formatted_pond_boundary_points, pond_depths) %>%
      cbind(., st_coordinates(.))
    full_pond_depths
@@ -153,7 +157,7 @@
    
    # Holgerson Data 
    # Do step by step rather than in pipes 
-   pond_grid_step1 <- st_make_grid(full_pond_depths, cellsize = c(5, 5), what = "centers")   #I made a bigger grid here (well smaller squares, more points)
+   pond_grid_step1 <- st_make_grid(full_pond_depths, cellsize = c(1, 1), what = "centers")   #I made a bigger grid here (well smaller squares, more points)
    pond_grid_step2 <- st_as_sf(pond_grid_step1)
    pond_grid_step3 <- st_contains(pond_boundary, pond_grid_step2, sparse = FALSE)
    pond_grid_step4 <- pond_grid_step2[pond_grid_step3 == "TRUE" , ]
@@ -161,12 +165,7 @@
    pond_grid <- pond_grid_step5
     
 # 6. TIN --> required packages not availale for this version of R 
-   # triangular irregular network surface (TIN) connects points using a Delaunay triangulation (a network of triangles as round as
-   # possible) and approximates each triangle as a plane. It results in contours that are pointier than you may be hoping for, but 
-   # doesn’t predict any values higher or lower than you measured and is a good reality check on any other method as its main 
-   # assumption is that you bothered to take a depth measurement anywhere that it mattered.
-   
-   
+  
     
 # 7. Inverse Distance Weighting (IDW) 
 # _____________________________________________________________________________  
@@ -222,18 +221,174 @@
    fit_gam_reml
    example_grid
    
+   library(terra)
    example_grid$TPRS <- predict(fit_gam_reml, newdata = example_grid, type = "response")  
+   
+   # Holgerson Data 
+   
+   # Water Depth 
+   fit_gam_reml_water_depth <- mgcv::gam(water_depth ~ s(X, Y, k = 60), data = full_pond_depths, method = "REML")
+   pond_grid$TPRS_water_depth <- predict(fit_gam_reml_water_depth, newdata = pond_grid, type = "response")  
+ 
+   # Sedimnet Depth 
+   fit_gam_reml_sed_depth <- mgcv::gam(sed_depth ~ s(X, Y, k = 60), data = full_pond_depths, method = "REML")
+   pond_grid$TPRS_sed_depth <- predict(fit_gam_reml_sed_depth, newdata = pond_grid, type = "response")  
+
+# 9. Soap Film Smooth (SFS)   
+# ______________________________________________________________________________ 
+   
+   # ---> 2/14/23 KG can't get this one to work just yet 
+   
+   library(sf)
+   # Example Data 
+   boundary_coords <- st_coordinates(boundary)
+   
+   gam_bound <- list(
+     list(
+       X = boundary_coords[-1, "X"], 
+       Y = boundary_coords[-1, "Y"], 
+       f = rep(0, nrow(boundary_coords))
+     )
+   )
+   
+   knot_points <- st_make_grid(
+     boundary,
+     n = c(10, 10),
+     what = "centers"
+   ) %>%
+     st_as_sf() %>%
+     filter(st_contains(boundary, x, sparse = FALSE)) %>%
+     filter(
+       !st_intersects(
+         boundary %>% st_cast("LINESTRING") %>% st_buffer(10), 
+         x, 
+         sparse = FALSE
+       )
+     ) %>%
+     cbind(., st_coordinates(.))
+   
+   fit_gam_soap <- gam(
+     depth ~ s(X, Y, bs = "so", xt = list(bnd = gam_bound)),
+     data = depths %>% 
+       filter(source == "measured") %>% 
+       filter(st_contains(boundary, geometry, sparse = FALSE)), 
+     method = "REML", 
+     knots = knot_points
+   )
+   
+   grid$GAM_Soap <- predict(fit_gam_soap, newdata = grid, type = "response")
     
     
+# 10. Compute Volume of water and volume of sediment 
     
+  #  Example Data 
+   boundary_area <- st_area(boundary) %>% 
+     as.numeric()
+   
+   example_grid %>% 
+     st_set_geometry(NULL) %>% 
+     summarise(
+       mean_depth = mean(IDW),
+       volume = mean(IDW) * boundary_area
+     )
+   
+   # Holgerson Data 
+   pond_boundary_area <- st_area(pond_boundary) %>% 
+     as.numeric()
+   
+   pond_grid %>% 
+     st_set_geometry(NULL) %>% 
+     summarise(
+       mean_depth = mean(IDW_sed_depth),
+       volume = mean(IDW_sed_depth) * pond_boundary_area
+     )
     
+# 11. Contouring 
+   
+   # Katie can't figure out piping 
+   # depth_raster <- example_grid %>% 
+   #   st_set_geometry(NULL) %>% 
+   #   select(X, Y, IDW) %>% 
+   #   raster::rasterFromXYZ(crs = raster::crs("+init=epsg:26920"))
+   
+   # Example Data 
+   depth_raster <- example_grid %>% 
+     st_set_geometry(NULL) 
+   depth_raster <- subset(depth_raster, select = c(X, Y, IDW)) %>% 
+     raster::rasterFromXYZ(crs = raster::crs("+init=epsg:26920"))
+   
+   depth_contours <- depth_raster %>% 
+     raster::rasterToContour(levels = c(0.5, 1, 1.5)) %>% 
+     st_as_sf()
+   
+   # Holgerson data 
+   pond_depth_raster <- pond_grid %>% 
+     st_set_geometry(NULL) 
+   
+   pond_depth_raster <- subset(pond_depth_raster, select = c(X, Y, IDW_sed_depth, IDW_water_depth)) %>% 
+     raster::rasterFromXYZ(crs = raster::crs("+init=epsg:26920"))
+   
+   # Can't get contours to work right now 2/14/23 KG 
+   pond_depth_contours <- pond_depth_raster %>% 
+     raster::rasterToContour(levels = c(0.5, 1, 1.5)) %>% 
+     st_as_sf()
+   
+   
+# 12. Plotting 
+   
+   # Example Data 
+   ggplot(example_grid) +
+     geom_sf(data = boundary) +
+     geom_raster(aes(X, Y, fill = TPRS)) +
+     geom_sf(data = depth_contours) +
+     scale_fill_viridis_c() +
+     annotation_scale(location = "br") +
+     labs(x = NULL, y = NULL, fill = "Depth (m)")
+   
+  # IDW MODEL: _______________________________________________________________
+   
+   # HOlgerson Data - Water Depth 
+  ellens_water_depth_IDW <- ggplot(pond_grid) +
+     geom_sf(data = pond_boundary) +
+     geom_raster(aes(X, Y, fill = IDW_water_depth)) +
+     scale_fill_viridis_c() +
+     annotation_scale(location = "br") +
+     labs(title= "Ellens Pond Water Depth (m) -- IDW", x = NULL, y = NULL, fill = "Water Depth (m)")
+  ellens_water_depth_IDW
+   
+   # HOlgerson Data - Sed Depth 
+  ellens_sed_depth_IDW <- ggplot(pond_grid) +
+     geom_sf(data = pond_boundary) +
+     geom_raster(aes(X, Y, fill = IDW_sed_depth)) +
+     scale_fill_viridis_c() +
+     annotation_scale(location = "br") +
+     labs(title= "Ellens Pond Sediment Depth (m) -- IDW", x = NULL, y = NULL, fill = "Sediment Depth (m)")
+  ellens_sed_depth_IDW
+   
+   # TPRS MODEL: _____________________________________________________________
+   
+   # HOlgerson Data - Water Depth 
+  ellens_water_depth_TPRS <- ggplot(pond_grid) +
+     geom_sf(data = pond_boundary) +
+     geom_raster(aes(X, Y, fill = TPRS_water_depth)) +
+     scale_fill_viridis_c() +
+     annotation_scale(location = "br") +
+     labs(title= "Ellens Pond Water Depth (m) -- TPRS", x = NULL, y = NULL, fill = "Water Depth (m)")
+  ellens_water_depth_TPRS
+   
+   # HOlgerson Data - Sed Depth 
+  ellens_sed_depth_TPRS <- ggplot(pond_grid) +
+     geom_sf(data = pond_boundary) +
+     geom_raster(aes(X, Y, fill = TPRS_sed_depth)) +
+     scale_fill_viridis_c() +
+     annotation_scale(location = "br") +
+     labs(title= "Ellens Pond Sediment Depth (m) -- TPRS", x = NULL, y = NULL, fill = "Sediment Depth (m)")
+  ellens_sed_depth_TPRS
     
-    
-    
-    
-    
-    
-    
-    
-    
+# Save Output figures 
+    getwd()
+    ggsave("Output_Figures/ellens_water_depth_IDW_0214.png", ellens_water_depth_IDW)
+    ggsave("Output_Figures/ellens_sed_depth_IDW_0214.png", ellens_sed_depth_IDW)
+    ggsave("Output_Figures/ellens_water_depth_TPRS_0214.png", ellens_water_depth_TPRS)
+    ggsave("Output_Figures/ellens_sed_depth_TPRS_0214.png", ellens_sed_depth_TPRS)
     
