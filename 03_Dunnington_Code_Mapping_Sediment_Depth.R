@@ -30,10 +30,18 @@
     
     library(sf)
     library(ggspatial)
+    
+    # install.packages("gstat")
+    library(gstat)
+    
+    install.packages("mgcv")
+    library(mgcv)
+    
+    # Not compatible wiht this version of R 
     install.packages("Rtools")
     install.packages("interpp")
-    install.packages("gstat")
     library(interpp)
+    
     
 # 1. Measured Depths 
     
@@ -158,38 +166,63 @@
    # doesn’t predict any values higher or lower than you measured and is a good reality check on any other method as its main 
    # assumption is that you bothered to take a depth measurement anywhere that it mattered.
    
-   # Exampl Data 
    
-   fit_TIN <- interp::interpp(
-     x = depths$X,
-     y = depths$Y,
-     z = depths$depth,
-     xo = grid$X,
-     yo = grid$Y,
-     duplicate = "strip"
-   )
-   
-   grid$TIN <- fit_TIN$z
     
-# 7. [inverse distance weighted interpolation]    
-   fit_gstat <- gstat::gstat(
-     formula = depth ~ 1,
-     data = as(depths, "Spatial"),
+# 7. Inverse Distance Weighting (IDW) 
+# _____________________________________________________________________________  
+   #Example Data 
+       fit_gstat <- gstat::gstat(
+         formula = depth ~ 1,
+         data = as(depths, "Spatial"),
+         nmax = 10, nmin = 3,
+         set = list(idp = 0.5)
+       )
+       
+       example_grid
+       
+       example_grid$IDW <- predict(fit_gstat, newdata = as(example_grid, "Spatial")) %>%
+         st_as_sf() %>%
+         pull(1)
+   
+   # Holgerson Lab Data 
+   
+   # build model for water depth 
+   fit_gstat_ponds_water_depth <- gstat::gstat(
+     formula = water_depth ~ 1,
+     data = as(full_pond_depths, "Spatial"),
      nmax = 10, nmin = 3,
      set = list(idp = 0.5)
    )
    
-   grid$IDW <- predict(fit_gstat, newdata = as(grid, "Spatial")) %>%
+   #build model for sediment depth 
+   fit_gstat_ponds_sed_depth <- gstat::gstat(
+     formula = sed_depth ~ 1,
+     data = as(full_pond_depths, "Spatial"),
+     nmax = 10, nmin = 3,
+     set = list(idp = 0.5)
+   )
+  
+   # use model to predict water depth 
+   pond_grid$IDW_water_depth <- predict(fit_gstat_ponds_water_depth, newdata = as(pond_grid, "Spatial")) %>%
+     st_as_sf() %>%
+     pull(1)
+   
+   # Use model to predict sediment depth 
+   pond_grid$IDW_sed_depth <- predict(fit_gstat_ponds_sed_depth, newdata = as(pond_grid, "Spatial")) %>%
      st_as_sf() %>%
      pull(1)
     
+# 8 Thin Plate Regression Spline (TPRS) 
+# ______________________________________________________________________________
     
-    
-    
-    
-    
-    
-    
+   # Example Data 
+  
+   depths
+   fit_gam_reml <- mgcv::gam(depth ~ s(X, Y, k = 60), data = depths, method = "REML")
+   fit_gam_reml
+   example_grid
+   
+   example_grid$TPRS <- predict(fit_gam_reml, newdata = example_grid, type = "response")  
     
     
     
