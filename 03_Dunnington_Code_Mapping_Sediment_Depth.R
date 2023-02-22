@@ -4,7 +4,6 @@
 # Holgerson Lab, Katie Gannon
 # Code modified from https://dewey.dunnington.ca/post/2019/bathymetry-lake-volume-estimation-using-r/ 
 
-# GIt check sediment mapping
 
 # 0. Set up R environment and Load Data 
 
