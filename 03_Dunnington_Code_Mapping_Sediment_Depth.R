@@ -63,8 +63,20 @@
    pond_depths$water_depth <- pond_depths$water_depth_cm / 100
    pond_depths$sed_depth <- pond_depths$sed_depth_cm / 100
 
+# COnnect the lat long from the pond depths shape file to the measuremed depths from seperate df 
+   
+   # Make a Measurement number in the points shape file that you can use to connect to 
    pond_depths
    pond_depths$Measurement_Number <- seq(1:nrow(pond_depths)) 
+   pond_depths$Measurement_Number <- as.numeric(pond_depths$Measurement_Number) #Change to a numeric so that it plays nicely with the Measurement Number from the other data frame 
+   
+   # Bring in file with the measured depths (or do this up above in the first steps )
+   measured_depths <- read_xlsx("random_depths.xlsx")
+   head(measured_depths)
+   
+   # Join the measured depths and the shape file of 
+   
+   
     
 # 2. Boundary / Polygon 
    
@@ -378,7 +390,7 @@
      labs(title= "Ellens Pond Water Depth (m) -- TPRS", x = NULL, y = NULL, fill = "Water Depth (m)")
   ellens_water_depth_TPRS
    
-   # HOlgerson Data - Sed Depth  - (option = "plasma") or (option = "plasma")
+   # HOlgerson Data - Sed Depth  - (option = "plasma") or (option = "magma")
   ellens_sed_depth_TPRS <- ggplot(pond_grid) +
      geom_sf(data = pond_boundary) +
      geom_raster(aes(X, Y, fill = TPRS_sed_depth)) +
