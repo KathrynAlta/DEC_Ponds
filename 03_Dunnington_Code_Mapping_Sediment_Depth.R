@@ -64,6 +64,7 @@
    pond_depths$sed_depth <- pond_depths$sed_depth_cm / 100
 
    pond_depths
+   pond_depths$Measurement_Number <- seq(1:nrow(pond_depths)) 
     
 # 2. Boundary / Polygon 
    
@@ -103,7 +104,7 @@
      geom_sf_text(aes(label = sed_depth), data = pond_depths, size = 2.5) +
      annotation_scale(location = "br")
     
-   # Example Data 
+   # Holgerson Data - Water Depth
    ggplot() +
      geom_sf(data = pond_boundary) +
      geom_sf_text(aes(label = water_depth), data = pond_depths, size = 2.5) +
@@ -328,6 +329,7 @@
    pond_depth_raster <- subset(pond_depth_raster, select = c(X, Y, IDW_sed_depth, IDW_water_depth)) %>% 
      raster::rasterFromXYZ(crs = raster::crs("+init=epsg:26920"))
    
+  #*******************************
    # Can't get contours to work right now 2/14/23 KG 
    pond_depth_contours <- pond_depth_raster %>% 
      raster::rasterToContour(levels = c(0.5, 1, 1.5)) %>% 
@@ -376,11 +378,11 @@
      labs(title= "Ellens Pond Water Depth (m) -- TPRS", x = NULL, y = NULL, fill = "Water Depth (m)")
   ellens_water_depth_TPRS
    
-   # HOlgerson Data - Sed Depth 
+   # HOlgerson Data - Sed Depth  - (option = "plasma") or (option = "plasma")
   ellens_sed_depth_TPRS <- ggplot(pond_grid) +
      geom_sf(data = pond_boundary) +
      geom_raster(aes(X, Y, fill = TPRS_sed_depth)) +
-     scale_fill_viridis_c() +
+     scale_fill_viridis_c(option = "plasma") +
      annotation_scale(location = "br") +
      labs(title= "Ellens Pond Sediment Depth (m) -- TPRS", x = NULL, y = NULL, fill = "Sediment Depth (m)")
   ellens_sed_depth_TPRS
