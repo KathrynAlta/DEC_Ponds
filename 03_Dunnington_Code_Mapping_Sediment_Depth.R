@@ -43,7 +43,7 @@
           # library(interpp)
     
     
-# 1. Measured Depths 
+# 1. Bring in data file with measured points (lat long)
     
     # Example Data 
     measured_depths <- read_sf(
@@ -57,24 +57,26 @@
     
     
   # Holgerson Lab Data
-   pond_depths <- read_sf("Spatial_Data/Ellens_Pond_020123/Ellens_Pond_Depths_1129.shp")   %>%   # Pull in shape file
+   pond_points <- read_sf("Spatial_Data/Ellens_Pond_020123/Ellens_Pond_Depths_1129.shp")   %>%   # Pull in shape file
      transmute(source = "measured", pond = Pond_Name, water_depth_cm = Depth_top_ , sed_depth_cm = Sediment_T) %>% # Subset to only columns that you need 
      st_transform(26920) # Transform or convert coordinates of simple feature 
-   pond_depths$water_depth <- pond_depths$water_depth_cm / 100
-   pond_depths$sed_depth <- pond_depths$sed_depth_cm / 100
+   pond_points$water_depth <- pond_points$water_depth_cm / 100
+   pond_points$sed_depth <- pond_points$sed_depth_cm / 100
 
-# COnnect the lat long from the pond depths shape file to the measuremed depths from seperate df 
+# 1.B COnnect the lat long from the pond depths shape file to the measuremed depths from seperate df 
    
    # Make a Measurement number in the points shape file that you can use to connect to 
-   pond_depths
-   pond_depths$Measurement_Number <- seq(1:nrow(pond_depths)) 
-   pond_depths$Measurement_Number <- as.numeric(pond_depths$Measurement_Number) #Change to a numeric so that it plays nicely with the Measurement Number from the other data frame 
+   pond_points
+   pond_points$Measurement_Number <- seq(1:nrow(pond_points)) 
+   pond_points$Measurement_Number <- as.numeric(pond_points$Measurement_Number) #Change to a numeric so that it plays nicely with the Measurement Number from the other data frame 
    
    # Bring in file with the measured depths (or do this up above in the first steps )
    measured_depths <- read_xlsx("random_depths.xlsx")
    head(measured_depths)
    
    # Join the measured depths and the shape file of 
+   pond_depths <- full_join(pond_points, measured_depths)
+   
    
    
     
