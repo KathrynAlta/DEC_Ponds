@@ -45,21 +45,20 @@
 # 1. Input all data
     
   # Points data 
-    ellens_pond_points <- read_sf("Spatial_Data/Ellens_Pond_020123/Ellens_Pond_Depths_1129.shp")   %>%   # Pull in shape file
-      transmute(source = "measured", pond = Pond_Name, water_depth_cm = Depth_top_ , sed_depth_cm = Sediment_T) %>% # Subset to only columns that you need 
+    harrison_pond_points <- read_sf("Spatial_Data/Harrison_Pond_030123/Harrison_Pond_Points_030123.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Harrison_Pond") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
-    
     
     applegate_pond_points <- read_sf("Spatial_Data/Applegate_Pond_022723/Applegate_Pond_Points_030123_1559.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Applegate_Pond") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
-    aquadro_pond_points <- read_sf("Spatial_Data/Aquadro_Pond_022723/Aquadro_Points_030123_1615.shp")   %>%   # Pull in shape file
-      transmute(source = "measured", pond = "Applegate_Pond") %>% # Subset to only columns that you need 
+    aquadro_pond_points <- read_sf("Spatial_Data/Aquadro_Pond_022723/Aquadro_Points_030123_1629.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Aquadro_Pond") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
   # Polygons 
-    ellens_pond_boundary <- read_sf("Spatial_Data/Ellens_Pond_020123/Ellens_Pond_poly_020123_1134.shp") %>%  # read in polygon of pond 
+    harrison_pond_boundary <- read_sf("Spatial_Data/Harrison_Pond_030123/Harrison_Pond_Poly_030123.shp") %>%  # read in polygon of pond 
       transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
       st_transform(26920) %>%
       st_zm()
@@ -76,7 +75,7 @@
     
     
   # Depth Measurements
-    ellens_pond_depth_meas <- read_xlsx("Depth_Measurements/Ellens_Pond_Depth_Measurements.xlsx")
+    harrison_pond_depth_meas <- read_xlsx("Depth_Measurements/Harrison_Pond_Depth_Measurements.xlsx")
     applegate_pond_depth_meas <- read_xlsx("Depth_Measurements/Applegate_Pond_Depth_Measurements.xlsx")
     aquadro_pond_depth_meas <- read_xlsx("Depth_Measurements/Aquadro_Pond_Depth_Measurements.xlsx")
     
@@ -137,71 +136,71 @@
     }
         
    # Apply function over the points shape file and measured depths for each pond 
-    ellens_pond_depths <- Connect_Depth_LatLong_FUNC(ellens_pond_points, ellens_pond_depth_meas)
+    harrison_pond_depths <- Connect_Depth_LatLong_FUNC(harrison_pond_points, harrison_pond_depth_meas)
     aquadro_pond_depths <- Connect_Depth_LatLong_FUNC(aquadro_pond_points, aquadro_pond_depth_meas)
     applegate_pond_depths <- Connect_Depth_LatLong_FUNC(applegate_pond_points, applegate_pond_depth_meas)
 
    
-# 3. Plot measured depths and thickness on basic map  
+# 3. Plot measured depths and thickness on a basic map  
    
-   # Example Data 
-   ggplot() +
-     geom_sf(data = example_boundary) +
-     geom_sf_text(aes(label = depth), data = example_depths, size = 2.5) +
-     annotation_scale(location = "br")
+   # Write a function to plot measured water depths 
+     Plot_Water_Depths_FUNC <- function(pond_boundary, pond_depths){
+       ggplot() +
+         geom_sf(data = pond_boundary) +
+         ggtitle("Measured Water Depths (m)") +
+         geom_sf_text(aes(label = Water_Depth_m), data = pond_depths, size = 2.5) +
+         annotation_scale(location = "br")
+     }
    
-   # Write a function to plot water depths 
-   Plot_Water_Depths_FUNC <- function(pond_boundary, pond_depths){
-     ggplot() +
-       geom_sf(data = pond_boundary) +
-       ggtitle("Measured Water Depths (m)") +
-       geom_sf_text(aes(label = Water_Depth_m), data = pond_depths, size = 2.5) +
-       annotation_scale(location = "br")
-   }
-   
-   # Write a function to plot water depths 
-   Plot_Sed_Thick_FUNC <- function(pond_boundary, pond_depths){
-     ggplot() +
-       geom_sf(data = pond_boundary) +
-       ggtitle("Measured Sediment Thickness (m)") +
-       geom_sf_text(aes(label = Sed_Thickness_m), data = pond_depths, size = 2.5) +
-       annotation_scale(location = "br")
-   }
+   # Write a function to plot measured sediment thickness 
+     Plot_Sed_Thick_FUNC <- function(pond_boundary, pond_depths){
+       ggplot() +
+         geom_sf(data = pond_boundary) +
+         ggtitle("Measured Sediment Thickness (m)") +
+         geom_sf_text(aes(label = Sed_Thickness_m), data = pond_depths, size = 2.5) +
+         annotation_scale(location = "br")
+     }
    
    # Plot each pond 
-   Plot_Water_Depths_FUNC(aquadro_pond_boundary, aquadro_pond_depths)
-   Plot_Sed_Thick_FUNC(aquadro_pond_boundary, aquadro_pond_depths)
+     Plot_Water_Depths_FUNC(aquadro_pond_boundary, aquadro_pond_depths)
+     Plot_Sed_Thick_FUNC(aquadro_pond_boundary, aquadro_pond_depths)
+     
+     Plot_Water_Depths_FUNC(applegate_pond_boundary, applegate_pond_depths)
+     Plot_Sed_Thick_FUNC(applegate_pond_boundary, applegate_pond_depths)
+     
+     Plot_Water_Depths_FUNC(harrison_pond_boundary, harrison_pond_depths)
+     Plot_Sed_Thick_FUNC(harrison_pond_boundary, harrison_pond_depths)
    
-   Plot_Water_Depths_FUNC(applegate_pond_boundary, applegate_pond_depths)
-   Plot_Sed_Thick_FUNC(applegate_pond_boundary, applegate_pond_depths)
    
 # 4. Add the coordinates of the boundary as columns and set the depth at the boundary to zero 
    
-   # Example Data 
-   boundary_points <- st_cast(boundary, "POINT")
-   depths <- rbind(boundary_points, measured_depths) %>%
-     cbind(., st_coordinates(.))
-   
-   depths
-    
-   # Holgerson Lab Data 
-   pond_boundary
-   pond_boundary_points <- st_cast(pond_boundary, "POINT")
-   pond_boundary_points
-   
-   # Format pond boundary points 
-     pond_name <- pond_depths[[1, "pond"]]
-     formatted_pond_boundary_points <- pond_boundary_points %>% transmute(source = "boundary", pond = pond_name, water_depth = 0, sed_depth = 0)
-     pond_boundary_points
-     formatted_pond_boundary_points
+  # Write Function 
+     pond_boundary <- aquadro_pond_boundary
+     pond_depths <- aquadro_pond_depths
      
-   # Bind together boundary and depth 
-     formatted_pond_boundary_points
+   Coord_Bound_FUNC <- function(pond_boundary, pond_depths){
+     
+     # cast geometry to another type, change from polygon to points 
+     pond_boundary
+     pond_boundary_points <- st_cast(pond_boundary, "POINT") 
+     pond_boundary_points
+     
+     # Format pond boundary points 
+     pond_name <- pond_depths[[1, "Pond_Name"]]
+     formatted_pond_boundary_points <- pond_boundary_points %>% transmute(source = "boundary", Pond_Name = pond_name, Water_Depth_m = 0, Sed_Thickness_m = 0)
+     
+     # Bind together boundary and depth 
+     pond_depths <- subset(pond_depths, select = c("source", "Pond_Name", "Water_Depth_m", "Sed_Thickness_m", "geometry"))
      pond_depths
-     pond_depths <- subset(pond_depths, select = c("source", "pond", "water_depth", "sed_depth", "geometry"))
-   full_pond_depths <- rbind(formatted_pond_boundary_points, pond_depths) %>%
-     cbind(., st_coordinates(.))
-   full_pond_depths
+     formatted_pond_boundary_points
+     full_pond_depths <- rbind(formatted_pond_boundary_points, pond_depths) %>%
+       cbind(., st_coordinates(.))
+     output <- full_pond_depths
+   }
+   
+    names(applegate_pond_depths)
+   applegate_pond_full <- Coord_Bound_FUNC(applegate_pond_boundary, applegate_pond_depths)
+   
    
 # 5. Create a grid to hold the raster output 
  
