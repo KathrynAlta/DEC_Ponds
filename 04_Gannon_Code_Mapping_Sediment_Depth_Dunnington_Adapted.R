@@ -45,7 +45,7 @@
 # 1. Input all data
     
   # Points data 
-    harrison_pond_points <- read_sf("Spatial_Data/Harrison_Pond_030123/Harrison_Pond_Points_030123.shp")   %>%   # Pull in shape file
+    harrison_pond_points <- read_sf("Spatial_Data/Harrison_Pond_030123/Harrison_Pond_Points_030123_1734.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Harrison_Pond") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
@@ -53,7 +53,7 @@
       transmute(source = "measured", pond = "Applegate_Pond") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
-    aquadro_pond_points <- read_sf("Spatial_Data/Aquadro_Pond_022723/Aquadro_Points_030123_1629.shp")   %>%   # Pull in shape file
+    aquadro_pond_points <- read_sf("Spatial_Data/Aquadro_Pond_022723/Aquadro_Pond_Points_030123_noz.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Aquadro_Pond") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
@@ -173,17 +173,22 @@
    
    
 # 4. Add the coordinates of the boundary as columns and set the depth at the boundary to zero 
+     
+     #**********************************
+     #* I got to here on 03/01/23 This is super close to working but it is 6 pm and my brain is mush,
+     #* it works if you step through it one at a time but applying the function make it throw an error 
+     #* Seperately - make sure that all of your points shape files do NOT have a Z component 
    
+  # For all ponds cast geometry to another type, change from polygon to points 
+     # This has to be done individually because it throws a warning 
+     pond_boundary
+     aquadro_pond_boundary_points <- st_cast(aquadro_pond_boundary, "POINT") 
+     
   # Write Function 
-     pond_boundary <- aquadro_pond_boundary
+     pond_boundary_points <- aquadro_pond_boundary_points
      pond_depths <- aquadro_pond_depths
      
-   Coord_Bound_FUNC <- function(pond_boundary, pond_depths){
-     
-     # cast geometry to another type, change from polygon to points 
-     pond_boundary
-     pond_boundary_points <- st_cast(pond_boundary, "POINT") 
-     pond_boundary_points
+   Coord_Bound_FUNC <- function(pond_boundary_points, pond_depths){
      
      # Format pond boundary points 
      pond_name <- pond_depths[[1, "Pond_Name"]]
@@ -192,6 +197,7 @@
      # Bind together boundary and depth 
      pond_depths <- subset(pond_depths, select = c("source", "Pond_Name", "Water_Depth_m", "Sed_Thickness_m", "geometry"))
      pond_depths
+     pond_boundary_points
      formatted_pond_boundary_points
      full_pond_depths <- rbind(formatted_pond_boundary_points, pond_depths) %>%
        cbind(., st_coordinates(.))
@@ -199,7 +205,7 @@
    }
    
     names(applegate_pond_depths)
-   applegate_pond_full <- Coord_Bound_FUNC(applegate_pond_boundary, applegate_pond_depths)
+   aquadro_pond_full <- Coord_Bound_FUNC(aquadro_pond_boundary_points, aquadro_pond_depths)
    
    
 # 5. Create a grid to hold the raster output 
