@@ -54,7 +54,7 @@
       transmute(source = "measured", pond = "Applegate_Pond") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
-    aquadro_pond_points <- read_sf("Spatial_Data/Aquadro_Pond_022723/Aquadro_Pond_Points_030123.shp")   %>%   # Pull in shape file
+    aquadro_pond_points <- read_sf("Spatial_Data/Aquadro_Pond_022723/Aquadro_Points_030123_1615.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Applegate_Pond") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
@@ -69,7 +69,7 @@
       st_transform(26920) %>%
       st_zm()
     
-    aquadro_pond_boundary <- read_sf("Spatial_Data/Aquadro_Pond_022723/Aquadro_Pond.shp") %>%  # read in polygon of pond 
+    aquadro_pond_boundary <- read_sf("Spatial_Data/Aquadro_Pond_022723/Aquadro_Pond_Poly_030123.shp") %>%  # read in polygon of pond 
       transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
       st_transform(26920) %>%
       st_zm()
