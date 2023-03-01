@@ -61,9 +61,9 @@
      transmute(source = "measured", pond = Pond_Name, water_depth_cm = Depth_top_ , sed_depth_cm = Sediment_T) %>% # Subset to only columns that you need 
      st_transform(26920) # Transform or convert coordinates of simple feature 
    
-   getwd()
-   pond_points <- read_sf("Spatial_Data/Aquadro_Pond_022723/Aquadro_Pont_Points.shp")   %>%   # Pull in shape file
-     transmute(source = "measured", pond = Pond_Name, water_depth_cm = Depth_top_ , sed_depth_cm = Sediment_T) %>% # Subset to only columns that you need 
+  
+   pond_points <- read_sf("Spatial_Data/Applegate_Pond_022723/Applegate_Pond_Points_030123.shp")   %>%   # Pull in shape file
+     transmute(source = "measured", pond = "Applegate_Pond") %>% # Subset to only columns that you need 
      st_transform(26920) # Transform or convert coordinates of simple feature 
    
    
@@ -109,7 +109,7 @@
      st_transform(26920) %>%
      st_zm()
    
-   pond_boundary <- read_sf("Spatial_Data/Aquadro_Pond_022723/Aquadro_Pond.shp") %>%  # read in polygon of pond 
+   pond_boundary <- read_sf("Spatial_Data/Applegate_Pond_022723/Applegate_Pond_Poly.shp") %>%  # read in polygon of pond 
      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
      st_transform(26920) %>%
      st_zm()
