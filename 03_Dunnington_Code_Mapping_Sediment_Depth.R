@@ -109,6 +109,11 @@
      st_transform(26920) %>%
      st_zm()
    
+   pond_boundary <- read_sf("Spatial_Data/Aquadro_Pond_022723/Aquadro_Pond.shp") %>%  # read in polygon of pond 
+     transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+     st_transform(26920) %>%
+     st_zm()
+   
    pond_boundary
    
 # 3. Take a look at the measurements 
