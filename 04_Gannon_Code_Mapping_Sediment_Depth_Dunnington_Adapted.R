@@ -49,13 +49,14 @@
       transmute(source = "measured", pond = "Harrison_Pond") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
-    applegate_pond_points <- read_sf("Spatial_Data/Applegate_Pond_022723/Applegate_Pond_Points_030123_1559.shp")   %>%   # Pull in shape file
+    applegate_pond_points <- read_sf("Spatial_Data/Applegate_Pond_022723/Applegate_Pond_Points_030123_noz.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Applegate_Pond") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
     aquadro_pond_points <- read_sf("Spatial_Data/Aquadro_Pond_022723/Aquadro_Pond_Points_030123_noz.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Aquadro_Pond") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
+
     
   # Polygons 
     harrison_pond_boundary <- read_sf("Spatial_Data/Harrison_Pond_030123/Harrison_Pond_Poly_030123.shp") %>%  # read in polygon of pond 
