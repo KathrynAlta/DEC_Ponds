@@ -60,6 +60,13 @@
    pond_points <- read_sf("Spatial_Data/Ellens_Pond_020123/Ellens_Pond_Depths_1129.shp")   %>%   # Pull in shape file
      transmute(source = "measured", pond = Pond_Name, water_depth_cm = Depth_top_ , sed_depth_cm = Sediment_T) %>% # Subset to only columns that you need 
      st_transform(26920) # Transform or convert coordinates of simple feature 
+   
+   getwd()
+   pond_points <- read_sf("Spatial_Data/Aquadro_Pond_022723/Aquadro_Pont_Points.shp")   %>%   # Pull in shape file
+     transmute(source = "measured", pond = Pond_Name, water_depth_cm = Depth_top_ , sed_depth_cm = Sediment_T) %>% # Subset to only columns that you need 
+     st_transform(26920) # Transform or convert coordinates of simple feature 
+   
+   
    pond_points$water_depth <- pond_points$water_depth_cm / 100
    pond_points$sed_depth <- pond_points$sed_depth_cm / 100
 
