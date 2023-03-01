@@ -150,32 +150,27 @@
      geom_sf_text(aes(label = depth), data = example_depths, size = 2.5) +
      annotation_scale(location = "br")
    
-   # Holgerson Data - Sediment Depth 
-   aquadro_pond_points$Number <- seq(1:nrow(aquadro_pond_points))
-   head(aquadro_pond_depths)
-   names(aquadro_pond_depths)
-   
-   ggplot() +
-     geom_sf(data = aquadro_pond_boundary) +
-     geom_sf_text(aes(label = Water_Depth_m), data = aquadro_pond_depths, size = 2.5) +
-     annotation_scale(location = "br")
-    
-   # Holgerson Data - Water Depth
-   ggplot() +
-     geom_sf(data = pond_boundary) +
-     geom_sf_text(aes(label = water_depth), data = pond_depths, size = 2.5) +
-     annotation_scale(location = "br")
-   
-   # Write a function to plot depths 
+   # Write a function to plot water depths 
    Plot_Water_Depths_FUNC <- function(pond_boundary, pond_depths){
      ggplot() +
        geom_sf(data = pond_boundary) +
-       ggtitle("Measured Water Depths") +
+       ggtitle("Measured Water Depths (m)") +
        geom_sf_text(aes(label = Water_Depth_m), data = pond_depths, size = 2.5) +
        annotation_scale(location = "br")
    }
    
-   Plot_Water_Depths_FUNC(applegate_pond_boundary, applegate_pond_depths)
+   # Write a function to plot water depths 
+   Plot_Sed_Thick_FUNC <- function(pond_boundary, pond_depths){
+     ggplot() +
+       geom_sf(data = pond_boundary) +
+       ggtitle("Measured Sediment Thickness (m)") +
+       geom_sf_text(aes(label = Sed_Thickness_m), data = pond_depths, size = 2.5) +
+       annotation_scale(location = "br")
+   }
+   
+   # Plot each pond 
+   Plot_Water_Depths_FUNC(aquadro_pond_boundary, aquadro_pond_depths)
+   Plot_Sed_Thick_FUNC(aquadro_pond_boundary, aquadro_pond_depths)
    
 # 4. Add the coordinates of the boundary as columns and set the depth at the boundary to zero 
    
