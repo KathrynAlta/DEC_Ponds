@@ -50,7 +50,7 @@
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
     
-    applegate_pond_points <- read_sf("Spatial_Data/Applegate_Pond_022723/Applegate_Pond_Points_030123.shp")   %>%   # Pull in shape file
+    applegate_pond_points <- read_sf("Spatial_Data/Applegate_Pond_022723/Applegate_Pond_Points_030123_1559.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Applegate_Pond") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
@@ -171,6 +171,9 @@
    # Plot each pond 
    Plot_Water_Depths_FUNC(aquadro_pond_boundary, aquadro_pond_depths)
    Plot_Sed_Thick_FUNC(aquadro_pond_boundary, aquadro_pond_depths)
+   
+   Plot_Water_Depths_FUNC(applegate_pond_boundary, applegate_pond_depths)
+   Plot_Sed_Thick_FUNC(applegate_pond_boundary, applegate_pond_depths)
    
 # 4. Add the coordinates of the boundary as columns and set the depth at the boundary to zero 
    
