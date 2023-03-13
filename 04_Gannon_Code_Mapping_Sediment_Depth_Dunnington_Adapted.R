@@ -269,7 +269,6 @@
         applegate_grid$IDW_water_depth <- IDW_predict_FUNC(IDW_bathym_applegate_FIT, applegate_grid)
         
         
-     
   # 7.2) SED THICKNESS 
         # Write a function to build a model for water depth using IDW
         IDW_sed_FUNC <- function(name_pond_full){
@@ -294,21 +293,26 @@
    
 # 8 Thin Plate Regression Spline (TPRS) 
 # ______________________________________________________________________________
-    
-   # Example Data 
-  
-   depths
-   fit_gam_reml <- mgcv::gam(depth ~ s(X, Y, k = 60), data = depths, method = "REML")
-   fit_gam_reml
-   example_grid
-   
-   library(terra)
-   example_grid$TPRS <- predict(fit_gam_reml, newdata = example_grid, type = "response")  
-   
-   # Holgerson Data 
+    install.packages("mgcv")
+  # 8.1) BATHYMETRY 
+
+    # create a model for water depth using TPRS
+      TPRS_bathym_harrison_FIT <- mgcv::gam(Water_Depth_m ~ s(X, Y, k = 60), data = harrison_pond_full, method = "REML")
+      TPRS_bathym_aquadro_FIT <- mgcv::gam(Water_Depth_m ~ s(X, Y, k = 60), data = aquadro_pond_full, method = "REML")
+      
+      TPRS_bathym_harrison_FIT
+      
+    # Use that TPRS model to get predictions and add them to the grid  
+       harrison_grid$TPRS_water_depth <- predict(TPRS_bathym_harrison_FIT, newdata = harrison_grid, type = "response")  
+       aquadro_grid$TPRS_water_depth <- predict(TPRS_bathym_aquadro_FIT, newdata = aquadro_grid, type = "response")  
+       
+        
    
    # Water Depth 
-   fit_gam_reml_water_depth <- mgcv::gam(water_depth ~ s(X, Y, k = 60), data = full_pond_depths, method = "REML")
+       full_pond_depths <- harrison_pond_full
+       pond_grid <- harrison_grid
+       
+   fit_gam_reml_water_depth <- mgcv::gam(Water_Depth_m ~ s(X, Y, k = 60), data = full_pond_depths, method = "REML")
    pond_grid$TPRS_water_depth <- predict(fit_gam_reml_water_depth, newdata = pond_grid, type = "response")  
  
    # Sedimnet Depth 
@@ -433,7 +437,7 @@
    }
    
    # Write a Function to plot Sediment depth 
-   Plot_sedmap_FUNC <- function(name_grid, name_boundary){
+   Plot_sedmap_FUNC <- function(name_grid, name_boundary, IDW_sed_depth){
      pond_name <- as.character(name_grid[1, "Pond_Name"])  # save pond name to use in the title of the plot 
      pond_name_form <- pond_name[1] # format pond name 
      output_plot <- ggplot(name_grid) +
