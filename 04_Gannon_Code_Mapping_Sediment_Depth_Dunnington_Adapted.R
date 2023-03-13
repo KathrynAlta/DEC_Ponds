@@ -38,6 +38,7 @@
     library(mgcv)
     
     # Not compatible wiht this version of R 
+          # install.packages("installr")
           # install.packages("Rtools")
           # install.packages("interpp")
           # library(interpp)
@@ -175,96 +176,105 @@
    
 # 4. Add the coordinates of the boundary as columns and set the depth at the boundary to zero 
      
-     #**********************************
-     #* I got to here on 03/01/23 This is super close to working but it is 6 pm and my brain is mush,
-     #* it works if you step through it one at a time but applying the function make it throw an error 
-     #* Seperately - make sure that all of your points shape files do NOT have a Z component 
+     
    
-  # For all ponds cast geometry to another type, change from polygon to points 
+  # 4.1 ) For all ponds cast geometry to another type, change from polygon to points 
      # This has to be done individually because it throws a warning 
-     pond_boundary
      aquadro_pond_boundary_points <- st_cast(aquadro_pond_boundary, "POINT") 
+     applegate_pond_boundary_points <- st_cast(applegate_pond_boundary, "POINT")
+     harrison_pond_boundary_points <- st_cast(harrison_pond_boundary, "POINT")
      
-  # Write Function 
-     pond_boundary_points <- aquadro_pond_boundary_points
-     pond_depths <- aquadro_pond_depths
+  # 4.2) Write Function 
      
-   Coord_Bound_FUNC <- function(pond_boundary_points, pond_depths){
-     
-     # Format pond boundary points 
-     pond_name <- pond_depths[[1, "Pond_Name"]]
-     formatted_pond_boundary_points <- pond_boundary_points %>% transmute(source = "boundary", Pond_Name = pond_name, Water_Depth_m = 0, Sed_Thickness_m = 0)
-     
-     # Bind together boundary and depth 
-     pond_depths <- subset(pond_depths, select = c("source", "Pond_Name", "Water_Depth_m", "Sed_Thickness_m", "geometry"))
-     pond_depths
-     pond_boundary_points
-     formatted_pond_boundary_points
-     full_pond_depths <- rbind(formatted_pond_boundary_points, pond_depths) %>%
-       cbind(., st_coordinates(.))
-     output <- full_pond_depths
-   }
-   
-    names(applegate_pond_depths)
+         # dfs to test function 
+           pond_boundary_points <- aquadro_pond_boundary_points  # this is just a long list of points on the boundary with depth set to zero 
+           pond_depths <- aquadro_pond_depths  # this is all of the points where we have measured water and sediment depths 
+           
+     Coord_Bound_FUNC <- function(pond_boundary_points, pond_depths){
+       
+         # Format pond boundary points 
+         pond_name <- pond_depths[[1, "Pond_Name"]] #grabbing the pond name from the pond depths data frame 
+         formatted_pond_boundary_points <- pond_boundary_points %>% transmute(source = "boundary", Pond_Name = pond_name, Water_Depth_m = 0, Sed_Thickness_m = 0)
+         
+         # Bind together boundary and depth 
+         pond_depths <- subset(pond_depths, select = c("source", "Pond_Name", "Water_Depth_m", "Sed_Thickness_m", "geometry"))
+         pond_depths
+         formatted_pond_boundary_points
+         full_pond_depths <- rbind(formatted_pond_boundary_points, pond_depths) %>%
+           cbind(., st_coordinates(.))
+         output <- full_pond_depths
+       }
+    
+  # 4.3) Run function across all ponds 
    aquadro_pond_full <- Coord_Bound_FUNC(aquadro_pond_boundary_points, aquadro_pond_depths)
+   applegate_pond_full <- Coord_Bound_FUNC(applegate_pond_boundary_points, applegate_pond_depths)
+   harrison_pond_full <- Coord_Bound_FUNC(harrison_pond_boundary_points, harrison_pond_depths)
    
    
 # 5. Create a grid to hold the raster output 
- 
-   
-   #Example Code but I don't like the pipes here 
-       # grid <- st_make_grid(depths, cellsize = c(10, 10), what = "centers") %>%
-        # st_as_sf() %>% 
-        # filter(st_contains(boundary, ., sparse = FALSE)) %>%  # This step is trying to cut off the grid so that it is only in the boundary of the polygon of the waterbody 
-        # cbind(., st_coordinates(.))
-   
-   # Do step by step rather than in pipes 
-   grid_step1 <- st_make_grid(depths, cellsize = c(10, 10), what = "centers")
-   grid_step2 <- st_as_sf(grid_step1)
-   grid_step3 <- st_contains(boundary, grid_step2, sparse = FALSE)
-   grid_step4 <- grid_step2[grid_step3 == "TRUE" , ]
-   grid_step5 <- cbind(grid_step4, st_coordinates(grid_step4))
-   example_grid <- grid_step5
 
+   # Write a function to create a grid 
+   GridCreate_FUNC <- function(name_pond_full, name_pond_boundary){
+     pond_grid_step1 <- st_make_grid(name_pond_full, cellsize = c(1, 1), what = "centers")   #I made a bigger grid here (well smaller squares, more points)
+     pond_grid_step2 <- st_as_sf(pond_grid_step1)
+     pond_grid_step3 <- st_contains(name_pond_boundary, pond_grid_step2, sparse = FALSE)
+     pond_grid_step4 <- pond_grid_step2[pond_grid_step3 == "TRUE" , ]
+     pond_grid_step5 <- cbind(pond_grid_step4, st_coordinates(pond_grid_step4))
+     pond_grid <- pond_grid_step5
+   }
    
-   # Holgerson Data 
-   # Do step by step rather than in pipes 
-   pond_grid_step1 <- st_make_grid(full_pond_depths, cellsize = c(1, 1), what = "centers")   #I made a bigger grid here (well smaller squares, more points)
-   pond_grid_step2 <- st_as_sf(pond_grid_step1)
-   pond_grid_step3 <- st_contains(pond_boundary, pond_grid_step2, sparse = FALSE)
-   pond_grid_step4 <- pond_grid_step2[pond_grid_step3 == "TRUE" , ]
-   pond_grid_step5 <- cbind(pond_grid_step4, st_coordinates(pond_grid_step4))
-   pond_grid <- pond_grid_step5
+   # Run the Function for each pond 
+   aquadro_grid <- GridCreate_FUNC(aquadro_pond_full, aquadro_pond_boundary)
+   applegate_grid <- GridCreate_FUNC(applegate_pond_full, applegate_pond_boundary)
+   harrison_grid <- GridCreate_FUNC(harrison_pond_full, harrison_pond_boundary)
     
 # 6. TIN --> required packages not availale for this version of R 
   
     
 # 7. Inverse Distance Weighting (IDW) 
 # _____________________________________________________________________________  
-   #Example Data 
-       fit_gstat <- gstat::gstat(
-         formula = depth ~ 1,
-         data = as(depths, "Spatial"),
-         nmax = 10, nmin = 3,
-         set = list(idp = 0.5)
-       )
+   
+   # 7.1) BATHYMETRY 
+   
+     # Write a function to build a model for water depth using IDW
+         IDW_bathym_FUNC <- function(name_pond_full){
+           output <- gstat::gstat(
+             formula = Water_Depth_m ~ 1,
+             data = as(name_pond_full, "Spatial"),
+             nmax = 10, nmin = 3,
+             set = list(idp = 0.5)
+           )
+         }
        
-       example_grid
-       
-       example_grid$IDW <- predict(fit_gstat, newdata = as(example_grid, "Spatial")) %>%
-         st_as_sf() %>%
-         pull(1)
-   
-   # Holgerson Lab Data 
-   
-   # build model for water depth 
-   fit_gstat_ponds_water_depth <- gstat::gstat(
-     formula = water_depth ~ 1,
-     data = as(full_pond_depths, "Spatial"),
-     nmax = 10, nmin = 3,
-     set = list(idp = 0.5)
-   )
-   
+      # Apply that function for each pond that you are interested in and save the output model as FIT  
+           IDW_bathym_harrison_FIT <- IDW_bathym_FUNC(harrison_pond_full) # Model based on inverse distance weighted (IDW) predicting the bathymetry (water depth) of harrison pond (farm and res pond named by last name of land owner)
+           IDW_bathym_applegate_FIT <- IDW_bathym_FUNC(applegate_pond_full)
+           IDW_bathym_aquadro_FIT <- IDW_bathym_FUNC(aquadro_pond_full)
+           
+      # Write a function that uses the spatial model to predict the water depth, then adds predicted values to the grid 
+        IDW_predict_FUNC <- function(model_FIT, name_grid){
+          predicted_formal_class <- predict(model_FIT, newdata = as(name_grid, "Spatial"))
+          predicted_sf <- st_as_sf(predicted_formal_class)
+          output <- predicted_sf$var1.pred
+        }
+        
+      # Apply function to each pond to get predictions 
+        harrison_grid$IDW_water_depth <- IDW_predict_FUNC(IDW_bathym_harrison_FIT, harrison_grid)
+        aquadro_grid$IDW_water_depth <- IDW_predict_FUNC(IDW_bathym_aquadro_FIT, aquadro_grid)
+        applegate_grid$IDW_water_depth <- IDW_predict_FUNC(IDW_bathym_applegate_FIT, applegate_grid)
+        
+        
+      # Predict function with pipes 
+        # Use model FIT to predict bathymetry and add those predictions to grid that you made for each pond 
+        harrison_grid$IDW_water_depth <- predict(IDW_bathym_harrison_FIT, newdata = as(harrison_grid, "Spatial")) %>%
+          st_as_sf() %>%
+          pull(1)
+      # Predict function step by step   
+        predicted_formal_class <- predict(IDW_bathym_harrison_FIT, newdata = as(harrison_grid, "Spatial"))
+        predicted_sf <- st_as_sf(predicted_formal_class)
+        harrison_grid$IDW_water_depth <- predict_step2$var1.pred
+           
+  # 7.2) SED THICKNESS 
    #build model for sediment depth 
    fit_gstat_ponds_sed_depth <- gstat::gstat(
      formula = sed_depth ~ 1,
@@ -273,12 +283,12 @@
      set = list(idp = 0.5)
    )
   
-   # use model to predict water depth 
+   # 7.3)  use model to predict water depth 
    pond_grid$IDW_water_depth <- predict(fit_gstat_ponds_water_depth, newdata = as(pond_grid, "Spatial")) %>%
      st_as_sf() %>%
      pull(1)
    
-   # Use model to predict sediment depth 
+   # 7.4) Use model to predict sediment depth 
    pond_grid$IDW_sed_depth <- predict(fit_gstat_ponds_sed_depth, newdata = as(pond_grid, "Spatial")) %>%
      st_as_sf() %>%
      pull(1)
