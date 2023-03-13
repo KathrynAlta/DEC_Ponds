@@ -211,15 +211,20 @@
    harrison_pond_full <- Coord_Bound_FUNC(harrison_pond_boundary_points, harrison_pond_depths)
    
    
-# 5. Create a grid to hold the raster output 
+# 5. Create a grid to hold the raster output
+   thing1 <- as.character(aquadro_pond_full[1, "Pond_Name"])
+   thing1[1]
 
    # Write a function to create a grid 
    GridCreate_FUNC <- function(name_pond_full, name_pond_boundary){
+     pond_name <- as.character(name_pond_full[1,"Pond_Name"])
+     pond_name_form <- pond_name[1]
      pond_grid_step1 <- st_make_grid(name_pond_full, cellsize = c(1, 1), what = "centers")   #I made a bigger grid here (well smaller squares, more points)
      pond_grid_step2 <- st_as_sf(pond_grid_step1)
      pond_grid_step3 <- st_contains(name_pond_boundary, pond_grid_step2, sparse = FALSE)
      pond_grid_step4 <- pond_grid_step2[pond_grid_step3 == "TRUE" , ]
      pond_grid_step5 <- cbind(pond_grid_step4, st_coordinates(pond_grid_step4))
+     pond_grid_step5$Pond_Name <- pond_name_form
      pond_grid <- pond_grid_step5
    }
    
@@ -246,7 +251,7 @@
            )
          }
        
-      # Apply that function for each pond that you are interested in and save the output model as FIT  
+      # Apply the model function for each pond that you are interested in and save the output model as FIT  
            IDW_bathym_harrison_FIT <- IDW_bathym_FUNC(harrison_pond_full) # Model based on inverse distance weighted (IDW) predicting the bathymetry (water depth) of harrison pond (farm and res pond named by last name of land owner)
            IDW_bathym_applegate_FIT <- IDW_bathym_FUNC(applegate_pond_full)
            IDW_bathym_aquadro_FIT <- IDW_bathym_FUNC(aquadro_pond_full)
@@ -258,41 +263,35 @@
           output <- predicted_sf$var1.pred
         }
         
-      # Apply function to each pond to get predictions 
+      # Apply the predict function to each pond to get predictions 
         harrison_grid$IDW_water_depth <- IDW_predict_FUNC(IDW_bathym_harrison_FIT, harrison_grid)
         aquadro_grid$IDW_water_depth <- IDW_predict_FUNC(IDW_bathym_aquadro_FIT, aquadro_grid)
         applegate_grid$IDW_water_depth <- IDW_predict_FUNC(IDW_bathym_applegate_FIT, applegate_grid)
         
         
-      # Predict function with pipes 
-        # Use model FIT to predict bathymetry and add those predictions to grid that you made for each pond 
-        harrison_grid$IDW_water_depth <- predict(IDW_bathym_harrison_FIT, newdata = as(harrison_grid, "Spatial")) %>%
-          st_as_sf() %>%
-          pull(1)
-      # Predict function step by step   
-        predicted_formal_class <- predict(IDW_bathym_harrison_FIT, newdata = as(harrison_grid, "Spatial"))
-        predicted_sf <- st_as_sf(predicted_formal_class)
-        harrison_grid$IDW_water_depth <- predict_step2$var1.pred
-           
+     
   # 7.2) SED THICKNESS 
-   #build model for sediment depth 
-   fit_gstat_ponds_sed_depth <- gstat::gstat(
-     formula = sed_depth ~ 1,
-     data = as(full_pond_depths, "Spatial"),
-     nmax = 10, nmin = 3,
-     set = list(idp = 0.5)
-   )
-  
-   # 7.3)  use model to predict water depth 
-   pond_grid$IDW_water_depth <- predict(fit_gstat_ponds_water_depth, newdata = as(pond_grid, "Spatial")) %>%
-     st_as_sf() %>%
-     pull(1)
+        # Write a function to build a model for water depth using IDW
+        IDW_sed_FUNC <- function(name_pond_full){
+          output <- gstat::gstat(
+            formula = Sed_Thickness_m ~ 1,
+            data = as(name_pond_full, "Spatial"),
+            nmax = 10, nmin = 3,
+            set = list(idp = 0.5)
+          )
+        }
+        
+        # Apply the Model function for each pond that you are interested in and save the output model as FIT  
+        IDW_sed_harrison_FIT <- IDW_sed_FUNC(harrison_pond_full) # Model based on inverse distance weighted (IDW) predicting the bathymetry (water depth) of harrison pond (farm and res pond named by last name of land owner)
+        IDW_sed_applegate_FIT <- IDW_sed_FUNC(applegate_pond_full)
+        IDW_sed_aquadro_FIT <- IDW_sed_FUNC(aquadro_pond_full)
+        
+        # Apply the predict function to each pond to get predictions 
+        harrison_grid$IDW_sed_depth <- IDW_predict_FUNC(IDW_sed_harrison_FIT, harrison_grid)
+        aquadro_grid$IDW_sed_depth <- IDW_predict_FUNC(IDW_sed_aquadro_FIT, aquadro_grid)
+        applegate_grid$IDW_sed_depth <- IDW_predict_FUNC(IDW_sed_applegate_FIT, applegate_grid)
+        
    
-   # 7.4) Use model to predict sediment depth 
-   pond_grid$IDW_sed_depth <- predict(fit_gstat_ponds_sed_depth, newdata = as(pond_grid, "Spatial")) %>%
-     st_as_sf() %>%
-     pull(1)
-    
 # 8 Thin Plate Regression Spline (TPRS) 
 # ______________________________________________________________________________
     
@@ -416,37 +415,60 @@
      raster::rasterToContour(levels = c(0.5, 1, 1.5)) %>% 
      st_as_sf()
    
-   
+##################################################################################################################  
 # 12. Plotting 
    
-   # Example Data 
-   ggplot(example_grid) +
-     geom_sf(data = boundary) +
-     geom_raster(aes(X, Y, fill = TPRS)) +
-     geom_sf(data = depth_contours) +
-     scale_fill_viridis_c() +
-     annotation_scale(location = "br") +
-     labs(x = NULL, y = NULL, fill = "Depth (m)")
+   # Write function so that you can select which model to plot 
+   
+   # Write a Function to plot water depth 
+   Plot_bathym_FUNC <- function(name_grid, name_boundary){
+     pond_name <- as.character(name_grid[1, "Pond_Name"])  # save pond name to use in the title of the plot 
+     pond_name_form <- pond_name[1]  # format pond name 
+     output_plot <- ggplot(name_grid) +
+       geom_sf(data = name_boundary) +
+       geom_raster(aes(X, Y, fill = IDW_water_depth)) +
+       scale_fill_viridis_c() +
+       annotation_scale(location = "br") +
+       labs(title= paste(pond_name, "Water Depth (m) -- IDW", sep = " "), x = NULL, y = NULL, fill = "Water Depth (m)")
+   }
+   
+   # Write a Function to plot Sediment depth 
+   Plot_sedmap_FUNC <- function(name_grid, name_boundary){
+     pond_name <- as.character(name_grid[1, "Pond_Name"])  # save pond name to use in the title of the plot 
+     pond_name_form <- pond_name[1] # format pond name 
+     output_plot <- ggplot(name_grid) +
+       geom_sf(data = name_boundary) +
+       geom_raster(aes(X, Y, fill = IDW_sed_depth)) +
+       scale_fill_viridis_c(option = "plasma") +
+       annotation_scale(location = "br") +
+       labs(title= paste(pond_name, "Sediment Depth (m) -- IDW", sep = " "), x = NULL, y = NULL, fill = "Sediment Depth (m)")
+   }
+   
+   plot1 <- Plot_bathym_FUNC(applegate_grid, applegate_pond_boundary)
+   plot2 <- Plot_sedmap_FUNC(applegate_grid, applegate_pond_boundary)
+   plot1
+   plot2
    
   # IDW MODEL: _______________________________________________________________
    
    # HOlgerson Data - Water Depth 
-  ellens_water_depth_IDW <- ggplot(pond_grid) +
-     geom_sf(data = pond_boundary) +
+   harrison_grid
+  applegate_water_depth_IDW <- ggplot(applegate_grid) +
+     geom_sf(data = applegate_pond_boundary) +
      geom_raster(aes(X, Y, fill = IDW_water_depth)) +
      scale_fill_viridis_c() +
      annotation_scale(location = "br") +
-     labs(title= "Ellens Pond Water Depth (m) -- IDW", x = NULL, y = NULL, fill = "Water Depth (m)")
-  ellens_water_depth_IDW
+     labs(title= "Applegate Pond Water Depth (m) -- IDW", x = NULL, y = NULL, fill = "Water Depth (m)")
+  applegate_water_depth_IDW
    
    # HOlgerson Data - Sed Depth 
-  ellens_sed_depth_IDW <- ggplot(pond_grid) +
-     geom_sf(data = pond_boundary) +
+  harrison_sed_depth_IDW <- ggplot(harrison_grid) +
+     geom_sf(data = harrison_pond_boundary) +
      geom_raster(aes(X, Y, fill = IDW_sed_depth)) +
-     scale_fill_viridis_c() +
+      scale_fill_viridis_c(option = "plasma") +
      annotation_scale(location = "br") +
-     labs(title= "Ellens Pond Sediment Depth (m) -- IDW", x = NULL, y = NULL, fill = "Sediment Depth (m)")
-  ellens_sed_depth_IDW
+     labs(title= "Harrison Pond Sediment Depth (m) -- IDW", x = NULL, y = NULL, fill = "Sediment Depth (m)")
+  harrison_sed_depth_IDW
    
    # TPRS MODEL: _____________________________________________________________
    
