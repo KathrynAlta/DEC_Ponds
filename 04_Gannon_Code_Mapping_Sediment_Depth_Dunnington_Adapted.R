@@ -36,6 +36,8 @@
     
     # install.packages("mgcv")
     library(mgcv)
+    #install.packages("mgcv")
+    # library(mgcv)
     
     # Not compatible wiht this version of R 
           # install.packages("installr")
@@ -293,32 +295,34 @@
    
 # 8 Thin Plate Regression Spline (TPRS) 
 # ______________________________________________________________________________
-    install.packages("mgcv")
+   
   # 8.1) BATHYMETRY 
 
     # create a model for water depth using TPRS
       TPRS_bathym_harrison_FIT <- mgcv::gam(Water_Depth_m ~ s(X, Y, k = 60), data = harrison_pond_full, method = "REML")
       TPRS_bathym_aquadro_FIT <- mgcv::gam(Water_Depth_m ~ s(X, Y, k = 60), data = aquadro_pond_full, method = "REML")
+      TPRS_bathym_applegate_FIT <- mgcv::gam(Water_Depth_m ~ s(X, Y, k = 60), data = applegate_pond_full, method = "REML")
       
-      TPRS_bathym_harrison_FIT
       
     # Use that TPRS model to get predictions and add them to the grid  
        harrison_grid$TPRS_water_depth <- predict(TPRS_bathym_harrison_FIT, newdata = harrison_grid, type = "response")  
        aquadro_grid$TPRS_water_depth <- predict(TPRS_bathym_aquadro_FIT, newdata = aquadro_grid, type = "response")  
+       applegate_grid$TPRS_water_depth <- predict(TPRS_bathym_applegate_FIT, newdata = applegate_grid, type = "response")  
+     
+  # 8.1) BATHYMETRY 
        
-        
-   
-   # Water Depth 
-       full_pond_depths <- harrison_pond_full
-       pond_grid <- harrison_grid
+    # create a model for water depth using TPRS
+       TPRS_sedmap_harrison_FIT <- mgcv::gam(Sed_Thickness_m ~ s(X, Y, k = 60), data = harrison_pond_full, method = "REML")
+       TPRS_sedmap_aquadro_FIT <- mgcv::gam(Sed_Thickness_m ~ s(X, Y, k = 60), data = aquadro_pond_full, method = "REML")
+       TPRS_sedmap_applegate_FIT <- mgcv::gam(Sed_Thickness_m ~ s(X, Y, k = 60), data = applegate_pond_full, method = "REML")
        
-   fit_gam_reml_water_depth <- mgcv::gam(Water_Depth_m ~ s(X, Y, k = 60), data = full_pond_depths, method = "REML")
-   pond_grid$TPRS_water_depth <- predict(fit_gam_reml_water_depth, newdata = pond_grid, type = "response")  
- 
-   # Sedimnet Depth 
-   fit_gam_reml_sed_depth <- mgcv::gam(sed_depth ~ s(X, Y, k = 60), data = full_pond_depths, method = "REML")
-   pond_grid$TPRS_sed_depth <- predict(fit_gam_reml_sed_depth, newdata = pond_grid, type = "response")  
-
+       
+    # Use that TPRS model to get predictions and add them to the grid  
+       harrison_grid$TPRS_sed_depth <- predict(TPRS_sedmap_harrison_FIT, newdata = harrison_grid, type = "response")  
+       aquadro_grid$TPRS_sed_depth <- predict(TPRS_sedmap_aquadro_FIT, newdata = aquadro_grid, type = "response")  
+       applegate_grid$TPRS_sed_depth <- predict(TPRS_sedmap_applegate_FIT, newdata = applegate_grid, type = "response")  
+       
+      
 # 9. Soap Film Smooth (SFS)   
 # ______________________________________________________________________________ 
    
@@ -448,11 +452,30 @@
        labs(title= paste(pond_name, "Sediment Depth (m) -- IDW", sep = " "), x = NULL, y = NULL, fill = "Sediment Depth (m)")
    }
    
-   plot1 <- Plot_bathym_FUNC(applegate_grid, applegate_pond_boundary)
-   plot2 <- Plot_sedmap_FUNC(applegate_grid, applegate_pond_boundary)
-   plot1
-   plot2
+  # Plot and Save 
    
+   # Plot
+     plot_bathym_IDW_applegate <- Plot_bathym_FUNC(applegate_grid, applegate_pond_boundary)
+     plot_sedmap_IDW_applegate <- Plot_sedmap_FUNC(applegate_grid, applegate_pond_boundary)
+     
+     plot_bathym_IDW_aquadro <- Plot_bathym_FUNC(aquadro_grid, aquadro_pond_boundary)
+     plot_sedmap_IDW_aquadro <- Plot_sedmap_FUNC(aquadro_grid, aquadro_pond_boundary)
+     
+     plot_bathym_IDW_harrison <- Plot_bathym_FUNC(harrison_grid, harrison_pond_boundary)
+     plot_sedmap_IDW_harrison <- Plot_sedmap_FUNC(harrison_grid, harrison_pond_boundary)
+     
+    # Save 
+     ggsave("Output_Figures/plot_bathym_IDW_applegate_031323.png", plot_bathym_IDW_applegate)
+     ggsave("Output_Figures/plot_sedmap_IDW_applegate_031323.png", plot_sedmap_IDW_applegate)
+     
+     ggsave("Output_Figures/plot_bathym_IDW_harrison_031323.png", plot_bathym_IDW_harrison)
+     ggsave("Output_Figures/plot_sedmap_IDW_harrison_031323.png", plot_sedmap_IDW_harrison)
+     
+     ggsave("Output_Figures/plot_bathym_IDW_aquadro_031323.png", plot_bathym_IDW_aquadro)
+     ggsave("Output_Figures/plot_sedmap_IDW_aquadro_031323.png", plot_sedmap_IDW_aquadro)
+   
+   
+  
   # IDW MODEL: _______________________________________________________________
    
    # HOlgerson Data - Water Depth 
