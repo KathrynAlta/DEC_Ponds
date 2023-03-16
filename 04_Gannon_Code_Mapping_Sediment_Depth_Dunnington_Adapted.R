@@ -34,7 +34,7 @@
     # install.packages("gstat")
     library(gstat)
     
-    # install.packages("mgcv")
+    install.packages("mgcv")
     library(mgcv)
     #install.packages("mgcv")
     # library(mgcv)
@@ -258,7 +258,7 @@
            IDW_bathym_applegate_FIT <- IDW_bathym_FUNC(applegate_pond_full)
            IDW_bathym_aquadro_FIT <- IDW_bathym_FUNC(aquadro_pond_full)
            
-      # Write a function that uses the spatial model to predict the water depth, then adds predicted values to the grid 
+      # Write a function that uses the spatial model to predict the water depth & adds predicted values to the grid 
         IDW_predict_FUNC <- function(model_FIT, name_grid){
           predicted_formal_class <- predict(model_FIT, newdata = as(name_grid, "Spatial"))
           predicted_sf <- st_as_sf(predicted_formal_class)
