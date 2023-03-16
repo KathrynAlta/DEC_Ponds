@@ -332,52 +332,53 @@
    library(sf)
  
   #OG Code 
-   boundary_coords <- st_coordinates(boundary) 
-   
-   # Gam_bound 
-       gam_bound <- list(
-         list(
-           X = boundary_coords[-1, "X"], 
-           Y = boundary_coords[-1, "Y"], 
-           f = rep(0, nrow(boundary_coords))
-         )
-       )
-   # Knot POints 
-       knot_points <- st_make_grid(
-         boundary,
-         n = c(10, 10),
-         what = "centers"
-       ) %>%
-         st_as_sf() %>%
-         filter(st_contains(boundary, x, sparse = FALSE)) %>%
-         filter(
-           !st_intersects(
-             boundary %>% st_cast("LINESTRING") %>% st_buffer(10), 
-             x, 
-             sparse = FALSE
-           )
-         ) %>%
-         cbind(., st_coordinates(.))
-   
-  # FIT gam Soap 
-       fit_gam_soap <- gam(
-         depth ~ s(X, Y, bs = "so", xt = list(bnd = gam_bound)),
-         data = depths %>% 
-           filter(source == "measured") %>% 
-           filter(st_contains(boundary, geometry, sparse = FALSE)), 
-         method = "REML", 
-         knots = knot_points
-       )
-       
-   # Add to Grid 
-   grid$GAM_Soap <- predict(fit_gam_soap, newdata = grid, type = "response")
+                   boundary_coords <- st_coordinates(boundary) 
+                   
+                   # Gam_bound 
+                       gam_bound <- list(
+                         list(
+                           X = boundary_coords[-1, "X"], 
+                           Y = boundary_coords[-1, "Y"], 
+                           f = rep(0, nrow(boundary_coords))
+                         )
+                       )
+                   # Knot POints 
+                       knot_points <- st_make_grid(
+                         boundary,
+                         n = c(10, 10),
+                         what = "centers"
+                       ) %>%
+                         st_as_sf() %>%
+                         filter(st_contains(boundary, x, sparse = FALSE)) %>%
+                         filter(
+                           !st_intersects(
+                             boundary %>% st_cast("LINESTRING") %>% st_buffer(10), 
+                             x, 
+                             sparse = FALSE
+                           )
+                         ) %>%
+                         cbind(., st_coordinates(.))
+                   
+                  # FIT gam Soap 
+                       fit_gam_soap <- gam(
+                         depth ~ s(X, Y, bs = "so", xt = list(bnd = gam_bound)),
+                         data = depths %>% 
+                           filter(source == "measured") %>% 
+                           filter(st_contains(boundary, geometry, sparse = FALSE)), 
+                         method = "REML", 
+                         knots = knot_points
+                       )
+                       
+                   # Add to Grid 
+                   grid$GAM_Soap <- predict(fit_gam_soap, newdata = grid, type = "response")
    
    
 #**********************************************   
-  # FAFIO Code
+  # Working SOAP Code
    boundary_coords <- st_coordinates( harrison_pond_boundary) 
+   boundary_linestring <- harrison_pond_boundary %>% st_cast("LINESTRING") %>% st_buffer(10)  # Need to make line string one at a time up here, it makes it but will throw an error 
    
-   # Gam Bound --> Runs 
+   # make gam_bound 
    gam_bound <- list(
      list(
        X = boundary_coords[-1, "X"], 
@@ -386,10 +387,7 @@
      )
    )
    
-   # KNot Points - make a 10 by ten grid inside of the pond boundary and save the center points of each grid square into a simple feature collection of spatial points 
-   # st_cast does not like being fed into a vector 
-   
-   # knot_points_ Step 1  
+   # Make knot points  
       # make a 10 by ten grid inside of the pond boundary and save the center points of each grid square
       # convert that list of center points to an sf 
       # subset that list of center points to only the points that fall within the the pond boundary 
@@ -399,67 +397,52 @@
      what = "centers"
    ) %>%
      st_as_sf() %>%
-     filter(as.vector(st_contains(harrison_pond_boundary, x, sparse = FALSE))) 
+     filter(as.vector(st_contains(harrison_pond_boundary, x, sparse = FALSE)))
    
-   # Knot Points Step 2 
-      
-      # Step by step 
-     thing_to_intersect <- harrison_pond_boundary %>% st_cast("LINESTRING") %>% st_buffer(10)
-     thing1 <- harrison_pond_boundary %>% st_cast("LINESTRING")
-     thing2 <- thing1 %>% st_buffer(10)
-     thing3 <- as.vector(thing2)
-   
-   # knot_points_2 
-   knot_points_2 <- knot_points_1 %>%  # this next section is where we hit out issue 
-     filter(
-       !st_intersects(
-         harrison_pond_boundary %>% st_cast("LINESTRING") %>% st_buffer(10), 
-         x, 
-         sparse = FALSE
-       )
-     ) %>%
+   # Make Intersection  
+     intersection <- !st_intersects(
+       boundary_linestring, 
+       knot_points_1, 
+       sparse = FALSE
+     )
+    
+  #Filter knot points by intersection    
+   knot_points <- knot_points_1 %>%   
+     filter(as.vector(intersection)) %>%
      cbind(., st_coordinates(.))
-   
-   # Messed with 
-            knot_points <- st_make_grid(
-                 harrison_pond_boundary,
-                 n = c(10, 10),
-                 what = "centers"
-               ) 
-           knot_points_sf <- st_as_sf(knot_points)  # convert to an sf 
-           
-           knot_points_contained <- st_contains(harrison_pond_boundary, knot_points_2, sparse = FALSE)
-           knot_points_contained <- as.vector(knot_points_contained)
-           
-           
-           knot_points <- knot_points_sf %>% filter(as.vector(st_contains(harrison_pond_boundary, knot_points_sf, sparse = FALSE))) 
-           
-           
-           knot_points <- knot_points %>% filter(st_contains(harrison_pond_boundary, x, sparse = FALSE)) 
-             
-             %>%
-             filter(
-               !st_intersects(
-                 harrison_pond_boundary %>% st_cast("LINESTRING") %>% st_buffer(10), 
-                 x, 
-                 sparse = FALSE
-               )
-             ) %>%
-             cbind(., st_coordinates(.))
    
    
    # Fit gam soap 
-   fit_gam_soap <- gam(
-     depth ~ s(X, Y, bs = "so", xt = list(bnd = gam_bound)),
-     data = depths %>% 
+   SOAP_bathym_harrison_FIT <- gam(
+     Water_Depth_m ~ s(X, Y, bs = "so", xt = list(bnd = gam_bound)),
+     data = harrison_pond_full %>% 
        filter(source == "measured") %>% 
-       filter(st_contains(boundary, geometry, sparse = FALSE)), 
+       filter(as.vector(st_contains(harrison_pond_boundary, geometry, sparse = FALSE))), 
      method = "REML", 
      knots = knot_points
    )
    
-   grid$GAM_Soap <- predict(fit_gam_soap, newdata = grid, type = "response")
-    
+   SOAP_bathym_harrison_FIT <- gam(
+     Water_Depth_m ~ s(X, Y, bs = "so", xt = list(bnd = gam_bound)),
+     data = harrison_pond_full %>% 
+       filter(source == "measured") %>% 
+       filter(as.vector(st_contains(harrison_pond_boundary, geometry, sparse = FALSE))), 
+     method = "REML", 
+     knots = knot_points
+   )
+   
+   SOAP_sedmap_harrison_FIT <- gam(
+     Sed_Thickness_m ~ s(X, Y, bs = "so", xt = list(bnd = gam_bound)),
+     data = harrison_pond_full %>% 
+       filter(source == "measured") %>% 
+       filter(as.vector(st_contains(harrison_pond_boundary, geometry, sparse = FALSE))), 
+     method = "REML", 
+     knots = knot_points
+   )
+   
+   harrison_grid$SOAP_water_depth <- predict(SOAP_bathym_harrison_FIT, newdata = harrison_grid, type = "response")
+   harrison_grid$SOAP_sed_depth <- predict(SOAP_sedmap_harrison_FIT, newdata = harrison_grid, type = "response")
+   
     
 # 10. Compute Volume of water and volume of sediment 
     
@@ -483,6 +466,23 @@
      summarise(
        mean_depth = mean(TPRS_sed_depth),
        volume = mean(TPRS_sed_depth) * pond_boundary_area
+     )
+   
+   # Pond Specific 
+   pond_boundary_area <- st_area(harrison_pond_boundary) %>% 
+     as.numeric()
+   
+   pond_boundary_area <- as.numeric(st_area(harrison_pond_boundary)) 
+   
+   harrison_grid %>% 
+     st_set_geometry(NULL) %>% 
+     summarise(
+       IDW_mean_depth = mean(IDW_sed_depth),
+       IDW_volume = mean(IDW_sed_depth) * pond_boundary_area,
+       TPRS_mean_depth = mean(TPRS_sed_depth),
+       TPRS_volume = mean(TPRS_sed_depth) * pond_boundary_area, 
+       SOAP_mean_depth = mean(SOAP_sed_depth),
+       SOAP_volume = mean(SOAP_sed_depth) * pond_boundary_area
      )
     
 # 11. Contouring 
@@ -527,10 +527,10 @@
      pond_name_form <- pond_name[1]  # format pond name 
      output_plot <- ggplot(name_grid) +
        geom_sf(data = name_boundary) +
-       geom_raster(aes(X, Y, fill = IDW_water_depth)) +
+       geom_raster(aes(X, Y, fill = TPRS_water_depth)) +
        scale_fill_viridis_c() +
        annotation_scale(location = "br") +
-       labs(title= paste(pond_name, "Water Depth (m) -- IDW", sep = " "), x = NULL, y = NULL, fill = "Water Depth (m)")
+       labs(title= paste(pond_name, "Water Depth (m) -- TPRS", sep = " "), x = NULL, y = NULL, fill = "Water Depth (m)")
    }
    
    # Write a Function to plot Sediment depth 
@@ -539,23 +539,31 @@
      pond_name_form <- pond_name[1] # format pond name 
      output_plot <- ggplot(name_grid) +
        geom_sf(data = name_boundary) +
-       geom_raster(aes(X, Y, fill = IDW_sed_depth)) +
+       geom_raster(aes(X, Y, fill = TPRS_sed_depth)) +
        scale_fill_viridis_c(option = "plasma") +
        annotation_scale(location = "br") +
-       labs(title= paste(pond_name, "Sediment Depth (m) -- IDW", sep = " "), x = NULL, y = NULL, fill = "Sediment Depth (m)")
+       labs(title= paste(pond_name, "Sediment Depth (m) -- TPRS", sep = " "), x = NULL, y = NULL, fill = "Sediment Depth (m)")
    }
    
   # Plot and Save 
    
    # Plot
-     plot_bathym_IDW_applegate <- Plot_bathym_FUNC(applegate_grid, applegate_pond_boundary)
-     plot_sedmap_IDW_applegate <- Plot_sedmap_FUNC(applegate_grid, applegate_pond_boundary)
+     plot_bathym_TPRS_applegate <- Plot_bathym_FUNC(applegate_grid, applegate_pond_boundary)
+     plot_sedmap_TPRS_applegate <- Plot_sedmap_FUNC(applegate_grid, applegate_pond_boundary)
      
-     plot_bathym_IDW_aquadro <- Plot_bathym_FUNC(aquadro_grid, aquadro_pond_boundary)
-     plot_sedmap_IDW_aquadro <- Plot_sedmap_FUNC(aquadro_grid, aquadro_pond_boundary)
+     plot_bathym_TPRS_aquadro <- Plot_bathym_FUNC(aquadro_grid, aquadro_pond_boundary)
+     plot_sedmap_TPRS_aquadro <- Plot_sedmap_FUNC(aquadro_grid, aquadro_pond_boundary)
      
-     plot_bathym_IDW_harrison <- Plot_bathym_FUNC(harrison_grid, harrison_pond_boundary)
-     plot_sedmap_IDW_harrison <- Plot_sedmap_FUNC(harrison_grid, harrison_pond_boundary)
+     plot_bathym_TPRS_harrison <- Plot_bathym_FUNC(harrison_grid, harrison_pond_boundary)
+     plot_sedmap_TPRS_harrison <- Plot_sedmap_FUNC(harrison_grid, harrison_pond_boundary)
+     
+     plot_bathym_SOAP_harrison
+     plot_bathym_IDW_harrison
+     plot_bathym_TPRS_harrison
+     
+     plot_bathym_SOAP_applegate
+     plot_bathym_IDW_applegate
+     plot_bathym_TPRS_applegate
      
     # Save 
      ggsave("Output_Figures/plot_bathym_IDW_applegate_031323.png", plot_bathym_IDW_applegate)
