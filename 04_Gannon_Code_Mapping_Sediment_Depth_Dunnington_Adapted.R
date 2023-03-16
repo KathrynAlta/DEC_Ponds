@@ -304,7 +304,8 @@
       TPRS_bathym_applegate_FIT <- mgcv::gam(Water_Depth_m ~ s(X, Y, k = 60), data = applegate_pond_full, method = "REML")
       
       
-    # Use that TPRS model to get predictions and add them to the grid  
+      # Use that TPRS model to get predictions and add them to the grid  
+      # NOTE --> If this spits an error reinstall mgcv package and try again (no idea why that works but it does)
        harrison_grid$TPRS_water_depth <- predict(TPRS_bathym_harrison_FIT, newdata = harrison_grid, type = "response")  
        aquadro_grid$TPRS_water_depth <- predict(TPRS_bathym_aquadro_FIT, newdata = aquadro_grid, type = "response")  
        applegate_grid$TPRS_water_depth <- predict(TPRS_bathym_applegate_FIT, newdata = applegate_grid, type = "response")  
@@ -327,11 +328,56 @@
 # ______________________________________________________________________________ 
    
    # ---> 2/14/23 KG can't get this one to work just yet 
-   
+   # 3/16/23 KG working on it 
    library(sf)
-   # Example Data 
-   boundary_coords <- st_coordinates(boundary)
+ 
+  #OG Code 
+   boundary_coords <- st_coordinates(boundary) 
    
+   # Gam_bound 
+       gam_bound <- list(
+         list(
+           X = boundary_coords[-1, "X"], 
+           Y = boundary_coords[-1, "Y"], 
+           f = rep(0, nrow(boundary_coords))
+         )
+       )
+   # Knot POints 
+       knot_points <- st_make_grid(
+         boundary,
+         n = c(10, 10),
+         what = "centers"
+       ) %>%
+         st_as_sf() %>%
+         filter(st_contains(boundary, x, sparse = FALSE)) %>%
+         filter(
+           !st_intersects(
+             boundary %>% st_cast("LINESTRING") %>% st_buffer(10), 
+             x, 
+             sparse = FALSE
+           )
+         ) %>%
+         cbind(., st_coordinates(.))
+   
+  # FIT gam Soap 
+       fit_gam_soap <- gam(
+         depth ~ s(X, Y, bs = "so", xt = list(bnd = gam_bound)),
+         data = depths %>% 
+           filter(source == "measured") %>% 
+           filter(st_contains(boundary, geometry, sparse = FALSE)), 
+         method = "REML", 
+         knots = knot_points
+       )
+       
+   # Add to Grid 
+   grid$GAM_Soap <- predict(fit_gam_soap, newdata = grid, type = "response")
+   
+   
+#**********************************************   
+  # FAFIO Code
+   boundary_coords <- st_coordinates( harrison_pond_boundary) 
+   
+   # Gam Bound --> Runs 
    gam_bound <- list(
      list(
        X = boundary_coords[-1, "X"], 
@@ -340,22 +386,69 @@
      )
    )
    
-   knot_points <- st_make_grid(
-     boundary,
+   # KNot Points - make a 10 by ten grid inside of the pond boundary and save the center points of each grid square into a simple feature collection of spatial points 
+   # st_cast does not like being fed into a vector 
+   
+   # knot_points_ Step 1  
+      # make a 10 by ten grid inside of the pond boundary and save the center points of each grid square
+      # convert that list of center points to an sf 
+      # subset that list of center points to only the points that fall within the the pond boundary 
+   knot_points_1 <- st_make_grid(
+     harrison_pond_boundary,      
      n = c(10, 10),
      what = "centers"
    ) %>%
      st_as_sf() %>%
-     filter(st_contains(boundary, x, sparse = FALSE)) %>%
+     filter(as.vector(st_contains(harrison_pond_boundary, x, sparse = FALSE))) 
+   
+   # Knot Points Step 2 
+      
+      # Step by step 
+     thing_to_intersect <- harrison_pond_boundary %>% st_cast("LINESTRING") %>% st_buffer(10)
+     thing1 <- harrison_pond_boundary %>% st_cast("LINESTRING")
+     thing2 <- thing1 %>% st_buffer(10)
+     thing3 <- as.vector(thing2)
+   
+   # knot_points_2 
+   knot_points_2 <- knot_points_1 %>%  # this next section is where we hit out issue 
      filter(
        !st_intersects(
-         boundary %>% st_cast("LINESTRING") %>% st_buffer(10), 
+         harrison_pond_boundary %>% st_cast("LINESTRING") %>% st_buffer(10), 
          x, 
          sparse = FALSE
        )
      ) %>%
      cbind(., st_coordinates(.))
    
+   # Messed with 
+            knot_points <- st_make_grid(
+                 harrison_pond_boundary,
+                 n = c(10, 10),
+                 what = "centers"
+               ) 
+           knot_points_sf <- st_as_sf(knot_points)  # convert to an sf 
+           
+           knot_points_contained <- st_contains(harrison_pond_boundary, knot_points_2, sparse = FALSE)
+           knot_points_contained <- as.vector(knot_points_contained)
+           
+           
+           knot_points <- knot_points_sf %>% filter(as.vector(st_contains(harrison_pond_boundary, knot_points_sf, sparse = FALSE))) 
+           
+           
+           knot_points <- knot_points %>% filter(st_contains(harrison_pond_boundary, x, sparse = FALSE)) 
+             
+             %>%
+             filter(
+               !st_intersects(
+                 harrison_pond_boundary %>% st_cast("LINESTRING") %>% st_buffer(10), 
+                 x, 
+                 sparse = FALSE
+               )
+             ) %>%
+             cbind(., st_coordinates(.))
+   
+   
+   # Fit gam soap 
    fit_gam_soap <- gam(
      depth ~ s(X, Y, bs = "so", xt = list(bnd = gam_bound)),
      data = depths %>% 
