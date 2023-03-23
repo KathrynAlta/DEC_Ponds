@@ -101,11 +101,15 @@
     landcov_wide <- spread(landcov_long, Class_Name, Percent_Co)  # Turn into wide formatt
     landcov_wide <- mutate_all(landcov_wide, ~replace_na(.,0))  # Change NAs to 0 (not included bc zero percent of the land classified as that category)
     
-  
-  
-  
-  
-  
+# 5) Lump Land Use Categories and get percent cover 
+    landcov_wide$Urban <- landcov_wide$Developed_High_Intensity + landcov_wide$Developed_Low_Intensity + landcov_wide$Developed_Medium_Intensity + landcov_wide$Developed_Open_Space
+    landcov_wide$Forested <- landcov_wide$Deciduous_Forest + landcov_wide$Evergreen_Forest + landcov_wide$Mixed_Forest
+    landcov_wide$Agricultre <- landcov_wide$Pasture_Hay + landcov_wide$Cultivated_Crops
+    landcov_wide$Wetland <- landcov_wide$Shrub_Scrub + landcov_wide$Woody_Wetland + landcov_wide$Emergent_Herbaceous_Wetlands
+    landcov_wide$Other <- landcov_wide$Baren_Land + landcov_wide$Grassland_Herbaceous
+    landcov_wide$Water <- landcov_wide$Open_Water
+    
+    landcov_simp <- subset(landcov_wide, select = c("Pond_Name", "Buffer_Size", "Urban", "Forested", "Agricultre", "Wetland", "Other", "Water"))
   
   
 # NOPE ********************************************************************************************************
