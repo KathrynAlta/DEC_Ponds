@@ -3,7 +3,7 @@
 ############################################################
 # Holgerson Lab, Katie Gannon
 
-
+# Check 
 # 0. Set up R environment and Load Data 
 
   #Set working directory: 
