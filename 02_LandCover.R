@@ -30,13 +30,25 @@
     library(ggspatial)
     library(gstat)
     library(mgcv)
-
+    
+    
+###################################################################
+# Working with all FRP dissolved together 
+    
   # Load data: 
     # Key for land cover grid ID 
     landcover_gridID <- read_xlsx("Input_Files/230321_LandCover_Values.xlsx")
-    frp_1km <- read_sf("Spatial_Data_LandCover/NLCD_frp_1km_Intersect.shp")
-    frp_500m <- read_sf("Spatial_Data_LandCover/NLCD_frp_500m_Intersect.shp")
-  
+    cny_ponds <- read_sf("Input_Files/FRP_cny_data.shp")
+    frp_1km <- read_sf("Spatial_Data_LandCover/NLCD_frp_1km_Dissolved.shp")
+    frp_500m <- read_sf("Spatial_Data_LandCover/NLCD_frp_500m_Dissolved.shp")
+
+    
+    
+    
+    
+###################################################################
+# Working with Shape files dissolved individually 
+    
     # Dissolved shape files for each pond and each buffer size 
     aquadro_dissolved_1km <- read_sf("Spatial_Data_LandCover/dissolved_1km_aquadro.shp")
     aquadro_dissolved_500m <- read_sf("Spatial_Data_LandCover/dissolved_500m_aquadro.shp")
@@ -113,43 +125,7 @@
     
     landcov_simp <- subset(landcov_wide, select = c("Pond_Name", "Buffer_Size", "Urban", "Forested", "Agricultre", "Wetland", "Other", "Water"))
   
-  
-# NOPE ********************************************************************************************************
-  # 1) Join dissolved shape files with the key of land cover grid --> You do not actully need to do this here
-  aquadro_dissolved_1km_named <- left_join(aquadro_dissolved_1km, landcover_gridID)
-  aquadro_plc_1km <- left_join(aquadro_dissolved_1km, landcover_gridID)   #Aquadro percent land cover for 1 km buffer
-  aquadro_plc_500m <- left_join(aquadro_dissolved_500m, landcover_gridID)   #Aquadro percent land cover for 500 m buffer
-  
-  longhouse_dissolved_1km_named <- left_join(longhouse_dissolved_1km, landcover_gridID)
-  longhouse_plc_1km <- left_join(longhouse_dissolved_1km, landcover_gridID)   #longhouse percent land cover for 1 km buffer
-  longhouse_plc_500m <- left_join(longhouse_dissolved_500m, landcover_gridID)   #longhouse percent land cover for 500 m buffer
-  
-  marks_dissolved_1km_named <- left_join(marks_dissolved_1km, landcover_gridID)
-  marks_plc_1km <- left_join(marks_dissolved_1km, landcover_gridID)   #marks percent land cover for 1 km buffer
-  marks_plc_500m <- left_join(marks_dissolved_500m, landcover_gridID)   #marks percent land cover for 500 m buffer
-  
-  ecovillage_dissolved_1km_named <- left_join(ecovillage_dissolved_1km, landcover_gridID)
-  ecovillage_plc_1km <- left_join(ecovillage_dissolved_1km, landcover_gridID)   #ecovillage percent land cover for 1 km buffer
-  ecovillage_plc_500m <- left_join(ecovillage_dissolved_500m, landcover_gridID)   #ecovillage percent land cover for 500 m buffer
-  
-  dybowski_dissolved_1km_named <- left_join(dybowski_dissolved_1km, landcover_gridID)
-  dybowski_plc_1km <- left_join(dybowski_dissolved_1km, landcover_gridID)   #dybowski percent land cover for 1 km buffer
-  dybowski_plc_500m <- left_join(dybowski_dissolved_500m, landcover_gridID)   #dybowski percent land cover for 500 m buffer
-  
-  
-  # Formatt 
-  head(aquadro_plc_1km)
-  pond_name <- "Aquadro"
-  
-  aquad_1km <- subset(aquadro_plc_1km, select = c("Class_Name", "Percent_Co"))  # Subset to only columns that you are interested in 
-  names(aquad_1km)[names(aquad_1km) == "Percent_Co"] <- "Percent_Co_1km"  #Note in the column name that this is for the 1 km 
-  aquad_1km <- as.data.frame(aquad_1km)  # save as a data frame to be easier to work with 
-  aquad_1km$geometry <- NULL  # Remove the geometry because we don't need it any more 
-  
-  head(aquad_1km)
-  aquad_1km$Pond_Name <- "Aquadro"
-  aquad_1km$Buffer_Size <- "1km"
-  wide <- spread(aquad_1km, Class_Name, Percent_Co_1km)
+
 
 
 
