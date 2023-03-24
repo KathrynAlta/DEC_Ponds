@@ -42,9 +42,6 @@
     frp_1km_df <- read_sf("Spatial_Data_LandCover/NLCD_frp_1km_Dissolved_owner.shp")
     frp_500m_df <- read_sf("Spatial_Data_LandCover/NLCD_frp_500m_Dissolved_owner.shp")
     
-  
-
-
 # 2) Split into a list of dataframes with each pond getting its own dataframe 
     frp_1km_lst <- split(frp_1km_df, frp_1km_df$Owner)
     frp_500m_lst <- split(frp_500m_df, frp_500m_df$Owner)
@@ -85,22 +82,61 @@
     frp_1km_lst_frm <- lapply(frp_1km_lst, Format_Long_1km_FUNC, landcover_gridID )
     frp_500m_lst_frm <- lapply(frp_500m_lst, Format_Long_500m_FUNC, landcover_gridID )
     
-    
 # 5) bind all of the dfs in each list into long dfs
     frp_1km_long <- do.call("rbind", frp_1km_lst_frm)
       rownames(frp_1km_long) <- seq(1:nrow(frp_1km_long))
     frp_500m_long <- do.call("rbind", frp_500m_lst_frm)
       rownames(frp_500m_long) <- seq(1:nrow(frp_500m_long))
+      
+    # Format the Land Use Category names 
+      frp_1km_long$Class_Name <- as.factor(frp_1km_long$Class_Name)
+      frp_500m_long$Class_Name <- as.factor(frp_500m_long$Class_Name)
+       
+      levels(frp_1km_long$Class_Name) <- c("Baren_Land", "Cultivated_Crops", "Deciduous_Forest", 
+                                           "Developed_High_Intensity", "Developed_Low_Intensity", "Developed_Medium_Intensity", 
+                                           "Developed_Open_Space","Emergent_Herbaceous_Wetlands", "Evergreen_Forest", 
+                                           "Grassland_Herbaceous","Mixed_Forest", "Open_Water", 
+                                           "Pasture_Hay", "Shrub_Scrub", "Woody_Wetland")
+      
+      levels(frp_500m_long$Class_Name) <- c("Baren_Land", "Cultivated_Crops", "Deciduous_Forest", 
+                                            "Developed_High_Intensity", "Developed_Low_Intensity", "Developed_Medium_Intensity", 
+                                            "Developed_Open_Space","Emergent_Herbaceous_Wetlands", "Evergreen_Forest", 
+                                            "Grassland_Herbaceous","Mixed_Forest", "Open_Water", 
+                                            "Pasture_Hay", "Shrub_Scrub", "Woody_Wetland")
+      
 
 # 6) Turn into wide dfs instead of long 
-    head(frp_1km_long)
-    head(frp_500m_long)
+    frp_1km_long <- subset(frp_1km_long, select = c("Pond_Name", "Class_Name", "Percent_Co"))
+    frp_500m_long <- subset(frp_500m_long, select = c("Pond_Name", "Class_Name", "Percent_Co"))
+    
     frp_1km_wide <- spread(frp_1km_long, Class_Name, Percent_Co)  # Turn into wide formatt
     frp_500m_wide <- spread(frp_500m_long, Class_Name, Percent_Co)  # Turn into wide formatt
     
-    head(frp_1km_wide) 
+    # Add buffer size back in 
+    frp_1km_wide$Buffer_Size <- "1km"
+    frp_500m_wide$Buffer_Size <- "500m"
     
-    # Problem somewher bc lots of NAs but overall process looks like it works! -KG 3/24
+    # Change NAs to zero (just means that there was not any of that land use type)
+    frp_1km_wide <- mutate_all(frp_1km_wide, ~replace_na(.,0))
+    frp_500m_wide <- mutate_all(frp_500m_wide, ~replace_na(.,0))
+    
+    # Put two buffer sizes together into one df 
+    str(frp_1km_wide)
+    str(frp_500m_wide)
+    frp_wide <- rbind(frp_1km_wide, frp_500m_wide)
+    
+# 7) Lump Land Use Categories and get percent cover 
+    frp_wide$Urban <- frp_wide$Developed_High_Intensity + frp_wide$Developed_Low_Intensity + frp_wide$Developed_Medium_Intensity + frp_wide$Developed_Open_Space
+    frp_wide$Forested <- frp_wide$Deciduous_Forest + frp_wide$Evergreen_Forest + frp_wide$Mixed_Forest
+    frp_wide$Agricultre <- frp_wide$Pasture_Hay + frp_wide$Cultivated_Crops
+    frp_wide$Wetland <- frp_wide$Shrub_Scrub + frp_wide$Woody_Wetland + frp_wide$Emergent_Herbaceous_Wetlands
+    frp_wide$Other <- frp_wide$Baren_Land + frp_wide$Grassland_Herbaceous
+    frp_wide$Water <- frp_wide$Open_Water
+    
+    landcov_simp <- subset(frp_wide, select = c("Pond_Name", "Buffer_Size", "Urban", "Forested", "Agricultre", "Wetland", "Other", "Water"))
+    head(landcov_simp)
+    
+    # write_xlsx(landcov_simp, "Output_Files/FRP_LandCover_230324.xlsx" )
     
     
     
