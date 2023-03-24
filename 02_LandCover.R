@@ -35,13 +35,72 @@
 ###################################################################
 # Working with all FRP dissolved together 
     
-  # Load data: 
+# 1)  Load data: 
     # Key for land cover grid ID 
     landcover_gridID <- read_xlsx("Input_Files/230321_LandCover_Values.xlsx")
     cny_ponds <- read_sf("Input_Files/FRP_cny_data.shp")
-    frp_1km <- read_sf("Spatial_Data_LandCover/NLCD_frp_1km_Dissolved.shp")
-    frp_500m <- read_sf("Spatial_Data_LandCover/NLCD_frp_500m_Dissolved.shp")
+    frp_1km_df <- read_sf("Spatial_Data_LandCover/NLCD_frp_1km_Dissolved_owner.shp")
+    frp_500m_df <- read_sf("Spatial_Data_LandCover/NLCD_frp_500m_Dissolved_owner.shp")
+    
+  
 
+
+# 2) Split into a list of dataframes with each pond getting its own dataframe 
+    frp_1km_lst <- split(frp_1km_df, frp_1km_df$Owner)
+    frp_500m_lst <- split(frp_500m_df, frp_500m_df$Owner)
+    
+# 3) Write a function to format all dissolved dataframes long
+    
+    dissolved_data <- frp_1km_lst[[1]]
+    head(dissolved_data)
+    
+    Format_Long_1km_FUNC <- function(dissolved_data, landcover_gridID){
+      plc_data <- left_join(dissolved_data, landcover_gridID)
+      plc_data <- subset(plc_data, select = c("Class_Name", "Area_m2"))  # Subset to only columns that you are interested in 
+      total_area <- pi*1000^2
+      plc_data$Percent_Co <- round((plc_data$Area_m2 / total_area ) * 100, 1) 
+      plc_data <- as.data.frame(plc_data)  # save as a data frame to be easier to work with 
+      plc_data$geometry <- NULL  # Remove the geometry because we don't need it any more
+      dissolved_data_df <- as.data.frame(dissolved_data)
+      plc_data$Pond_Name <- dissolved_data_df[ 1, "Owner"]
+      plc_data$Buffer_Size <- "1km"
+      output <- plc_data
+    }
+    
+    Format_Long_500m_FUNC <- function(dissolved_data, landcover_gridID){
+      plc_data <- left_join(dissolved_data, landcover_gridID)
+      plc_data <- subset(plc_data, select = c("Class_Name", "Area_m2"))  # Subset to only columns that you are interested in 
+      total_area <- pi*500^2
+      plc_data$Percent_Co <- round((plc_data$Area_m2 / total_area ) * 100, 1) 
+      plc_data <- as.data.frame(plc_data)  # save as a data frame to be easier to work with 
+      plc_data$geometry <- NULL  # Remove the geometry because we don't need it any more
+      dissolved_data_df <- as.data.frame(dissolved_data)
+      plc_data$Pond_Name <- dissolved_data_df[ 1, "Owner"]
+      plc_data$Buffer_Size <- "500m"
+      output <- plc_data
+    }
+    
+# 4) Apply that function to formatt long the list of all data
+    
+    frp_1km_lst_frm <- lapply(frp_1km_lst, Format_Long_1km_FUNC, landcover_gridID )
+    frp_500m_lst_frm <- lapply(frp_500m_lst, Format_Long_500m_FUNC, landcover_gridID )
+    
+    
+# 5) bind all of the dfs in each list into long dfs
+    frp_1km_long <- do.call("rbind", frp_1km_lst_frm)
+      rownames(frp_1km_long) <- seq(1:nrow(frp_1km_long))
+    frp_500m_long <- do.call("rbind", frp_500m_lst_frm)
+      rownames(frp_500m_long) <- seq(1:nrow(frp_500m_long))
+
+# 6) Turn into wide dfs instead of long 
+    head(frp_1km_long)
+    head(frp_500m_long)
+    frp_1km_wide <- spread(frp_1km_long, Class_Name, Percent_Co)  # Turn into wide formatt
+    frp_500m_wide <- spread(frp_500m_long, Class_Name, Percent_Co)  # Turn into wide formatt
+    
+    head(frp_1km_wide) 
+    
+    # Problem somewher bc lots of NAs but overall process looks like it works! -KG 3/24
     
     
     
