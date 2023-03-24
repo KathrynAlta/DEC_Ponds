@@ -7,7 +7,7 @@
 # 0. Set up R environment and Load Data 
 
   #Set working directory: 
-    setwd("~/Sediment_Mapping_DEC") # Desktop 
+    setwd("~/DEC_Ponds") # Desktop 
     getwd()
     
   # Load packages: 
@@ -33,7 +33,9 @@
 
   # Load data: 
     # Key for land cover grid ID 
-    landcover_gridID <- read_xlsx("230321_LandCover_Values.xlsx")
+    landcover_gridID <- read_xlsx("Input_Files/230321_LandCover_Values.xlsx")
+    frp_1km <- read_sf("Spatial_Data_LandCover/NLCD_frp_1km_Intersect.shp")
+    frp_500m <- read_sf("Spatial_Data_LandCover/NLCD_frp_500m_Intersect.shp")
   
     # Dissolved shape files for each pond and each buffer size 
     aquadro_dissolved_1km <- read_sf("Spatial_Data_LandCover/dissolved_1km_aquadro.shp")
