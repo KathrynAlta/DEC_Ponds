@@ -220,10 +220,23 @@
     
     landcov_simp <- subset(landcov_wide, select = c("Pond_Name", "Buffer_Size", "Urban", "Forested", "Agricultre", "Wetland", "Other", "Water"))
   
+    
 
+####################################################
+# Farm and Residential Ponds data 
+    
+    farmres <- read_xlsx("Input_Files/230327_FarmResidPonds.xlsx")
+    names(farmres)
+    farmres <- subset(farmres, select = c("Owner", "Cored?", "SedMap?", "area_ha", "depth_m from landowner", "depth_m_Measured", "Year_built", "fish?"))
+  head(farmres)
+  write_xlsx(farmres, "Output_Files/Site_Selection_230327.xlsx")
+  
+  
+  head(landcov_simp)
 
-
-
+  names(farmres)[names(farmres) == "Owner"] <- "Pond_Name"
+  site_select_data <- full_join(landcov_simp, farmres)
+  write_xlsx(site_select_data, "Output_Files/Site_Selection_comp_230327.xlsx")
 
 
 
