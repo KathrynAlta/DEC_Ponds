@@ -34,7 +34,7 @@
     # install.packages("gstat")
     library(gstat)
     
-    install.packages("mgcv")
+    # install.packages("mgcv")
     library(mgcv)
     #install.packages("mgcv")
     # library(mgcv)
@@ -48,31 +48,31 @@
 # 1. Input all data
     
   # Points data 
-    harrison_pond_points <- read_sf("Spatial_Data/Harrison_Pond_030123/Harrison_Pond_Points_030123_1734.shp")   %>%   # Pull in shape file
+    harrison_pond_points <- read_sf("Spatial_Data_SedimentMapping/Harrison_Pond_030123/Harrison_Pond_Points_030123_1734.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Harrison_Pond") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
-    applegate_pond_points <- read_sf("Spatial_Data/Applegate_Pond_022723/Applegate_Pond_Points_030123_noz.shp")   %>%   # Pull in shape file
+    applegate_pond_points <- read_sf("Spatial_Data_SedimentMapping/Applegate_Pond_022723/Applegate_Pond_Points_030123_noz.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Applegate_Pond") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
-    aquadro_pond_points <- read_sf("Spatial_Data/Aquadro_Pond_022723/Aquadro_Pond_Points_030123_noz.shp")   %>%   # Pull in shape file
+    aquadro_pond_points <- read_sf("Spatial_Data_SedimentMapping/Aquadro_Pond_022723/Aquadro_Pond_Points_030123_noz.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Aquadro_Pond") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
 
     
   # Polygons 
-    harrison_pond_boundary <- read_sf("Spatial_Data/Harrison_Pond_030123/Harrison_Pond_Poly_030123.shp") %>%  # read in polygon of pond 
+    harrison_pond_boundary <- read_sf("Spatial_Data_SedimentMapping/Harrison_Pond_030123/Harrison_Pond_Poly_030123.shp") %>%  # read in polygon of pond 
       transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
       st_transform(26920) %>%
       st_zm()
     
-    applegate_pond_boundary <- read_sf("Spatial_Data/Applegate_Pond_022723/Applegate_Pond_Poly.shp") %>%  # read in polygon of pond 
+    applegate_pond_boundary <- read_sf("Spatial_Data_SedimentMapping/Applegate_Pond_022723/Applegate_Pond_Poly.shp") %>%  # read in polygon of pond 
       transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
       st_transform(26920) %>%
       st_zm()
     
-    aquadro_pond_boundary <- read_sf("Spatial_Data/Aquadro_Pond_022723/Aquadro_Pond_Poly_030123.shp") %>%  # read in polygon of pond 
+    aquadro_pond_boundary <- read_sf("Spatial_Data_SedimentMapping/Aquadro_Pond_022723/Aquadro_Pond_Poly_030123.shp") %>%  # read in polygon of pond 
       transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
       st_transform(26920) %>%
       st_zm()
@@ -110,9 +110,11 @@
           st_transform(26920)
     
 
-# 2. Connect the lat long from the pond depths shape file to the measuremed depths from seperate df 
+# 2. Connect the lat long from the pond depths shape file to the measuremed depths from seperate df --> make spatial
    
     # Write a function to connect the measured depths to the lat long in the shape file 
+        
+        # Dummy data to write function 
         pond_points <- applegate_pond_points
         measured_depths <- applegate_pond_depth_meas
         
@@ -177,8 +179,6 @@
    
    
 # 4. Add the coordinates of the boundary as columns and set the depth at the boundary to zero 
-     
-     
    
   # 4.1 ) For all ponds cast geometry to another type, change from polygon to points 
      # This has to be done individually because it throws a warning 
@@ -188,7 +188,7 @@
      
   # 4.2) Write Function 
      
-         # dfs to test function 
+         # Dummy data to write function 
            pond_boundary_points <- aquadro_pond_boundary_points  # this is just a long list of points on the boundary with depth set to zero 
            pond_depths <- aquadro_pond_depths  # this is all of the points where we have measured water and sediment depths 
            
@@ -214,8 +214,10 @@
    
    
 # 5. Create a grid to hold the raster output
-   thing1 <- as.character(aquadro_pond_full[1, "Pond_Name"])
-   thing1[1]
+  
+   # Dummy data to write function 
+       thing1 <- as.character(aquadro_pond_full[1, "Pond_Name"])
+       thing1[1]
 
    # Write a function to create a grid 
    GridCreate_FUNC <- function(name_pond_full, name_pond_boundary){
@@ -234,6 +236,9 @@
    aquadro_grid <- GridCreate_FUNC(aquadro_pond_full, aquadro_pond_boundary)
    applegate_grid <- GridCreate_FUNC(applegate_pond_full, applegate_pond_boundary)
    harrison_grid <- GridCreate_FUNC(harrison_pond_full, harrison_pond_boundary)
+   
+   # Up to here is all set up, getting the grid made (place to put output from the model) and processing the input 
+   #   data (make spatial, calc depth, add zero depth around boundary) getting ready to make a feed the model 
     
 # 6. TIN --> required packages not availale for this version of R 
   
