@@ -239,7 +239,11 @@
    
    # Up to here is all set up, getting the grid made (place to put output from the model) and processing the input 
    #   data (make spatial, calc depth, add zero depth around boundary) getting ready to make a feed the model 
-    
+
+   # Now there are multiple models that you can build that use different methods (math) to interpolate the water
+   #   and sediment depths at each point on the grid. You are going to build and run multiple models and look at the
+   #   output, then make a decision about what model to use for your final estimates 
+       
 # 6. TIN --> required packages not availale for this version of R 
   
     
