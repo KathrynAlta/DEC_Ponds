@@ -369,6 +369,9 @@
       
       # Use that TPRS model to get predictions and add them to the grid  
       # NOTE --> If this spits an error reinstall mgcv package and try again (no idea why that works but it does)
+         # install.packages("mgcv")
+          # library(mgcv)
+      
        harrison_grid$TPRS_water_depth <- predict(TPRS_bathym_harrison_FIT, newdata = harrison_grid, type = "response")  
        aquadro_grid$TPRS_water_depth <- predict(TPRS_bathym_aquadro_FIT, newdata = aquadro_grid, type = "response")  
        applegate_grid$TPRS_water_depth <- predict(TPRS_bathym_applegate_FIT, newdata = applegate_grid, type = "response")  
@@ -510,66 +513,59 @@
  # Back to things that work *********************************************************************************
     
 # 10. Compute Volume of water and volume of sediment 
-    
-  #  Example Data 
-   boundary_area <- st_area(boundary) %>% 
-     as.numeric()
    
-   example_grid %>% 
-     st_set_geometry(NULL) %>% 
-     summarise(
-       mean_depth = mean(IDW),
-       volume = mean(IDW) * boundary_area
-     )
+   # 10.1 Sediment Volume 
+       # Write a function to calculate sediment volume for each pond 
+       sed_vol_calc_FUNC <- function(pond_boundary, pond_grid){
+         
+         pond_boundary_area <- as.numeric(st_area(pond_boundary)) 
+         
+         output <- pond_grid %>% 
+           st_set_geometry(NULL) %>% 
+           summarise(
+             TIN_mean_sed_depth = mean(TIN_sed_depth),
+             TIN_sed_volume = mean(TIN_sed_depth) * pond_boundary_area,
+             IDW_mean_sed_depth = mean(IDW_sed_depth),
+             IDW_sed_volume = mean(IDW_sed_depth) * pond_boundary_area,
+             TPRS_mean_sed_depth = mean(TPRS_sed_depth),
+             TPRS_sed_volume = mean(TPRS_sed_depth) * pond_boundary_area, 
+           )
+       }
+       
+       # Apply Function to calcualte sediment volume for each pond 
+       harrison_sed_vol <- sed_vol_calc_FUNC(harrison_pond_boundary, harrison_grid)
+       applegate_sed_vol <- sed_vol_calc_FUNC(applegate_pond_boundary, applegate_grid)
+       aquadro_sed_vol <- sed_vol_calc_FUNC(aquadro_pond_boundary, aquadro_grid)
+       
+  # 10.2 Water Volume 
+       # Write a function to calculate sediment volume for each pond 
+       water_vol_calc_FUNC <- function(pond_boundary, pond_grid){
+         
+         pond_boundary_area <- as.numeric(st_area(pond_boundary)) 
+         
+         output <- pond_grid %>% 
+           st_set_geometry(NULL) %>% 
+           summarise(
+             TIN_mean_water_depth = mean(TIN_water_depth),
+             TIN_water_volume = mean(TIN_water_depth) * pond_boundary_area,
+             IDW_mean_water_depth = mean(IDW_water_depth),
+             IDW_water_volume = mean(IDW_water_depth) * pond_boundary_area,
+             TPRS_mean_water_depth = mean(TPRS_water_depth),
+             TPRS_water_volume = mean(TPRS_water_depth) * pond_boundary_area, 
+           )
+       }
+       
+       # Apply Function to calcualte sediment volume for each pond 
+       harrison_water_vol <- water_vol_calc_FUNC(harrison_pond_boundary, harrison_grid)
+       harrison_water_vol
+       
    
-   # Holgerson Data TPRS IDW
-   pond_boundary <- aquadro_pond_boundary
-   pond_grid <-   aquadro_grid
-   pond_boundary_area <- st_area(pond_boundary) %>% 
-     as.numeric()
+     
+
    
-   pond_grid %>% 
-     st_set_geometry(NULL) %>% 
-     summarise(
-       mean_depth = mean(TPRS_sed_depth),
-       volume = mean(TPRS_sed_depth) * pond_boundary_area
-     )
-   # THIS IS WHAT WE WANT For all of the ponds, mean depth and volume 
    
-   # Pond Specific 
-   pond_boundary_area <- st_area(harrison_pond_boundary) %>% 
-     as.numeric()
    
-   pond_boundary_area <- as.numeric(st_area(harrison_pond_boundary)) 
-   
-   harrison_grid %>% 
-     st_set_geometry(NULL) %>% 
-     summarise(
-       IDW_mean_depth = mean(IDW_sed_depth),
-       IDW_volume = mean(IDW_sed_depth) * pond_boundary_area,
-       TPRS_mean_depth = mean(TPRS_sed_depth),
-       TPRS_volume = mean(TPRS_sed_depth) * pond_boundary_area, 
-     )
-   
-   aquadro_grid %>% 
-     st_set_geometry(NULL) %>% 
-     summarise(
-       IDW_mean_depth = mean(IDW_sed_depth),
-       IDW_volume = mean(IDW_sed_depth) * pond_boundary_area,
-       TPRS_mean_depth = mean(TPRS_sed_depth),
-       TPRS_volume = mean(TPRS_sed_depth) * pond_boundary_area, 
-     )
-   
-   applegate_grid %>% 
-     st_set_geometry(NULL) %>% 
-     summarise(
-       IDW_mean_depth = mean(IDW_sed_depth),
-       IDW_volume = mean(IDW_sed_depth) * pond_boundary_area,
-       TPRS_mean_depth = mean(TPRS_sed_depth),
-       TPRS_volume = mean(TPRS_sed_depth) * pond_boundary_area, 
-     )
-   
-    
+        
 # 11. Contouring 
    
    # Katie can't figure out piping 
@@ -606,6 +602,18 @@
    
    # Write function so that you can select which model to plot 
    
+   # Write a Function to plot Sediment depth -- IDW 
+   Plot_sedmap_TIN_FUNC <- function(name_grid, name_boundary, pond_depths){
+     pond_name <- as.character(name_grid[1, "Pond_Name"])  # save pond name to use in the title of the plot 
+     pond_name_form <- pond_name[1] # format pond name 
+     output_plot <- ggplot(name_grid) +
+       geom_sf(data = name_boundary) +
+       geom_raster(aes(X, Y, fill = TIN_sed_depth)) +
+       scale_fill_viridis_c() +
+       geom_sf_text(aes(label = Sed_Thickness_m), data = pond_depths, size = 3) + 
+       annotation_scale(location = "br") +
+       labs(title= paste(pond_name, "Sediment Depth (m) -- TIN", sep = " "), x = NULL, y = NULL, fill = "Sediment Depth (m)")
+   }
    
    # Write a Function to plot Sediment depth -- IDW 
    Plot_sedmap_IDW_FUNC <- function(name_grid, name_boundary, pond_depths){
@@ -638,28 +646,37 @@
   # Plot and Save 
    
    # Plot
-     plot_sedmap_IDW_applegate <- Plot_sedmap_IDW_FUNC(applegate_grid, applegate_pond_boundary, applegate_pond_depths)
-     plot_sedmap_TPRS_applegate <- Plot_sedmap_TPRS_FUNC(applegate_grid, applegate_pond_boundary, applegate_pond_depths)
-     plot_sedmap_IDW_applegate
-     plot_sedmap_TPRS_applegate
+    plot_sedmap_TIN_applegate <- Plot_sedmap_TIN_FUNC(applegate_grid, applegate_pond_boundary, applegate_pond_depths)
+    plot_sedmap_IDW_applegate <- Plot_sedmap_IDW_FUNC(applegate_grid, applegate_pond_boundary, applegate_pond_depths)
+    plot_sedmap_TPRS_applegate <- Plot_sedmap_TPRS_FUNC(applegate_grid, applegate_pond_boundary, applegate_pond_depths)
+    plot_sedmap_TIN_applegate 
+    plot_sedmap_IDW_applegate
+    plot_sedmap_TPRS_applegate
      
-     plot_sedmap_IDW_aquadro <- Plot_sedmap_IDW_FUNC(aquadro_grid, aquadro_pond_boundary, aquadro_pond_depths)
+    plot_sedmap_TIN_aquadro <- Plot_sedmap_TIN_FUNC(aquadro_grid, aquadro_pond_boundary, aquadro_pond_depths) 
+    plot_sedmap_IDW_aquadro <- Plot_sedmap_IDW_FUNC(aquadro_grid, aquadro_pond_boundary, aquadro_pond_depths)
      plot_sedmap_TPRS_aquadro <- Plot_sedmap_TPRS_FUNC(aquadro_grid, aquadro_pond_boundary, aquadro_pond_depths)
+     plot_sedmap_TIN_aquadro
      plot_sedmap_IDW_aquadro
      plot_sedmap_TPRS_aquadro
      
+     plot_sedmap_TIN_harrison <- Plot_sedmap_TIN_FUNC(harrison_grid, harrison_pond_boundary, harrison_pond_depths)
      plot_sedmap_IDW_harrison <- Plot_sedmap_IDW_FUNC(harrison_grid, harrison_pond_boundary, harrison_pond_depths)
      plot_sedmap_TPRS_harrison <- Plot_sedmap_TPRS_FUNC(harrison_grid, harrison_pond_boundary, harrison_pond_depths)
+     plot_sedmap_TIN_harrison
      plot_sedmap_IDW_harrison
      plot_sedmap_TPRS_harrison
      
     # Save 
+     ggsave("Output_Figures/plot_sedmap_TIN_applegate_230830.png", plot_sedmap_TIN_applegate)
      ggsave("Output_Figures/plot_sedmap_IDW_applegate_230828.png", plot_sedmap_IDW_applegate)
      ggsave("Output_Figures/plot_sedmap_TRPS_applegate_230828.png", plot_sedmap_TPRS_applegate)
      
+     ggsave("Output_Figures/plot_sedmap_TIN_harrison_230830.png", plot_sedmap_TIN_harrison)
      ggsave("Output_Figures/plot_sedmap_IDW_harrison_230828.png", plot_sedmap_IDW_harrison)
      ggsave("Output_Figures/plot_sedmap_TRPS_harrison_230828.png", plot_sedmap_TPRS_harrison)
      
+     ggsave("Output_Figures/plot_sedmap_IDW_aquadro_230830.png", plot_sedmap_TIN_aquadro)
      ggsave("Output_Figures/plot_sedmap_IDW_aquadro_230828.png", plot_sedmap_IDW_aquadro)
      ggsave("Output_Figures/plot_sedmap_TRPS_aquadro_230828.png", plot_sedmap_TPRS_aquadro)
      
