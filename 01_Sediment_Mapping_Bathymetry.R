@@ -536,6 +536,8 @@
        harrison_sed_vol <- sed_vol_calc_FUNC(harrison_pond_boundary, harrison_grid)
        applegate_sed_vol <- sed_vol_calc_FUNC(applegate_pond_boundary, applegate_grid)
        aquadro_sed_vol <- sed_vol_calc_FUNC(aquadro_pond_boundary, aquadro_grid)
+       harrison_sed_vol 
+       aquadro_sed_vol
        
   # 10.2 Water Volume 
        # Write a function to calculate sediment volume for each pond 
@@ -676,7 +678,7 @@
      ggsave("Output_Figures/plot_sedmap_IDW_harrison_230828.png", plot_sedmap_IDW_harrison)
      ggsave("Output_Figures/plot_sedmap_TRPS_harrison_230828.png", plot_sedmap_TPRS_harrison)
      
-     ggsave("Output_Figures/plot_sedmap_IDW_aquadro_230830.png", plot_sedmap_TIN_aquadro)
+     ggsave("Output_Figures/plot_sedmap_TIN_aquadro_230830.png", plot_sedmap_TIN_aquadro)
      ggsave("Output_Figures/plot_sedmap_IDW_aquadro_230828.png", plot_sedmap_IDW_aquadro)
      ggsave("Output_Figures/plot_sedmap_TRPS_aquadro_230828.png", plot_sedmap_TPRS_aquadro)
      
