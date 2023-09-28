@@ -370,7 +370,7 @@
       # Use that TPRS model to get predictions and add them to the grid  
       # NOTE --> If this spits an error reinstall mgcv package and try again (no idea why that works but it does)
          # install.packages("mgcv")
-          # library(mgcv)
+          library(mgcv)
       
        harrison_grid$TPRS_water_depth <- predict(TPRS_bathym_harrison_FIT, newdata = harrison_grid, type = "response")  
        aquadro_grid$TPRS_water_depth <- predict(TPRS_bathym_aquadro_FIT, newdata = aquadro_grid, type = "response")  
