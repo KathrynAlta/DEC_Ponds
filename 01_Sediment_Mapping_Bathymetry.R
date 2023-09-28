@@ -488,15 +488,6 @@
      knots = knot_points
    )
    
-   SOAP_bathym_harrison_FIT <- gam(
-     Water_Depth_m ~ s(X, Y, bs = "so", xt = list(bnd = gam_bound)),
-     data = harrison_pond_full %>% 
-       filter(source == "measured") %>% 
-       filter(as.vector(st_contains(harrison_pond_boundary, geometry, sparse = FALSE))), 
-     method = "REML", 
-     knots = knot_points
-   )
-   
    SOAP_sedmap_harrison_FIT <- gam(
      Sed_Thickness_m ~ s(X, Y, bs = "so", xt = list(bnd = gam_bound)),
      data = harrison_pond_full %>% 
@@ -506,8 +497,44 @@
      knots = knot_points
    )
    
-   harrison_grid$SOAP_water_depth <- predict(SOAP_bathym_harrison_FIT, newdata = harrison_grid, type = "response")
-   harrison_grid$SOAP_sed_depth <- predict(SOAP_sedmap_harrison_FIT, newdata = harrison_grid, type = "response")
+   
+   harrison_grid$SOAP_water_depth <- predict.gam(SOAP_bathym_harrison_FIT, newdata = harrison_grid, type = "response")
+   harrison_grid$SOAP_sed_depth <- predict.gam(SOAP_sedmap_harrison_FIT, newdata = harrison_grid, type = "response")
+   
+   # Write a fucntion to fit gam soap model NOTE -- need to make boundary linestring before and outside of function 
+   SOAP_bathym_FUNC <- function(pond_boundary, pond_linestring){
+     
+     # 1. make gam_bound 
+     gam_bound <- list(
+       list(
+         X = boundary_coords[-1, "X"], 
+         Y = boundary_coords[-1, "Y"], 
+         f = rep(0, nrow(pond_boundary))
+       )
+     )
+     
+     # 2. Make knot points 
+     knot_points_1 <- st_make_grid(
+       pond_boundary,      
+       n = c(10, 10),
+       what = "centers"
+     ) %>%
+       st_as_sf() %>%
+       filter(as.vector(st_contains(pond_boundary, x, sparse = FALSE)))
+     
+     # 3. Make Intersection  
+     intersection <- !st_intersects(
+       pond_linestring, 
+       knot_points_1, 
+       sparse = FALSE
+     )
+     
+     # 4. Filter knot points by intersection    
+     knot_points <- knot_points_1 %>%   
+       filter(as.vector(intersection)) %>%
+       cbind(., st_coordinates(.))
+   }
+    
    
 #***********************************************
  # Back to things that work *********************************************************************************
