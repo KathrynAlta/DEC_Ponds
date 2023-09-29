@@ -47,7 +47,7 @@
           # library(interpp)
     
 # 1. Input all data
-    
+#####    
   # Points data 
     harrison_pond_points <- read_sf("Spatial_Data_SedimentMapping/Harrison_Pond_030123/Harrison_Pond_Points_030123_1734.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Harrison_Pond") %>% # Subset to only columns that you need 
@@ -84,31 +84,8 @@
     applegate_pond_depth_meas <- read_xlsx("Depth_Measurements/Applegate_Pond_Depth_Measurements.xlsx")
     aquadro_pond_depth_meas <- read_xlsx("Depth_Measurements/Aquadro_Pond_Depth_Measurements.xlsx")
     
-    
-  # Example Data from Dunnington Code 
-      # Example Boundary 
-        example_boundary <- read_sf(
-          system.file(
-            "longlake/LongLakeMarshWaterPoly.shp", 
-            package = "ggspatial"
-          )
-        ) %>%
-          filter(label == "Long Lake") %>%
-          transmute(source = "boundary", depth = 0) %>%
-          st_transform(26920) %>%
-          st_zm()
-        
-        example_boundary
-        
-        # Example Depths 
-        example_depths <- read_sf(
-          system.file(
-            "longlake/LongLakeDepthSurvey.shp", 
-            package = "ggspatial"
-          )  # this is loading data using normal read_sf from within a package in r 
-        ) %>%
-          transmute(source = "measured", depth = DEPTH_M) %>%   # this is subsetting down to only the columns needed 
-          st_transform(26920)
+#####    
+ 
     
 
 # 2. Connect the lat long from the pond depths shape file to the measuremed depths from seperate df --> make spatial
@@ -515,11 +492,15 @@
        # Write a function to calculate sediment volume for each pond 
        sed_vol_calc_FUNC <- function(pond_boundary, pond_grid){
          
+         pond_name <- as.character(pond_grid[1, "Pond_Name"])  # save pond name to use in the title of the plot 
+         pond_name_form <- pond_name[1] # format pond name 
+         
          pond_boundary_area <- as.numeric(st_area(pond_boundary)) 
          
          output <- pond_grid %>% 
            st_set_geometry(NULL) %>% 
            summarise(
+             Pond_Name = pond_name_form,
              TIN_mean_sed_depth = mean(TIN_sed_depth),
              TIN_sed_volume = mean(TIN_sed_depth) * pond_boundary_area,
              IDW_mean_sed_depth = mean(IDW_sed_depth),
@@ -537,16 +518,24 @@
        aquadro_sed_vol <- sed_vol_calc_FUNC(aquadro_pond_boundary, aquadro_grid)
        harrison_sed_vol 
        aquadro_sed_vol
+       applegate_sed_vol
+       
+       # Create dataframe with the estimated sediment volume for all ponds for all models 
+       all_sed_vols <- rbind(harrison_sed_vol, aquadro_sed_vol, applegate_sed_vol)
        
   # 10.2 Water Volume 
        # Write a function to calculate sediment volume for each pond 
        water_vol_calc_FUNC <- function(pond_boundary, pond_grid){
+         
+         pond_name <- as.character(pond_grid[1, "Pond_Name"])  # save pond name to use in the title of the plot 
+         pond_name_form <- pond_name[1] # format pond name 
          
          pond_boundary_area <- as.numeric(st_area(pond_boundary)) 
          
          output <- pond_grid %>% 
            st_set_geometry(NULL) %>% 
            summarise(
+             Pond_Name = pond_name_form,
              TIN_mean_water_depth = mean(TIN_water_depth),
              TIN_water_volume = mean(TIN_water_depth) * pond_boundary_area,
              IDW_mean_water_depth = mean(IDW_water_depth),
@@ -651,55 +640,104 @@
        
            
    
-  # Plot and Save 
+    # 12.5 Plot each model for each pond 
+       
+       # Applegate 
+        plot_sedmap_TIN_applegate <- Plot_sedmap_TIN_FUNC(applegate_grid, applegate_pond_boundary, applegate_pond_depths)
+        plot_sedmap_IDW_applegate <- Plot_sedmap_IDW_FUNC(applegate_grid, applegate_pond_boundary, applegate_pond_depths)
+        plot_sedmap_TPRS_applegate <- Plot_sedmap_TPRS_FUNC(applegate_grid, applegate_pond_boundary, applegate_pond_depths)
+        plot_sedmap_SOAP_applegate <- Plot_sedmap_SOAP_FUNC(applegate_grid, applegate_pond_boundary, applegate_pond_depths)
+            plot_sedmap_TIN_applegate 
+            plot_sedmap_IDW_applegate
+            plot_sedmap_TPRS_applegate
+            plot_sedmap_SOAP_applegate
+     
+        # Aquadro 
+        plot_sedmap_TIN_aquadro <- Plot_sedmap_TIN_FUNC(aquadro_grid, aquadro_pond_boundary, aquadro_pond_depths) 
+        plot_sedmap_IDW_aquadro <- Plot_sedmap_IDW_FUNC(aquadro_grid, aquadro_pond_boundary, aquadro_pond_depths)
+        plot_sedmap_TPRS_aquadro <- Plot_sedmap_TPRS_FUNC(aquadro_grid, aquadro_pond_boundary, aquadro_pond_depths)
+        plot_sedmap_SOAP_aquadro <- Plot_sedmap_SOAP_FUNC(aquadro_grid, aquadro_pond_boundary, aquadro_pond_depths)
+             plot_sedmap_TIN_aquadro
+             plot_sedmap_IDW_aquadro
+             plot_sedmap_TPRS_aquadro
+             plot_sedmap_SOAP_aquadro
+     
+             
+        # Harrison      
+        plot_sedmap_TIN_harrison <- Plot_sedmap_TIN_FUNC(harrison_grid, harrison_pond_boundary, harrison_pond_depths)
+        plot_sedmap_IDW_harrison <- Plot_sedmap_IDW_FUNC(harrison_grid, harrison_pond_boundary, harrison_pond_depths)
+        plot_sedmap_TPRS_harrison <- Plot_sedmap_TPRS_FUNC(harrison_grid, harrison_pond_boundary, harrison_pond_depths)
+        plot_sedmap_SOAP_harrison <- Plot_sedmap_SOAP_FUNC(harrison_grid, harrison_pond_boundary, harrison_pond_depths)
+              plot_sedmap_TIN_harrison
+              plot_sedmap_IDW_harrison
+              plot_sedmap_TPRS_harrison
+              plot_sedmap_SOAP_harrison
+     
+    # 12. Save maps for each pond 
+      # Applegate 
+         ggsave("Output_Figures/plot_sedmap_TIN_applegate_230830.png", plot_sedmap_TIN_applegate)
+         ggsave("Output_Figures/plot_sedmap_IDW_applegate_230828.png", plot_sedmap_IDW_applegate)
+         ggsave("Output_Figures/plot_sedmap_TRPS_applegate_230828.png", plot_sedmap_TPRS_applegate)
+        
+      # Aquadro 
+         ggsave("Output_Figures/plot_sedmap_TIN_aquadro_230830.png", plot_sedmap_TIN_aquadro)
+         ggsave("Output_Figures/plot_sedmap_IDW_aquadro_230828.png", plot_sedmap_IDW_aquadro)
+         ggsave("Output_Figures/plot_sedmap_TRPS_aquadro_230828.png", plot_sedmap_TPRS_aquadro)
+         
+      # Harrison 
+         ggsave("Output_Figures/plot_sedmap_TIN_harrison_230830.png", plot_sedmap_TIN_harrison)
+         ggsave("Output_Figures/plot_sedmap_IDW_harrison_230828.png", plot_sedmap_IDW_harrison)
+         ggsave("Output_Figures/plot_sedmap_TRPS_harrison_230828.png", plot_sedmap_TPRS_harrison)
+         
+     
+     
    
-   # Plot
-    plot_sedmap_TIN_applegate <- Plot_sedmap_TIN_FUNC(applegate_grid, applegate_pond_boundary, applegate_pond_depths)
-    plot_sedmap_IDW_applegate <- Plot_sedmap_IDW_FUNC(applegate_grid, applegate_pond_boundary, applegate_pond_depths)
-    plot_sedmap_TPRS_applegate <- Plot_sedmap_TPRS_FUNC(applegate_grid, applegate_pond_boundary, applegate_pond_depths)
-    plot_sedmap_SOAP_applegate <- Plot_sedmap_SOAP_FUNC(applegate_grid, applegate_pond_boundary, applegate_pond_depths)
-    
-        plot_sedmap_TIN_applegate 
-        plot_sedmap_IDW_applegate
-        plot_sedmap_TPRS_applegate
-        plot_sedmap_SOAP_applegate
-     
-    plot_sedmap_TIN_aquadro <- Plot_sedmap_TIN_FUNC(aquadro_grid, aquadro_pond_boundary, aquadro_pond_depths) 
-    plot_sedmap_IDW_aquadro <- Plot_sedmap_IDW_FUNC(aquadro_grid, aquadro_pond_boundary, aquadro_pond_depths)
-    plot_sedmap_TPRS_aquadro <- Plot_sedmap_TPRS_FUNC(aquadro_grid, aquadro_pond_boundary, aquadro_pond_depths)
-    plot_sedmap_SOAP_aquadro <- Plot_sedmap_SOAP_FUNC(aquadro_grid, aquadro_pond_boundary, aquadro_pond_depths)
-         plot_sedmap_TIN_aquadro
-         plot_sedmap_IDW_aquadro
-         plot_sedmap_TPRS_aquadro
-         plot_sedmap_SOAP_aquadro
-     
-   plot_sedmap_TIN_harrison <- Plot_sedmap_TIN_FUNC(harrison_grid, harrison_pond_boundary, harrison_pond_depths)
-   plot_sedmap_IDW_harrison <- Plot_sedmap_IDW_FUNC(harrison_grid, harrison_pond_boundary, harrison_pond_depths)
-   plot_sedmap_TPRS_harrison <- Plot_sedmap_TPRS_FUNC(harrison_grid, harrison_pond_boundary, harrison_pond_depths)
-   plot_sedmap_SOAP_harrison <- Plot_sedmap_SOAP_FUNC(harrison_grid, harrison_pond_boundary, harrison_pond_depths)
-        plot_sedmap_TIN_harrison
-        plot_sedmap_IDW_harrison
-        plot_sedmap_TPRS_harrison
-        plot_sedmap_SOAP_harrison
-     
-    # Save 
-     ggsave("Output_Figures/plot_sedmap_TIN_applegate_230830.png", plot_sedmap_TIN_applegate)
-     ggsave("Output_Figures/plot_sedmap_IDW_applegate_230828.png", plot_sedmap_IDW_applegate)
-     ggsave("Output_Figures/plot_sedmap_TRPS_applegate_230828.png", plot_sedmap_TPRS_applegate)
-     
-     ggsave("Output_Figures/plot_sedmap_TIN_harrison_230830.png", plot_sedmap_TIN_harrison)
-     ggsave("Output_Figures/plot_sedmap_IDW_harrison_230828.png", plot_sedmap_IDW_harrison)
-     ggsave("Output_Figures/plot_sedmap_TRPS_harrison_230828.png", plot_sedmap_TPRS_harrison)
-     
-     ggsave("Output_Figures/plot_sedmap_TIN_aquadro_230830.png", plot_sedmap_TIN_aquadro)
-     ggsave("Output_Figures/plot_sedmap_IDW_aquadro_230828.png", plot_sedmap_IDW_aquadro)
-     ggsave("Output_Figures/plot_sedmap_TRPS_aquadro_230828.png", plot_sedmap_TPRS_aquadro)
      
      
-   
-   
-  # OLD CODE #######################################################################################################
      
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+  ########################################################################################################### 
+  # OLD CODE 9/29/23
+  ###########################################################################################################
+     
+     # Example Data from Dunnington Code 
+     # Example Boundary 
+     example_boundary <- read_sf(
+       system.file(
+         "longlake/LongLakeMarshWaterPoly.shp", 
+         package = "ggspatial"
+       )
+     ) %>%
+       filter(label == "Long Lake") %>%
+       transmute(source = "boundary", depth = 0) %>%
+       st_transform(26920) %>%
+       st_zm()
+     
+     example_boundary
+     
+     # Example Depths 
+     example_depths <- read_sf(
+       system.file(
+         "longlake/LongLakeDepthSurvey.shp", 
+         package = "ggspatial"
+       )  # this is loading data using normal read_sf from within a package in r 
+     ) %>%
+       transmute(source = "measured", depth = DEPTH_M) %>%   # this is subsetting down to only the columns needed 
+       st_transform(26920) 
   # SOAP 9/29/23 
      # ---> 2/14/23 KG can't get this one to work just yet 
      # 3/16/23 KG working on it 
