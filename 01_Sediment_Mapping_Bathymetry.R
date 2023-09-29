@@ -369,7 +369,7 @@
       
       # Use that TPRS model to get predictions and add them to the grid  
       # NOTE --> If this spits an error reinstall mgcv package and try again (no idea why that works but it does)
-         # install.packages("mgcv")
+          # install.packages("mgcv")
           library(mgcv)
       
        harrison_grid$TPRS_water_depth <- predict(TPRS_bathym_harrison_FIT, newdata = harrison_grid, type = "response")  
@@ -393,155 +393,114 @@
 # 9. Soap Film Smooth (SFS)   
 # ______________________________________________________________________________ 
    
-   # ---> 2/14/23 KG can't get this one to work just yet 
-   # 3/16/23 KG working on it 
-   library(sf)
- 
-  #OG Code 
-                   boundary_coords <- st_coordinates(boundary) 
-                   
-                   # Gam_bound 
-                       gam_bound <- list(
-                         list(
-                           X = boundary_coords[-1, "X"], 
-                           Y = boundary_coords[-1, "Y"], 
-                           f = rep(0, nrow(boundary_coords))
-                         )
-                       )
-                   # Knot POints 
-                       knot_points <- st_make_grid(
-                         boundary,
-                         n = c(10, 10),
-                         what = "centers"
-                       ) %>%
-                         st_as_sf() %>%
-                         filter(st_contains(boundary, x, sparse = FALSE)) %>%
-                         filter(
-                           !st_intersects(
-                             boundary %>% st_cast("LINESTRING") %>% st_buffer(10), 
-                             x, 
-                             sparse = FALSE
-                           )
-                         ) %>%
-                         cbind(., st_coordinates(.))
-                   
-                  # FIT gam Soap 
-                       fit_gam_soap <- gam(
-                         depth ~ s(X, Y, bs = "so", xt = list(bnd = gam_bound)),
-                         data = depths %>% 
-                           filter(source == "measured") %>% 
-                           filter(st_contains(boundary, geometry, sparse = FALSE)), 
-                         method = "REML", 
-                         knots = knot_points
-                       )
-                       
-                   # Add to Grid 
-                   grid$GAM_Soap <- predict(fit_gam_soap, newdata = grid, type = "response")
    
+# Writing code to scale 9/29/23 
    
-#**********************************************   
-  # Working SOAP Code
-   boundary_coords <- st_coordinates( harrison_pond_boundary) 
-   boundary_linestring <- harrison_pond_boundary %>% st_cast("LINESTRING") %>% st_buffer(10)  # Need to make line string one at a time up here, it makes it but will throw an error 
+   # 9.1. Make Linestring for each pond (throws an air but works)
+   harrison_linestring <- harrison_pond_boundary %>% st_cast("LINESTRING") %>% st_buffer(10)  # Need to make line string one at a time up here, it makes it but will throw an error 
+   aquadro_linestring <- aquadro_pond_boundary %>% st_cast("LINESTRING") %>% st_buffer(10)  # Need to make line string one at a time up here, it makes it but will throw an error 
+   applegate_linestring <- applegate_pond_boundary %>% st_cast("LINESTRING") %>% st_buffer(10)  # Need to make line string one at a time up here, it makes it but will throw an error 
+
    
-   # make gam_bound 
-   gam_bound <- list(
-     list(
-       X = boundary_coords[-1, "X"], 
-       Y = boundary_coords[-1, "Y"], 
-       f = rep(0, nrow(boundary_coords))
-     )
-   )
+  # 9.2. Write a function to create knot points from line string and boundary 
    
-   # Make knot points  
-      # make a 10 by ten grid inside of the pond boundary and save the center points of each grid square
-      # convert that list of center points to an sf 
-      # subset that list of center points to only the points that fall within the the pond boundary 
-   knot_points_1 <- st_make_grid(
-     harrison_pond_boundary,      
-     n = c(10, 10),
-     what = "centers"
-   ) %>%
-     st_as_sf() %>%
-     filter(as.vector(st_contains(harrison_pond_boundary, x, sparse = FALSE)))
-   
-   # Make Intersection  
-     intersection <- !st_intersects(
-       boundary_linestring, 
-       knot_points_1, 
-       sparse = FALSE
-     )
-    
-  #Filter knot points by intersection    
-   knot_points <- knot_points_1 %>%   
-     filter(as.vector(intersection)) %>%
-     cbind(., st_coordinates(.))
-   
-   
-   # Fit gam soap 
-   SOAP_bathym_harrison_FIT <- gam(
-     Water_Depth_m ~ s(X, Y, bs = "so", xt = list(bnd = gam_bound)),
-     data = harrison_pond_full %>% 
-       filter(source == "measured") %>% 
-       filter(as.vector(st_contains(harrison_pond_boundary, geometry, sparse = FALSE))), 
-     method = "REML", 
-     knots = knot_points
-   )
-   
-   SOAP_sedmap_harrison_FIT <- gam(
-     Sed_Thickness_m ~ s(X, Y, bs = "so", xt = list(bnd = gam_bound)),
-     data = harrison_pond_full %>% 
-       filter(source == "measured") %>% 
-       filter(as.vector(st_contains(harrison_pond_boundary, geometry, sparse = FALSE))), 
-     method = "REML", 
-     knots = knot_points
-   )
-   
-   
-   harrison_grid$SOAP_water_depth <- predict.gam(SOAP_bathym_harrison_FIT, newdata = harrison_grid, type = "response")
-   harrison_grid$SOAP_sed_depth <- predict.gam(SOAP_sedmap_harrison_FIT, newdata = harrison_grid, type = "response")
-   
-   # Write a fucntion to fit gam soap model NOTE -- need to make boundary linestring before and outside of function 
-   SOAP_bathym_FUNC <- function(pond_boundary, pond_linestring){
+   SOAP_knot_points_FUNC <- function(pond_boundary, pond_linestring){
      
-     # 1. make gam_bound 
-     gam_bound <- list(
-       list(
-         X = boundary_coords[-1, "X"], 
-         Y = boundary_coords[-1, "Y"], 
-         f = rep(0, nrow(pond_boundary))
-       )
-     )
-     
-     # 2. Make knot points 
-     knot_points_1 <- st_make_grid(
-       pond_boundary,      
-       n = c(10, 10),
-       what = "centers"
-     ) %>%
-       st_as_sf() %>%
-       filter(as.vector(st_contains(pond_boundary, x, sparse = FALSE)))
-     
-     # 3. Make Intersection  
-     intersection <- !st_intersects(
-       pond_linestring, 
-       knot_points_1, 
-       sparse = FALSE
-     )
-     
-     # 4. Filter knot points by intersection    
-     knot_points <- knot_points_1 %>%   
-       filter(as.vector(intersection)) %>%
-       cbind(., st_coordinates(.))
+         # FUNC Step 1. make gam_bound 
+         gam_bound <- list(
+           list(
+             X = boundary_coords[-1, "X"], 
+             Y = boundary_coords[-1, "Y"], 
+             f = rep(0, nrow(pond_boundary))
+           )
+         )
+         
+         # FUNC Step 2. Make knot points 
+         knot_points_1 <- st_make_grid(
+           pond_boundary,      
+           n = c(10, 10),
+           what = "centers"
+         ) %>%
+           st_as_sf() %>%
+           filter(as.vector(st_contains(pond_boundary, x, sparse = FALSE)))
+         
+         # FUNC Step 3. Make Intersection  
+         intersection <- !st_intersects(
+           pond_linestring, 
+           knot_points_1, 
+           sparse = FALSE
+         )
+         
+         # FUNC Step 4. Filter knot points by intersection    
+         knot_points <- knot_points_1 %>%   
+           filter(as.vector(intersection)) %>%
+           cbind(., st_coordinates(.))
    }
+   
+   # 9.3. Apply Knot Points Function to Each Pond 
+   harrison_knot_points <- SOAP_knot_points_FUNC(harrison_pond_boundary, harrison_linestring )
+   aquadro_knot_points <- SOAP_knot_points_FUNC(aquadro_pond_boundary, aquadro_linestring )
+   applegate_knot_points <- SOAP_knot_points_FUNC(applegate_pond_boundary, applegate_linestring )
+   
+   # 9.4. Write a function to fit a GAM model for bathymetry 
+   
+     SOAP_bathym_model_FUNC <- function(pond_full, pond_boundary, pond_knot_points){
+       
+       SOAP_bathym_model <- gam(
+         Water_Depth_m ~ s(X, Y, bs = "so", xt = list(bnd = gam_bound)),
+         data = pond_full %>% 
+           filter(source == "measured") %>% 
+           filter(as.vector(st_contains(pond_boundary, geometry, sparse = FALSE))), 
+         method = "REML", 
+         knots = pond_knot_points
+       )
+       
+     }
+      
+   # 9.5. Write a function to fit a GAM model for sediment thickness 
+     SOAP_seddepth_model_FUNC <- function(pond_full, pond_boundary, pond_knot_points){
+       
+       SOAP_bathym_model <- gam(
+         Sed_Thickness_m ~ s(X, Y, bs = "so", xt = list(bnd = gam_bound)),
+         data = pond_full %>% 
+           filter(source == "measured") %>% 
+           filter(as.vector(st_contains(pond_boundary, geometry, sparse = FALSE))), 
+         method = "REML", 
+         knots = pond_knot_points
+       )
+       
+     }
+     
+        # Trouble shooting making model 
+               SOAP_bathym_model <- gam(
+                 Sed_Thickness_m ~ s(X, Y, bs = "so", xt = list(bnd = gam_bound)),
+                 data = pond_full %>% 
+                   filter(source == "measured") %>% 
+                   filter(as.vector(st_contains(pond_boundary, geometry, sparse = FALSE))), 
+                 method = "REML", 
+                 knots = pond_knot_points
+               )
+   
+   # 9.6. Use bathym model function to make a bathymetry GAM model for each lake 
+        SOAP_bathym_harrison_FIT <- SOAP_bathym_model_FUNC(harrison_pond_full, harrison_pond_boundary, harrison_knot_points)
+        SOAP_bathym_aquadro_FIT <- SOAP_bathym_model_FUNC(aquadro_pond_full, aquadro_pond_boundary, aquadro_knot_points)
+        SOAP_bathym_applegate_FIT <- SOAP_bathym_model_FUNC(applegate_pond_full, applegate_pond_boundary, applegate_knot_points)
+        
+   # 9.7. Use Sediment model function to make a sediment GAM model for each lake 
+        SOAP_seddepth_harrison_FIT <- SOAP_seddepth_model_FUNC(harrison_pond_full, harrison_pond_boundary, harrison_knot_points)
+   
+   # 9.8. Use bathymetry GAM model to predict water depth for each pond 
+        harrison_grid$SOAP_water_depth <- predict.gam(SOAP_bathym_harrison_FIT, newdata = harrison_grid, type = "response")
+   
+   # 9.9. USe sediment thickness GAM Model to predict sedimemt depth for each pond
+        harrison_grid$SOAP_sed_depth <- predict.gam(SOAP_sedmap_harrison_FIT, newdata = harrison_grid, type = "response")
+        
     
    
-#***********************************************
- # Back to things that work *********************************************************************************
-    
+#_______________________________________________________________________________
 # 10. Compute Volume of water and volume of sediment 
    
-   # 10.1 Sediment Volume 
+   # 10.1 Compute Sediment Volume 
        # Write a function to calculate sediment volume for each pond 
        sed_vol_calc_FUNC <- function(pond_boundary, pond_grid){
          
@@ -587,14 +546,8 @@
        # Apply Function to calcualte sediment volume for each pond 
        harrison_water_vol <- water_vol_calc_FUNC(harrison_pond_boundary, harrison_grid)
        harrison_water_vol
-       
-   
-     
 
-   
-   
-   
-        
+#_______________________________________________________________________________       
 # 11. Contouring 
    
    # Katie can't figure out piping 
@@ -626,7 +579,7 @@
      raster::rasterToContour(levels = c(0.5, 1, 1.5)) %>% 
      st_as_sf()
    
-##################################################################################################################  
+#_______________________________________________________________________________ 
 # 12. Plotting 
    
    # Write function so that you can select which model to plot 
@@ -712,7 +665,128 @@
      
    
    
-  
+  # OLD CODE #######################################################################################################
+     
+  # SOAP 9/29/23 
+     # ---> 2/14/23 KG can't get this one to work just yet 
+     # 3/16/23 KG working on it 
+     library(sf)
+     
+     #OG Code 
+     boundary_coords <- st_coordinates(boundary) 
+     
+     # Gam_bound 
+     gam_bound <- list(
+       list(
+         X = boundary_coords[-1, "X"], 
+         Y = boundary_coords[-1, "Y"], 
+         f = rep(0, nrow(boundary_coords))
+       )
+     )
+     # Knot POints 
+     knot_points <- st_make_grid(
+       boundary,
+       n = c(10, 10),
+       what = "centers"
+     ) %>%
+       st_as_sf() %>%
+       filter(st_contains(boundary, x, sparse = FALSE)) %>%
+       filter(
+         !st_intersects(
+           boundary %>% st_cast("LINESTRING") %>% st_buffer(10), 
+           x, 
+           sparse = FALSE
+         )
+       ) %>%
+       cbind(., st_coordinates(.))
+     
+     # FIT gam Soap 
+     fit_gam_soap <- gam(
+       depth ~ s(X, Y, bs = "so", xt = list(bnd = gam_bound)),
+       data = depths %>% 
+         filter(source == "measured") %>% 
+         filter(st_contains(boundary, geometry, sparse = FALSE)), 
+       method = "REML", 
+       knots = knot_points
+     )
+     
+     # Add to Grid 
+     grid$GAM_Soap <- predict(fit_gam_soap, newdata = grid, type = "response")
+     
+     
+     #**********************************************   
+     # Working SOAP Code
+     boundary_coords <- st_coordinates( harrison_pond_boundary) 
+     boundary_linestring <- harrison_pond_boundary %>% st_cast("LINESTRING") %>% st_buffer(10)  # Need to make line string one at a time up here, it makes it but will throw an error 
+     
+     # make gam_bound 
+     gam_bound <- list(
+       list(
+         X = boundary_coords[-1, "X"], 
+         Y = boundary_coords[-1, "Y"], 
+         f = rep(0, nrow(boundary_coords))
+       )
+     )
+     
+     # Make knot points  
+     # make a 10 by ten grid inside of the pond boundary and save the center points of each grid square
+     # convert that list of center points to an sf 
+     # subset that list of center points to only the points that fall within the the pond boundary 
+     knot_points_1 <- st_make_grid(
+       harrison_pond_boundary,      
+       n = c(10, 10),
+       what = "centers"
+     ) %>%
+       st_as_sf() %>%
+       filter(as.vector(st_contains(harrison_pond_boundary, x, sparse = FALSE)))
+     
+     # Make Intersection  
+     intersection <- !st_intersects(
+       boundary_linestring, 
+       knot_points_1, 
+       sparse = FALSE
+     )
+     
+     #Filter knot points by intersection    
+     knot_points <- knot_points_1 %>%   
+       filter(as.vector(intersection)) %>%
+       cbind(., st_coordinates(.))
+     
+     
+     # Fit gam soap 
+     SOAP_bathym_harrison_FIT <- gam(
+       Water_Depth_m ~ s(X, Y, bs = "so", xt = list(bnd = gam_bound)),
+       data = harrison_pond_full %>% 
+         filter(source == "measured") %>% 
+         filter(as.vector(st_contains(harrison_pond_boundary, geometry, sparse = FALSE))), 
+       method = "REML", 
+       knots = knot_points
+     )
+     
+     SOAP_sedmap_harrison_FIT <- gam(
+       Sed_Thickness_m ~ s(X, Y, bs = "so", xt = list(bnd = gam_bound)),
+       data = harrison_pond_full %>% 
+         filter(source == "measured") %>% 
+         filter(as.vector(st_contains(harrison_pond_boundary, geometry, sparse = FALSE))), 
+       method = "REML", 
+       knots = knot_points
+     )
+     
+     
+     harrison_grid$SOAP_water_depth <- predict.gam(SOAP_bathym_harrison_FIT, newdata = harrison_grid, type = "response")
+     harrison_grid$SOAP_sed_depth <- predict.gam(SOAP_sedmap_harrison_FIT, newdata = harrison_grid, type = "response")
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
   # IDW MODEL: _______________________________________________________________
    
    # HOlgerson Data - Water Depth 
