@@ -401,99 +401,110 @@
    aquadro_linestring <- aquadro_pond_boundary %>% st_cast("LINESTRING") %>% st_buffer(10)  # Need to make line string one at a time up here, it makes it but will throw an error 
    applegate_linestring <- applegate_pond_boundary %>% st_cast("LINESTRING") %>% st_buffer(10)  # Need to make line string one at a time up here, it makes it but will throw an error 
 
-   
-  # 9.2. Write a function to create knot points from line string and boundary 
-   
-   SOAP_knot_points_FUNC <- function(pond_boundary, pond_linestring){
-     
-         # FUNC Step 1. make gam_bound 
-         gam_bound <- list(
-           list(
-             X = boundary_coords[-1, "X"], 
-             Y = boundary_coords[-1, "Y"], 
-             f = rep(0, nrow(pond_boundary))
-           )
-         )
-         
-         # FUNC Step 2. Make knot points 
-         knot_points_1 <- st_make_grid(
-           pond_boundary,      
-           n = c(10, 10),
-           what = "centers"
-         ) %>%
-           st_as_sf() %>%
-           filter(as.vector(st_contains(pond_boundary, x, sparse = FALSE)))
-         
-         # FUNC Step 3. Make Intersection  
-         intersection <- !st_intersects(
-           pond_linestring, 
-           knot_points_1, 
-           sparse = FALSE
-         )
-         
-         # FUNC Step 4. Filter knot points by intersection    
-         knot_points <- knot_points_1 %>%   
-           filter(as.vector(intersection)) %>%
-           cbind(., st_coordinates(.))
-   }
-   
-   # 9.3. Apply Knot Points Function to Each Pond 
-   harrison_knot_points <- SOAP_knot_points_FUNC(harrison_pond_boundary, harrison_linestring )
-   aquadro_knot_points <- SOAP_knot_points_FUNC(aquadro_pond_boundary, aquadro_linestring )
-   applegate_knot_points <- SOAP_knot_points_FUNC(applegate_pond_boundary, applegate_linestring )
-   
-   # 9.4. Write a function to fit a GAM model for bathymetry 
-   
-     SOAP_bathym_model_FUNC <- function(pond_full, pond_boundary, pond_knot_points){
-       
-       SOAP_bathym_model <- gam(
-         Water_Depth_m ~ s(X, Y, bs = "so", xt = list(bnd = gam_bound)),
-         data = pond_full %>% 
-           filter(source == "measured") %>% 
-           filter(as.vector(st_contains(pond_boundary, geometry, sparse = FALSE))), 
-         method = "REML", 
-         knots = pond_knot_points
-       )
-       
-     }
-      
-   # 9.5. Write a function to fit a GAM model for sediment thickness 
-     SOAP_seddepth_model_FUNC <- function(pond_full, pond_boundary, pond_knot_points){
-       
-       SOAP_bathym_model <- gam(
-         Sed_Thickness_m ~ s(X, Y, bs = "so", xt = list(bnd = gam_bound)),
-         data = pond_full %>% 
-           filter(source == "measured") %>% 
-           filter(as.vector(st_contains(pond_boundary, geometry, sparse = FALSE))), 
-         method = "REML", 
-         knots = pond_knot_points
-       )
-       
-     }
-     
-        # Trouble shooting making model 
-               SOAP_bathym_model <- gam(
-                 Sed_Thickness_m ~ s(X, Y, bs = "so", xt = list(bnd = gam_bound)),
-                 data = pond_full %>% 
-                   filter(source == "measured") %>% 
-                   filter(as.vector(st_contains(pond_boundary, geometry, sparse = FALSE))), 
-                 method = "REML", 
-                 knots = pond_knot_points
-               )
-   
-   # 9.6. Use bathym model function to make a bathymetry GAM model for each lake 
-        SOAP_bathym_harrison_FIT <- SOAP_bathym_model_FUNC(harrison_pond_full, harrison_pond_boundary, harrison_knot_points)
-        SOAP_bathym_aquadro_FIT <- SOAP_bathym_model_FUNC(aquadro_pond_full, aquadro_pond_boundary, aquadro_knot_points)
-        SOAP_bathym_applegate_FIT <- SOAP_bathym_model_FUNC(applegate_pond_full, applegate_pond_boundary, applegate_knot_points)
+  # 9.2 Create Gam bound for each pond
+      # 9.2.a write a function to create gam bound 
+      SOAP_gam_bound_FUNC <- function(pond_boundary){ 
         
-   # 9.7. Use Sediment model function to make a sediment GAM model for each lake 
-        SOAP_seddepth_harrison_FIT <- SOAP_seddepth_model_FUNC(harrison_pond_full, harrison_pond_boundary, harrison_knot_points)
+        boundary_coords <- st_coordinates(pond_boundary)
+        
+        gam_bound <- list(
+          list(
+            X = boundary_coords[-1, "X"], 
+            Y = boundary_coords[-1, "Y"], 
+            f = rep(0, nrow(pond_boundary))
+          )
+        )
+        }
    
-   # 9.8. Use bathymetry GAM model to predict water depth for each pond 
+      # 9.2.b apply function to create a gam boutnd for each pond  
+      harrison_gam_bound <- SOAP_gam_bound_FUNC(harrison_pond_boundary)
+      applegate_gam_bound <- SOAP_gam_bound_FUNC(applegate_pond_boundary)
+      aquadro_gam_bound <- SOAP_gam_bound_FUNC(aquadro_pond_boundary)
+   
+   
+  # 9.3. Create knot points for each pond 
+      
+      # 9.3.a Write a function to create knot points from line string and boundary 
+   
+         SOAP_knot_points_FUNC <- function(pond_boundary, pond_linestring){
+           
+               
+               # FUNC Step 1. Make knot points 
+               knot_points_1 <- st_make_grid(
+                 pond_boundary,      
+                 n = c(10, 10),
+                 what = "centers"
+               ) %>%
+                 st_as_sf() %>%
+                 filter(as.vector(st_contains(pond_boundary, x, sparse = FALSE)))
+               
+               # FUNC Step 2. Make Intersection  
+               intersection <- !st_intersects(
+                 pond_linestring, 
+                 knot_points_1, 
+                 sparse = FALSE
+               )
+           
+               # FUNC Step 3. Filter knot points by intersection    
+               knot_points <- knot_points_1 %>%   
+                 filter(as.vector(intersection)) %>%
+                 cbind(., st_coordinates(.))
+         }
+   
+       # 9.3.b Apply Knot Points Function to Each Pond 
+       harrison_knot_points <- SOAP_knot_points_FUNC(harrison_pond_boundary, harrison_linestring )
+       aquadro_knot_points <- SOAP_knot_points_FUNC(aquadro_pond_boundary, aquadro_linestring )
+       applegate_knot_points <- SOAP_knot_points_FUNC(applegate_pond_boundary, applegate_linestring )
+   
+   # 9.5. Bathymetry GAM model 
+       
+       # 9.5.a Write a function to fit a GAM model for bathymetry 
+           SOAP_bathym_model_FUNC <- function(pond_full, pond_boundary, pond_knot_points, pond_gam_bound){
+             
+             SOAP_bathym_model <- gam(
+               Water_Depth_m ~ s(X, Y, bs = "so", xt = list(bnd = pond_gam_bound)),
+               data = pond_full %>% 
+                 filter(source == "measured") %>% 
+                 filter(as.vector(st_contains(pond_boundary, geometry, sparse = FALSE))), 
+               method = "REML", 
+               knots = pond_knot_points
+             )
+           }
+           
+      # 9.5.b Use bathym model function to make a bathymetry GAM model for each lake 
+           SOAP_bathym_harrison_FIT <- SOAP_bathym_model_FUNC(harrison_pond_full, harrison_pond_boundary, harrison_knot_points, harrison_gam_bound)
+           SOAP_bathym_aquadro_FIT <- SOAP_bathym_model_FUNC(aquadro_pond_full, aquadro_pond_boundary, aquadro_knot_points, aquadro_gam_bound)
+           SOAP_bathym_applegate_FIT <- SOAP_bathym_model_FUNC(applegate_pond_full, applegate_pond_boundary, applegate_knot_points, applegate_gam_bound)
+           
+          
+   # 9.6. Sediment GAM Model 
+      #9.6.a  Write a function to fit a GAM model for sediment thickness 
+         SOAP_seddepth_model_FUNC <- function(pond_full, pond_boundary, pond_knot_points, pond_gam_bound){
+           SOAP_bathym_model <- gam(
+             Sed_Thickness_m ~ s(X, Y, bs = "so", xt = list(bnd = pond_gam_bound)),
+             data = pond_full %>% 
+               filter(source == "measured") %>% 
+               filter(as.vector(st_contains(pond_boundary, geometry, sparse = FALSE))), 
+             method = "REML", 
+             knots = pond_knot_points
+           )
+         }
+         
+      #9.6.b Use sediment model function to make a sediment GAM model for each lake
+        SOAP_seddepth_harrison_FIT <- SOAP_seddepth_model_FUNC(harrison_pond_full, harrison_pond_boundary, harrison_knot_points, harrison_gam_bound)
+        SOAP_seddepth_aquadro_FIT <- SOAP_seddepth_model_FUNC(aquadro_pond_full, aquadro_pond_boundary, aquadro_knot_points, aquadro_gam_bound)
+        SOAP_seddepth_applegate_FIT <- SOAP_seddepth_model_FUNC(applegate_pond_full, applegate_pond_boundary, applegate_knot_points, applegate_gam_bound)
+        
+   # 9.7 Use models to predict sediment and water depth 
+        # 9.7.a  Use bathymetry GAM model to predict water depth for each pond 
         harrison_grid$SOAP_water_depth <- predict.gam(SOAP_bathym_harrison_FIT, newdata = harrison_grid, type = "response")
-   
-   # 9.9. USe sediment thickness GAM Model to predict sedimemt depth for each pond
-        harrison_grid$SOAP_sed_depth <- predict.gam(SOAP_sedmap_harrison_FIT, newdata = harrison_grid, type = "response")
+        aquadro_grid$SOAP_water_depth <- predict.gam(SOAP_bathym_aquadro_FIT, newdata = aquadro_grid, type = "response")
+        applegate_grid$SOAP_water_depth <- predict.gam(SOAP_bathym_applegate_FIT, newdata = applegate_grid, type = "response")
+        
+        # 9.7.b USe sediment thickness GAM Model to predict sedimemt depth for each pond
+        harrison_grid$SOAP_sed_depth <- predict.gam(SOAP_seddepth_harrison_FIT, newdata = harrison_grid, type = "response")
+        aquadro_grid$SOAP_sed_depth <- predict.gam(SOAP_seddepth_aquadro_FIT, newdata = aquadro_grid, type = "response")
+        applegate_grid$SOAP_sed_depth <- predict.gam(SOAP_seddepth_applegate_FIT, newdata = applegate_grid, type = "response")
         
     
    
@@ -515,6 +526,8 @@
              IDW_sed_volume = mean(IDW_sed_depth) * pond_boundary_area,
              TPRS_mean_sed_depth = mean(TPRS_sed_depth),
              TPRS_sed_volume = mean(TPRS_sed_depth) * pond_boundary_area, 
+             SOAP_mean_sed_depth = mean(SOAP_sed_depth),
+             SOAP_sed_volume = mean(SOAP_sed_depth) * pond_boundary_area, 
            )
        }
        
@@ -539,7 +552,9 @@
              IDW_mean_water_depth = mean(IDW_water_depth),
              IDW_water_volume = mean(IDW_water_depth) * pond_boundary_area,
              TPRS_mean_water_depth = mean(TPRS_water_depth),
-             TPRS_water_volume = mean(TPRS_water_depth) * pond_boundary_area, 
+             TPRS_water_volume = mean(TPRS_water_depth) * pond_boundary_area,
+             SOAP_mean_water_depth = mean(SOAP_water_depth),
+             SOAP_water_volume = mean(SOAP_water_depth) * pond_boundary_area,
            )
        }
        
@@ -550,79 +565,90 @@
 #_______________________________________________________________________________       
 # 11. Contouring 
    
-   # Katie can't figure out piping 
-   # depth_raster <- example_grid %>% 
-   #   st_set_geometry(NULL) %>% 
-   #   select(X, Y, IDW) %>% 
-   #   raster::rasterFromXYZ(crs = raster::crs("+init=epsg:26920"))
-   
-   # Example Data 
-   depth_raster <- example_grid %>% 
-     st_set_geometry(NULL) 
-   depth_raster <- subset(depth_raster, select = c(X, Y, IDW)) %>% 
-     raster::rasterFromXYZ(crs = raster::crs("+init=epsg:26920"))
-   
-   depth_contours <- depth_raster %>% 
-     raster::rasterToContour(levels = c(0.5, 1, 1.5)) %>% 
-     st_as_sf()
-   
-   # Holgerson data 
-   pond_depth_raster <- pond_grid %>% 
-     st_set_geometry(NULL) 
-   
-   pond_depth_raster <- subset(pond_depth_raster, select = c(X, Y, IDW_sed_depth, IDW_water_depth)) %>% 
-     raster::rasterFromXYZ(crs = raster::crs("+init=epsg:26920"))
-   
-  #*******************************
-   # Can't get contours to work right now 2/14/23 KG 
-   pond_depth_contours <- pond_depth_raster %>% 
-     raster::rasterToContour(levels = c(0.5, 1, 1.5)) %>% 
-     st_as_sf()
+           # Katie can't figure out piping 
+           # depth_raster <- example_grid %>% 
+           #   st_set_geometry(NULL) %>% 
+           #   select(X, Y, IDW) %>% 
+           #   raster::rasterFromXYZ(crs = raster::crs("+init=epsg:26920"))
+           
+           # Example Data 
+           depth_raster <- example_grid %>% 
+             st_set_geometry(NULL) 
+           depth_raster <- subset(depth_raster, select = c(X, Y, IDW)) %>% 
+             raster::rasterFromXYZ(crs = raster::crs("+init=epsg:26920"))
+           
+           depth_contours <- depth_raster %>% 
+             raster::rasterToContour(levels = c(0.5, 1, 1.5)) %>% 
+             st_as_sf()
+           
+           # Holgerson data 
+           pond_depth_raster <- pond_grid %>% 
+             st_set_geometry(NULL) 
+           
+           pond_depth_raster <- subset(pond_depth_raster, select = c(X, Y, IDW_sed_depth, IDW_water_depth)) %>% 
+             raster::rasterFromXYZ(crs = raster::crs("+init=epsg:26920"))
+           
+          #*******************************
+           # Can't get contours to work right now 2/14/23 KG 
+           pond_depth_contours <- pond_depth_raster %>% 
+             raster::rasterToContour(levels = c(0.5, 1, 1.5)) %>% 
+             st_as_sf()
    
 #_______________________________________________________________________________ 
 # 12. Plotting 
    
-   # Write function so that you can select which model to plot 
+   # 12.1 Write a Function to plot Sediment depth -- TIN 
+       Plot_sedmap_TIN_FUNC <- function(name_grid, name_boundary, pond_depths){
+         pond_name <- as.character(name_grid[1, "Pond_Name"])  # save pond name to use in the title of the plot 
+         pond_name_form <- pond_name[1] # format pond name 
+         output_plot <- ggplot(name_grid) +
+           geom_sf(data = name_boundary) +
+           geom_raster(aes(X, Y, fill = TIN_sed_depth)) +
+           scale_fill_viridis_c() +
+           geom_sf_text(aes(label = Sed_Thickness_m), data = pond_depths, size = 3) + 
+           annotation_scale(location = "br") +
+           labs(title= paste(pond_name, "Sediment Depth (m) -- TIN", sep = " "), x = NULL, y = NULL, fill = "Sediment Depth (m)")
+       }
    
-   # Write a Function to plot Sediment depth -- IDW 
-   Plot_sedmap_TIN_FUNC <- function(name_grid, name_boundary, pond_depths){
-     pond_name <- as.character(name_grid[1, "Pond_Name"])  # save pond name to use in the title of the plot 
-     pond_name_form <- pond_name[1] # format pond name 
-     output_plot <- ggplot(name_grid) +
-       geom_sf(data = name_boundary) +
-       geom_raster(aes(X, Y, fill = TIN_sed_depth)) +
-       scale_fill_viridis_c() +
-       geom_sf_text(aes(label = Sed_Thickness_m), data = pond_depths, size = 3) + 
-       annotation_scale(location = "br") +
-       labs(title= paste(pond_name, "Sediment Depth (m) -- TIN", sep = " "), x = NULL, y = NULL, fill = "Sediment Depth (m)")
-   }
+   # 12.2 Write a Function to plot Sediment depth -- IDW 
+       Plot_sedmap_IDW_FUNC <- function(name_grid, name_boundary, pond_depths){
+         pond_name <- as.character(name_grid[1, "Pond_Name"])  # save pond name to use in the title of the plot 
+         pond_name_form <- pond_name[1] # format pond name 
+         output_plot <- ggplot(name_grid) +
+           geom_sf(data = name_boundary) +
+           geom_raster(aes(X, Y, fill = IDW_sed_depth)) +
+           scale_fill_viridis_c() +
+           geom_sf_text(aes(label = Sed_Thickness_m), data = pond_depths, size = 3) + 
+           annotation_scale(location = "br") +
+           labs(title= paste(pond_name, "Sediment Depth (m) -- IDW", sep = " "), x = NULL, y = NULL, fill = "Sediment Depth (m)")
+       }
    
-   # Write a Function to plot Sediment depth -- IDW 
-   Plot_sedmap_IDW_FUNC <- function(name_grid, name_boundary, pond_depths){
-     pond_name <- as.character(name_grid[1, "Pond_Name"])  # save pond name to use in the title of the plot 
-     pond_name_form <- pond_name[1] # format pond name 
-     output_plot <- ggplot(name_grid) +
-       geom_sf(data = name_boundary) +
-       geom_raster(aes(X, Y, fill = IDW_sed_depth)) +
-       scale_fill_viridis_c() +
-       geom_sf_text(aes(label = Sed_Thickness_m), data = pond_depths, size = 3) + 
-       annotation_scale(location = "br") +
-       labs(title= paste(pond_name, "Sediment Depth (m) -- IDW", sep = " "), x = NULL, y = NULL, fill = "Sediment Depth (m)")
-   }
+   # 12.3 Write a Function to plot Sediment depth -- TPRS 
+       Plot_sedmap_TPRS_FUNC <- function(name_grid, name_boundary, pond_depths){
+         pond_name <- as.character(name_grid[1, "Pond_Name"])  # save pond name to use in the title of the plot 
+         pond_name_form <- pond_name[1] # format pond name 
+         output_plot <- ggplot(name_grid) +
+           geom_sf(data = name_boundary) +
+           geom_raster(aes(X, Y, fill = TPRS_sed_depth)) +
+           scale_fill_viridis_c(option = "D") +
+           geom_sf_text(aes(label = Sed_Thickness_m), data = pond_depths, size = 3) + 
+           annotation_scale(location = "br") +
+           labs(title= paste(pond_name, "Sediment Depth (m) -- TPRS", sep = " "), x = NULL, y = NULL, fill = "Sediment Depth (m)")
+       }
    
-   # Write a Function to plot Sediment depth -- TPRS 
-   Plot_sedmap_TPRS_FUNC <- function(name_grid, name_boundary, pond_depths){
-     pond_name <- as.character(name_grid[1, "Pond_Name"])  # save pond name to use in the title of the plot 
-     pond_name_form <- pond_name[1] # format pond name 
-     output_plot <- ggplot(name_grid) +
-       geom_sf(data = name_boundary) +
-       geom_raster(aes(X, Y, fill = TPRS_sed_depth)) +
-       scale_fill_viridis_c(option = "D") +
-       geom_sf_text(aes(label = Sed_Thickness_m), data = pond_depths, size = 3) + 
-       annotation_scale(location = "br") +
-       labs(title= paste(pond_name, "Sediment Depth (m) -- TPRS", sep = " "), x = NULL, y = NULL, fill = "Sediment Depth (m)")
-   }
-   
+   # 12.4 Write a Function to plot Sediment depth -- SOAP 
+       Plot_sedmap_SOAP_FUNC <- function(name_grid, name_boundary, pond_depths){
+         pond_name <- as.character(name_grid[1, "Pond_Name"])  # save pond name to use in the title of the plot 
+         pond_name_form <- pond_name[1] # format pond name 
+         output_plot <- ggplot(name_grid) +
+           geom_sf(data = name_boundary) +
+           geom_raster(aes(X, Y, fill = SOAP_sed_depth)) +
+           scale_fill_viridis_c(option = "D") +
+           geom_sf_text(aes(label = Sed_Thickness_m), data = pond_depths, size = 3) + 
+           annotation_scale(location = "br") +
+           labs(title= paste(pond_name, "Sediment Depth (m) -- SOAP", sep = " "), x = NULL, y = NULL, fill = "Sediment Depth (m)")
+       }
+       
            
    
   # Plot and Save 
@@ -631,23 +657,30 @@
     plot_sedmap_TIN_applegate <- Plot_sedmap_TIN_FUNC(applegate_grid, applegate_pond_boundary, applegate_pond_depths)
     plot_sedmap_IDW_applegate <- Plot_sedmap_IDW_FUNC(applegate_grid, applegate_pond_boundary, applegate_pond_depths)
     plot_sedmap_TPRS_applegate <- Plot_sedmap_TPRS_FUNC(applegate_grid, applegate_pond_boundary, applegate_pond_depths)
-    plot_sedmap_TIN_applegate 
-    plot_sedmap_IDW_applegate
-    plot_sedmap_TPRS_applegate
+    plot_sedmap_SOAP_applegate <- Plot_sedmap_SOAP_FUNC(applegate_grid, applegate_pond_boundary, applegate_pond_depths)
+    
+        plot_sedmap_TIN_applegate 
+        plot_sedmap_IDW_applegate
+        plot_sedmap_TPRS_applegate
+        plot_sedmap_SOAP_applegate
      
     plot_sedmap_TIN_aquadro <- Plot_sedmap_TIN_FUNC(aquadro_grid, aquadro_pond_boundary, aquadro_pond_depths) 
     plot_sedmap_IDW_aquadro <- Plot_sedmap_IDW_FUNC(aquadro_grid, aquadro_pond_boundary, aquadro_pond_depths)
-     plot_sedmap_TPRS_aquadro <- Plot_sedmap_TPRS_FUNC(aquadro_grid, aquadro_pond_boundary, aquadro_pond_depths)
-     plot_sedmap_TIN_aquadro
-     plot_sedmap_IDW_aquadro
-     plot_sedmap_TPRS_aquadro
+    plot_sedmap_TPRS_aquadro <- Plot_sedmap_TPRS_FUNC(aquadro_grid, aquadro_pond_boundary, aquadro_pond_depths)
+    plot_sedmap_SOAP_aquadro <- Plot_sedmap_SOAP_FUNC(aquadro_grid, aquadro_pond_boundary, aquadro_pond_depths)
+         plot_sedmap_TIN_aquadro
+         plot_sedmap_IDW_aquadro
+         plot_sedmap_TPRS_aquadro
+         plot_sedmap_SOAP_aquadro
      
-     plot_sedmap_TIN_harrison <- Plot_sedmap_TIN_FUNC(harrison_grid, harrison_pond_boundary, harrison_pond_depths)
-     plot_sedmap_IDW_harrison <- Plot_sedmap_IDW_FUNC(harrison_grid, harrison_pond_boundary, harrison_pond_depths)
-     plot_sedmap_TPRS_harrison <- Plot_sedmap_TPRS_FUNC(harrison_grid, harrison_pond_boundary, harrison_pond_depths)
-     plot_sedmap_TIN_harrison
-     plot_sedmap_IDW_harrison
-     plot_sedmap_TPRS_harrison
+   plot_sedmap_TIN_harrison <- Plot_sedmap_TIN_FUNC(harrison_grid, harrison_pond_boundary, harrison_pond_depths)
+   plot_sedmap_IDW_harrison <- Plot_sedmap_IDW_FUNC(harrison_grid, harrison_pond_boundary, harrison_pond_depths)
+   plot_sedmap_TPRS_harrison <- Plot_sedmap_TPRS_FUNC(harrison_grid, harrison_pond_boundary, harrison_pond_depths)
+   plot_sedmap_SOAP_harrison <- Plot_sedmap_SOAP_FUNC(harrison_grid, harrison_pond_boundary, harrison_pond_depths)
+        plot_sedmap_TIN_harrison
+        plot_sedmap_IDW_harrison
+        plot_sedmap_TPRS_harrison
+        plot_sedmap_SOAP_harrison
      
     # Save 
      ggsave("Output_Figures/plot_sedmap_TIN_applegate_230830.png", plot_sedmap_TIN_applegate)
