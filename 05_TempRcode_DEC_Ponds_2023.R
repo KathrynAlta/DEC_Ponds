@@ -5,10 +5,12 @@
 library(tidyverse)
 library(scales)
 library(cowplot)
+library(ggpubr)
 
 ## Load data ####
-setwd("C:/Users/mah543/Dropbox/Cornell/Research/DEC_CarbonGrant/FarmResidPonds/HOBO_Data_2023")  #work
-setwd("C:/Users/Meredith/Dropbox/Cornell/Research/DEC_CarbonGrant/FarmResidPonds/HOBO_Data_2023") #Home
+setwd("C:/Users/mah543/Dropbox/Cornell/Research/DEC_CarbonGrant/FarmResidPonds/HOBO_Data_2023")  #work MH
+setwd("C:/Users/Meredith/Dropbox/Cornell/Research/DEC_CarbonGrant/FarmResidPonds/HOBO_Data_2023") #Home MH
+setwd("C:/Users/pb577/OneDrive - Cornell University/Documents/DEC_Ponds/DEC_Ponds/Temp_HOBO_Data") #work PB
 
 boyce <- read.csv("Boyce_compiled.csv", strip.white=T, na.strings="na")
 edwards <- read.csv("Edwards_compiled.csv", strip.white=T, na.strings="na")
@@ -247,4 +249,129 @@ white_temp <- white_long  %>% ggplot(aes(x=datetime2, y=temp, color=depth)) +
   xlab("Time") + ylab("Temperature") + ylim(c(9,35))+
   theme(legend.position = c(.1,.85))
 white_temp 
+
+## Modified figures for quarterly report #6
+
+#*Boyce_mod ####
+boyce$datetime2 <- as.POSIXct(boyce$datetime, 
+                              '%m/%d/%Y %H:%M', tz="US/Eastern")
+
+boyce_long <- boyce %>% pivot_longer(
+  cols = starts_with("wtr_"),
+  names_to = "depth",
+  names_prefix = "wtr_",
+  values_to = "temp",
+  values_drop_na = TRUE)
+head(boyce_long)
+
+boyce_temp_mod <- boyce_long  %>% 
+  ggplot(aes(x=datetime2, y=temp, color=depth)) + 
+  #geom_hline(yintercept=100, linetype='dotted', col = 'blue')+
+  geom_point(size=0.5) + #geom_path()+
+  scale_x_datetime(breaks=date_breaks(width="7 days"), 
+                   labels=date_format("%m/%d", tz="America/new_york"))+ theme_bw() +
+  theme(text = element_text(size=18), axis.text.x = element_text(angle=-40))+ 
+  xlab("Date (MM/DD)") + ylab("Temperature (°C)") + ylim(c(9,35))+
+  theme(legend.position = c(.15,.85))+
+  scale_color_discrete(labels=c('Bottom', 'Middle', 'Top'))+
+  guides(color = guide_legend(reverse=TRUE, title = "Measurement depth:", override.aes = list(size = 4)))+
+  geom_rect(aes(xmin=as.POSIXct('2023-06-02 12:00'),
+                xmax = as.POSIXct('2023-06-14 12:00'),
+                ymin = -Inf,
+                ymax = Inf),  alpha = 0.01, fill="grey", linetype = 0)
+
+boyce_temp_mod
+
+#*Edwards_mod ####
+edwards$datetime2 <- as.POSIXct(edwards$datetime_proposed, 
+                                '%m/%d/%Y %H:%M', tz="US/Eastern")
+
+edwards_long <- edwards %>% pivot_longer(
+  cols = starts_with("wtr_"),
+  names_to = "depth",
+  names_prefix = "wtr_",
+  values_to = "temp",
+  values_drop_na = TRUE)
+head(edwards_long)
+
+edwards_temp_mod <- edwards_long  %>%  subset(datetime2 >= "2023-04-25 17:30") %>%
+  ggplot(aes(x=datetime2, y=temp, color=depth)) + 
+  #geom_hline(yintercept=100, linetype='dotted', col = 'blue')+
+  geom_point(size=0.5) + #geom_path()+
+  scale_x_datetime(breaks=date_breaks(width="7 days"), 
+                   labels=date_format("%m/%d", tz="America/new_york"))+ theme_bw() +
+  theme(text = element_text(size=18), axis.text.x = element_text(angle=-40))+ 
+  xlab("Date (MM/DD)") + ylab("Temperature (°C)") + ylim(c(9,35))+
+  theme(legend.position = c(.15,.85))+
+  scale_color_discrete(labels=c('Bottom', 'Middle', 'Top'))+
+  guides(color = guide_legend(reverse=TRUE, title = "Measurement depth:", override.aes = list(size = 4)))+
+  geom_rect(aes(xmin=as.POSIXct('2023-06-02 12:00'),
+                xmax = as.POSIXct('2023-06-14 12:00'),
+                ymin = -Inf,
+                ymax = Inf),  alpha = 0.01, fill="grey", linetype = 0)
+
+edwards_temp_mod 
+
+#*White_mod ####
+white$datetime2 <- as.POSIXct(white$datetime_proposed, 
+                              '%m/%d/%Y %H:%M', tz="US/Eastern")
+
+white_long <- white %>% pivot_longer(
+  cols = starts_with("wtr_"),
+  names_to = "depth",
+  names_prefix = "wtr_",
+  values_to = "temp",
+  values_drop_na = TRUE)
+head(white_long)
+
+white_temp_mod <- white_long  %>% ggplot(aes(x=datetime2, y=temp, color=depth)) + 
+  #geom_hline(yintercept=100, linetype='dotted', col = 'blue')+
+  geom_point(size=0.5) + #geom_path()+
+  scale_x_datetime(breaks=date_breaks(width="7 days"), 
+                   labels=date_format("%m/%d", tz="America/new_york"))+ theme_bw() +
+  theme(text = element_text(size=18), axis.text.x = element_text(angle=-40))+ 
+  xlab("Date (MM/DD)") + ylab("Temperature (°C)") + ylim(c(9,35))+
+  theme(legend.position = c(.15,.85))+
+  scale_color_discrete(labels=c('Bottom', 'Middle', 'Top'))+
+  guides(color = guide_legend(reverse=TRUE, title = "Measurement depth:", override.aes = list(size = 4)))+
+  geom_rect(aes(xmin=as.POSIXct('2023-06-02 12:00'),
+                xmax = as.POSIXct('2023-06-14 12:00'),
+                ymin = -Inf,
+                ymax = Inf),  alpha = 0.01, fill="grey", linetype = 0)
+
+white_temp_mod
+
+#*Howarth_mod ####
+howarth$datetime2 <- as.POSIXct(howarth$datetime_proposed, 
+                                '%m/%d/%Y %H:%M', tz="US/Eastern")
+
+howarth_long <- howarth %>% pivot_longer(
+  cols = starts_with("wtr_"),
+  names_to = "depth",
+  names_prefix = "wtr_",
+  values_to = "temp",
+  values_drop_na = TRUE)
+head(howarth_long)
+
+howarth_temp_mod <- howarth_long  %>% subset(datetime2 >= "2023-04-25 12:40") %>%
+  ggplot(aes(x=datetime2, y=temp, color=depth)) + 
+  geom_point(size=0.5) + #geom_path()+
+  scale_x_datetime(breaks=date_breaks(width="7 days"), 
+                   labels=date_format("%m/%d", tz="America/new_york"))+ theme_bw() +
+  theme(text = element_text(size=18), axis.text.x = element_text(angle=-40))+ 
+  xlab("Date (MM/DD)") + ylab("Temperature (°C)") + ylim(c(9,35))+
+  theme(legend.position = c(.15,.85))+
+  scale_color_discrete(labels=c('Bottom', 'Middle', 'Top'))+
+  guides(color = guide_legend(reverse=TRUE, title = "Measurement depth:", override.aes = list(size = 4)))+
+  geom_rect(aes(xmin=as.POSIXct('2023-06-02 12:00'),
+                xmax = as.POSIXct('2023-06-14 12:00'),
+                ymin = -Inf,
+                ymax = Inf),  alpha = 0.01, fill="grey", linetype = 0)
+
+howarth_temp_mod
+
+combined_figure <- ggarrange(boyce_temp_mod, edwards_temp_mod, white_temp_mod, howarth_temp_mod, 
+          labels = c("A", "B", "C", "D"),
+          ncol = 2, nrow = 2)
+ggsave("plot.pdf", width = 18,   height = 12)
 
