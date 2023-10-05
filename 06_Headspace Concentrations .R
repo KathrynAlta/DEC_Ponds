@@ -24,9 +24,12 @@
 # 1. Load and format data from the GC 
     
     #N2O
-      gc_raw_nitrous <- read.table("Input_Files/GC_Data/2023_10_04 - NSF Mixing082123rerun_PECD.txt", skip = 3, sep = "", dec = ".", fill = TRUE, col.names = c("Sample_ID",	"Full_Sample_Name", "Level_Number",	"Ret. Time",	"Area",	"Height",	"Conc.",	"Std. Conc.",	"Area%",	"Height%",	"Accuracy[%]",	"Cal. Point", "Col13", "Col14"))  #bring in data from GC you need to name the columns because the column names on the raw file have a # in them and that throws off R reading the row
-      gc_nitrous <- subset(gc_raw_nitrous, select = c("Sample_ID", "Full_Sample_Name", "Area")) # subset to only the columns that you need 
-      nrow(gc_nitrous)
+      gc_raw_nitrous <- read.table("Input_Files/GC_Data/2023_10_04 - NSF Mixing082123rerun_PECD.txt", skip = 3, sep = "", dec = ".", fill = TRUE)  #bring in data from GC you need to name the columns because the column names on the raw file have a # in them and that throws off R reading the row
+      colnames(gc_raw_nitrous) <- (1:ncol(gc_raw_nitrous))
+      gc_nitrous <- subset(gc_raw_nitrous, select = c("1", "5"))
+      colnames(gc_nitrous) <- c("Full_Sample_Name", "Area")
+      gc_nitrous$Sample_ID <- (1:(nrow(gc_nitrous)))
+      gc_nitrous <- subset(gc_nitrous, select = c("Sample_ID", "Full_Sample_Name", "Area"))
       gc_nitrous <- gc_nitrous[2:(nrow(gc_nitrous) - 5),] # Remove the first row and the last 5 rows (these are stats that the GC generates that we don't need )
      
       # Remove the extra digits at the end of the sample names, these are also added by the GC and we don't need themt to do our caclulations 
@@ -104,85 +107,6 @@
           #  This might be the silliest work around I have ever coded substring name, start at the number of characters in first name plus one, stop at the total number of characters minus the number of characters in last name plus one 
         gc_nitrous_standards$St_Con_CH4 <- substring(gc_nitrous_standards$St_Con_All, (nchar(gc_nitrous_standards$St_Con_CO2)+2), (nchar(gc_nitrous_standards$St_Con_All) - (nchar(gc_nitrous_standards$St_Con_N2O) + 1)) ) 
         middle_name <- substring(name, (nchar(first_name)+2), (nchar(name) - (nchar(last_name) + 1)) ) 
-        
-        
-    # Figuring out naming 10/5
-        # Pulling everything before the first _ 
-       
-        middle_name <- gsub(".*_.*", "\\1", name)
-        
-        # Example 1 
-            x<- "\nTYPE:    School\nCITY:   ATLANTA\n\n\nCITY:   LAS VEGAS\n\n" 
-            unlist(regmatches(x, gregexpr("CITY:\\s*\\K.*", x, perl=TRUE)))
-            unlist(regmatches(name, gregexpr("_*\\K.*", name, perl=TRUE)))
-        
-        
-        # Example 2 
-            a <- " anything goes here, STR1 GET_ME STR2, anything goes here"
-            res <- str_match(a, "STR1\\s*(.*?)\\s*STR2")
-            answer <- res[,2]
-            
-            b <- " anything goes here, psl1 COFFEE psl2, anything goes here"
-            res <- str_match(b, "psl1\\s*(.*?)\\s*psl2")
-            answer <- res[,2]
-            
-            c <- " anything goes here, _ COFFEE _, anything goes here"
-            res <- str_match(c, "_\\s*(.*?)\\s*_")
-            answer <- res[,2]
-            
-            res <- str_match(a, "_\\s*(.*?)\\s*_")
-            
-        # Example 3 
-            test <- " anything goes here, STR1 GET_ME STR2, anything goes here STR1 GET_ME2 STR2"
-            pattern <- "STR1\\s*(.*?)\\s*STR2"
-            result <- regmatches(test, regexec(pattern, test))
-            result[[1]][2]
-            
-            test <- " anything goes here, psl1 COFFEE psl2, anything goes here STR1 GET_ME2 STR2"
-            pattern <- "psl1\\s*(.*?)\\s*psl2"
-            result <- regmatches(test, regexec(pattern, test))
-            result[[1]][2]
-            
-            test <- " anything goes here, _ COFFEE _, anything goes here STR1 GET_ME2 STR2"
-            pattern <- "_\\s*(.*?)\\s*_"
-            result <- regmatches(test, regexec(pattern, test))
-            result[[1]][2]
-            
-            name <- as.character("Katie_Alta_Gannon")
-            pattern <- "_\\s*(.*?)\\s*_"
-            result <- regmatches(name, regexec(pattern, name))
-            result[[1]][2] # This works to pull the name in the middle of the two _ 
-
-        
-        
-        standard_name <- as.character(gc_nitrous_standards[11,2])
-
-        sn <- "8_12_16"
-        
-        conc_co2 <- sub('([^$]+\\$).*', '\\1', standard_name)  #everything before the first $ including the $
-        conc_co2 <- sub('([^_]+\\_).*', '\\1', sn)
-        
-        a <- "45216 Walnut Avenue Mary's Bake Shop"
-        gsub("(Avenue).*", "\\1", a)
-        
-        b <- "45216 Walnut $ Mary's Bake Shop"
-        gsub("$.*", "\\1", b)
-        
-        conc_co2 <- gsub("($).*", "\\1", a)
-        gsub("(Avenue).*", "\\1", a)
-        
-        ?sub()
-        
-        # Understanding language 
-        psl <- "I_Love_Halloween"
-        conc_co2 <-  sub("I_*", "", psl) #anything after "I*" 
-        
-        
-        
-        pumpkin <- "J$A$C?K"
-        holloween <- sub("$", "_", pumpkin) #everything before the $ including the $ sign
-        halloween <- grep("_Love_", psl)
-        holloween <- sub('([^$]+\\$).*', '\\1', pumpkin) #everything before the $ including the $ sign 
         
         
 # 3. Drift 
