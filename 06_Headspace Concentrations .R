@@ -40,8 +40,18 @@
         #     NOTE -- if we are going to be doing a bunch of runs that are not full I can re-code this to be cleaner 
         
         gc_methane <- gc_raw_co2_and_ch4[5:143,]  # seperate out just methane 
+        colnames(gc_methane) <- c("Sample_ID",	"Full_Sample_Name", "Level_Number",	"Ret. Time",	"Area",	"Height",	"Conc.",	"Std. Conc.",	"Area%",	"Height%",	"Accuracy[%]",	"Cal. Point", "Col13", "Col14")
+        gc_methane$Short_Sample_Name <- sub('([^_]+\\_).*', '\\1', gc_methane$Full_Sample_Name) # Remove every character after "_" 
+        gc_methane$Sample_Name <- gsub("_", "", gc_methane$Short_Sample_Name) # Remove all of the "_"
+        gc_methane <- subset(gc_methane, select = c("Sample_ID", "Sample_Name", "Area")) # Remove the extra columns hat you made 
         
-        gc_carbondiox <- gc_raw_co2_and_ch4[153:291,]  # seperate out just methane
+        
+        gc_carbondiox <- gc_raw_co2_and_ch4[153:291,]  # seperate out just carbon dioxide
+        colnames(gc_carbondiox) <- c("Sample_ID",	"Full_Sample_Name", "Level_Number",	"Ret. Time",	"Area",	"Height",	"Conc.",	"Std. Conc.",	"Area%",	"Height%",	"Accuracy[%]",	"Cal. Point", "Col13", "Col14")
+        gc_carbondiox$Short_Sample_Name <- sub('([^_]+\\_).*', '\\1', gc_carbondiox$Full_Sample_Name) # Remove every character after "_" 
+        gc_carbondiox$Sample_Name <- gsub("_", "", gc_carbondiox$Short_Sample_Name) # Remove all of the "_"
+        gc_carbondiox <- subset(gc_carbondiox, select = c("Sample_ID", "Sample_Name", "Area")) # Remove the extra columns hat you made 
+        
         
         #For the CH4 and CO2 file you will also have to split the two gases 
 
