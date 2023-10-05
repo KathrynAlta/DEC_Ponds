@@ -57,5 +57,16 @@
 
 # 2. Standard curves 
         # NOTE: working just with N2O for now because it is the simplist, I will come back through and add CO2 and CH4
-
+    
+  # Pull just the standards 
+        gc_nitrous$Type <- ifelse(grepl("A-", gc_nitrous$Sample_Name), "sample", "standard")  #make a column that differentiates standards from samples, I had to do this with the "A-" because for some reason the code was funky about using $ 
+        head(gc_nitrous)
+        str(gc_nitrous)
+        gc_nitrous_standards <- gc_nitrous[gc_nitrous$Type == "standard"]
+        
+        
+        
+        
+        
+        
 # 3. Drift 
