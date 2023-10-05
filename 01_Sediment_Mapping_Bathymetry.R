@@ -8,7 +8,7 @@
 # 0. Set up R environment and Load Data 
 
     #Set working directory: 
-    setwd("~/DEC_Ponds") # Desktop 
+    setwd("~/DEC_Ponds") 
     getwd()
     
     # Load packages: 
