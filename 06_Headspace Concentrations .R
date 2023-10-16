@@ -4,6 +4,8 @@
 # This code is written to process raw data files coming off of the GC. Here we calculate standard curves, check for
 # drift, correct for drift, calculate concentrations in headspace, and calculate concentrations in water 
 
+# Celebrate the shit out of yourself 
+
 # 0. Set up R Environment 
     #Set working directory: 
     setwd("~/DEC_Ponds") # Desktop 
