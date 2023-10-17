@@ -48,7 +48,26 @@
           # library(interpp)
     
 # 1. Input all data
-    # Desktop 
+    
+    # Load Depths data 
+    sediment_depths <- read_xlsx("~/OneDrive/Holgerson_Lab/DEC_Ponds/Input_Files/DEC_Ponds_Sediment_Mapping_Depths.xlsx")
+      # Formatt 
+      names(sediment_depths)[names(sediment_depths) == "Pond Name"] <- "Pond"
+      names(sediment_depths)[names(sediment_depths) == "Site Number"] <- "Site_Number"
+      names(sediment_depths)[names(sediment_depths) == "Depth of top of sediments (cm)"] <- "depth_top_sed_cm"
+      names(sediment_depths)[names(sediment_depths) == "Depth of bottom of sediments (cm)"] <- "depth_btm_sed_cm"
+      sediment_depths <- subset(sediment_depths, select = c("Pond", "Date", "Site_Number", "depth_top_sed_cm", "depth_btm_sed_cm"))
+      # Calculate Sediment thickness and water depth 
+      sediment_depths$Pond <- as.factor(sediment_depths$Pond)
+      sediment_depths$Date <- as.factor(sediment_depths$Date)
+      sediment_depths$Site_Number <- as.numeric(sediment_depths$Site_Number)
+      sediment_depths$depth_top_sed_cm <- as.numeric(sediment_depths$depth_top_sed_cm)
+      sediment_depths$depth_btm_sed_cm <- as.numeric(sediment_depths$depth_btm_sed_cm)
+      sediment_depths$Sed_Thickness_cm <- sediment_depths$depth_btm_sed_cm - sediment_depths$depth_top_sed_cm
+      names(sediment_depths)[names(sediment_depths) == "depth_top_sed_cm"] <- "Water_Depth_cm"
+      sediment_depths <- subset(sediment_depths, select = c("Pond", "Date", "Site_Number", "Sed_Thickness_cm", "Water_Depth_cm"))
+      
+    # Input Spatial Files on Desktop 
 #####    
   # Points data 
     # Intensive Desktop 
@@ -118,7 +137,7 @@
     aquadro_pond_depth_meas <- read_xlsx("Depth_Measurements/Aquadro_Pond_Depth_Measurements.xlsx")
 #####    
 
-  #### Input data Mac 
+  #### Input Spatial Files Mac 
     # Points 
     boyce_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Boyce_Points/Boyce_Points.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Shelterbelt") %>% # Subset to only columns that you need 
