@@ -48,6 +48,7 @@
           # library(interpp)
     
 # 1. Input all data
+    # Desktop 
 #####    
   # Points data 
     # Intensive Desktop 
@@ -115,11 +116,100 @@
     harrison_pond_depth_meas <- read_xlsx("Depth_Measurements/Harrison_Pond_Depth_Measurements.xlsx")
     applegate_pond_depth_meas <- read_xlsx("Depth_Measurements/Applegate_Pond_Depth_Measurements.xlsx")
     aquadro_pond_depth_meas <- read_xlsx("Depth_Measurements/Aquadro_Pond_Depth_Measurements.xlsx")
+#####    
+
+  #### Input data Mac 
+    # Points 
+    boyce_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Boyce_Points/Boyce_Points.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Shelterbelt") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature 
     
-  #### Input data Mac     
+    white_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/White_Points/White_Points.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Shelterbelt") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature 
+    
+    howarth_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Howarth_Points/Howarth_Points.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Shelterbelt") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature 
+    
+    edwards_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Edwards_Points/Edwards_Points.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Shelterbelt") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature 
+    
     shelterbelt_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Shelterbelt_Points/Shelterbelt_Points.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Shelterbelt") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
+    
+    mtpleasantse_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Mt_Pleasant_SE_Points/Mt_Pleasant_SE_Points.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Shelterbelt") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature 
+    
+    harrison_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Harrison_Points/Harrison_Pond_Points_030123.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Shelterbelt") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature 
+    
+    levine_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Levine_Points/Levine_Points.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Shelterbelt") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature 
+    
+    aquadro_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Aquadro_Points/Aquadro_Pont_Points.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Shelterbelt") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature 
+    
+    applegate_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Applegate_Points/Applegate_Pont_Points.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Shelterbelt") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature 
+    
+    # Polygons
+    boyce_polygon <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Boyce_Polygon/Boyce_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    white_polygon <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/White_Polygon/White_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    howarth_polygon <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Howarth_Polygon/Howarth_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    edwards_polygon <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Edwards_Polygon/Edwards_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    shelterbelt_polygon <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Shelterbelt_Polygon/Shelterbelt_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    mtpleasantse_polygon <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Mt_Pleasant_SE_Polygon/Mt_Pleasant_SE_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    harrison_polygon <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Harrison_Polygon/Harrison_Pond_Poly_030123.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    levine_polygon <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Levine_Polygon/Levine_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    aquadro_polygon <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Aquadro_Polygon/Aquardo_Pond_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    applegate_polygon <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Applegate_Polygon/Applegate_Pond_Poly.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
     
 
 #####    
