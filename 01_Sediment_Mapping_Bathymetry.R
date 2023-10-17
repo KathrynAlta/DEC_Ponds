@@ -53,22 +53,18 @@
     sediment_depths <- read_xlsx("~/OneDrive/Holgerson_Lab/DEC_Ponds/Input_Files/DEC_Ponds_Sediment_Mapping_Depths.xlsx")
       # Formatt 
       names(sediment_depths)[names(sediment_depths) == "Pond Name"] <- "Pond"
-      names(sediment_depths)[names(sediment_depths) == "Site Number"] <- "Site_Number"
-      names(sediment_depths)[names(sediment_depths) == "Depth of top of sediments (cm)"] <- "depth_top_sed_cm"
-      names(sediment_depths)[names(sediment_depths) == "Depth of bottom of sediments (cm)"] <- "depth_btm_sed_cm"
-      sediment_depths <- subset(sediment_depths, select = c("Pond", "Date", "Site_Number", "depth_top_sed_cm", "depth_btm_sed_cm"))
-      # Calculate Sediment thickness and water depth 
-      sediment_depths$Pond <- as.factor(sediment_depths$Pond)
-      sediment_depths$Date <- as.factor(sediment_depths$Date)
-      sediment_depths$Site_Number <- as.numeric(sediment_depths$Site_Number)
-      sediment_depths$depth_top_sed_cm <- as.numeric(sediment_depths$depth_top_sed_cm)
-      sediment_depths$depth_btm_sed_cm <- as.numeric(sediment_depths$depth_btm_sed_cm)
-      sediment_depths$Sed_Thickness_cm <- sediment_depths$depth_btm_sed_cm - sediment_depths$depth_top_sed_cm
-      names(sediment_depths)[names(sediment_depths) == "depth_top_sed_cm"] <- "Water_Depth_cm"
-      sediment_depths <- subset(sediment_depths, select = c("Pond", "Date", "Site_Number", "Sed_Thickness_cm", "Water_Depth_cm"))
+      names(sediment_depths)[names(sediment_depths) == "Site Number"] <- "Measurement_Number"
+      names(sediment_depths)[names(sediment_depths) == "Depth of top of sediments (cm)"] <- "Depth_to_top_of_Sediment_cm"
+      names(sediment_depths)[names(sediment_depths) == "Depth of bottom of sediments (cm)"] <- "Depth_to_btm_of_sediment_cm"
+      sediment_depths$Measurement_Number <- as.numeric(sediment_depths$Measurement_Number)
+      sediment_depths$Depth_to_top_of_Sediment_cm <- as.numeric(sediment_depths$Depth_to_top_of_Sediment_cm)
+      sediment_depths$Depth_to_btm_of_sediment_cm <- as.numeric(sediment_depths$Depth_to_btm_of_sediment_cm)
+      sediment_depths <- subset(sediment_depths, select = c( "Pond", "Measurement_Number", "Depth_to_top_of_Sediment_cm", "Depth_to_btm_of_sediment_cm"))
+      
+      
       
     # Input Spatial Files on Desktop 
-#####    
+      #####    
   # Points data 
     # Intensive Desktop 
     boyce_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Boyce_Points.shp")   %>%   # Pull in shape file
@@ -135,24 +131,25 @@
     harrison_pond_depth_meas <- read_xlsx("Depth_Measurements/Harrison_Pond_Depth_Measurements.xlsx")
     applegate_pond_depth_meas <- read_xlsx("Depth_Measurements/Applegate_Pond_Depth_Measurements.xlsx")
     aquadro_pond_depth_meas <- read_xlsx("Depth_Measurements/Aquadro_Pond_Depth_Measurements.xlsx")
-#####    
+      #####    
 
-  #### Input Spatial Files Mac 
+    # Input Spatial Files Mac 
+      #####
     # Points 
     boyce_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Boyce_Points/Boyce_Points.shp")   %>%   # Pull in shape file
-      transmute(source = "measured", pond = "Shelterbelt") %>% # Subset to only columns that you need 
+      transmute(source = "measured", pond = "Boyce") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
     white_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/White_Points/White_Points.shp")   %>%   # Pull in shape file
-      transmute(source = "measured", pond = "Shelterbelt") %>% # Subset to only columns that you need 
+      transmute(source = "measured", pond = "White") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
     howarth_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Howarth_Points/Howarth_Points.shp")   %>%   # Pull in shape file
-      transmute(source = "measured", pond = "Shelterbelt") %>% # Subset to only columns that you need 
+      transmute(source = "measured", pond = "Howarth") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
     edwards_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Edwards_Points/Edwards_Points.shp")   %>%   # Pull in shape file
-      transmute(source = "measured", pond = "Shelterbelt") %>% # Subset to only columns that you need 
+      transmute(source = "measured", pond = "Edwards") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
     shelterbelt_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Shelterbelt_Points/Shelterbelt_Points.shp")   %>%   # Pull in shape file
@@ -160,23 +157,23 @@
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
     mtpleasantse_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Mt_Pleasant_SE_Points/Mt_Pleasant_SE_Points.shp")   %>%   # Pull in shape file
-      transmute(source = "measured", pond = "Shelterbelt") %>% # Subset to only columns that you need 
+      transmute(source = "measured", pond = "Mt_Pleasant_SE") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
     harrison_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Harrison_Points/Harrison_Pond_Points_030123.shp")   %>%   # Pull in shape file
-      transmute(source = "measured", pond = "Shelterbelt") %>% # Subset to only columns that you need 
+      transmute(source = "measured", pond = "Harrison") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
     levine_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Levine_Points/Levine_Points.shp")   %>%   # Pull in shape file
-      transmute(source = "measured", pond = "Shelterbelt") %>% # Subset to only columns that you need 
+      transmute(source = "measured", pond = "Levine") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
     aquadro_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Aquadro_Points/Aquadro_Pont_Points.shp")   %>%   # Pull in shape file
-      transmute(source = "measured", pond = "Shelterbelt") %>% # Subset to only columns that you need 
+      transmute(source = "measured", pond = "Aquadro") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
     applegate_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Applegate_Points/Applegate_Pont_Points.shp")   %>%   # Pull in shape file
-      transmute(source = "measured", pond = "Shelterbelt") %>% # Subset to only columns that you need 
+      transmute(source = "measured", pond = "Applegate") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
     # Polygons
@@ -229,16 +226,28 @@
       transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
       st_transform(26920) %>%
       st_zm()
-    
+      #####
 
 #####    
 # 2. Connect the lat long from the pond depths shape file to the measuremed depths from seperate df --> make spatial
    
+    # Seperate Sediment depth data out by pond 
+    boyce_meas_depths <- subset(sediment_depths, sediment_depths$Pond == "Boyce")
+    white_meas_depths <- subset(sediment_depths, sediment_depths$Pond == "White")
+    howarth_meas_depths <- subset(sediment_depths, sediment_depths$Pond == "Howarth")
+    edwards_meas_depths <- subset(sediment_depths, sediment_depths$Pond == "Edwards")
+    shelterbelt_meas_depths <- subset(sediment_depths, sediment_depths$Pond == "Shelterbelt")
+    mtpleasantse_meas_depths <- subset(sediment_depths, sediment_depths$Pond == "Mt_Pleasant_SE")
+    harrison_meas_depths <- subset(sediment_depths, sediment_depths$Pond == "Harrison")
+    levine_meas_depths <- subset(sediment_depths, sediment_depths$Pond == "Levine")
+    applegate_meas_depths <- subset(sediment_depths, sediment_depths$Pond == "Applegate")
+    aquadro_meas_depths <- subset(sediment_depths, sediment_depths$Pond == "Aquadro")
+    
     # Write a function to connect the measured depths to the lat long in the shape file 
         
         # Dummy data to write function 
-        pond_points <- applegate_pond_points
-        measured_depths <- applegate_pond_depth_meas
+        pond_points <- harrison_points
+        measured_depths <- harrison_meas_depths
         
     Connect_Depth_LatLong_FUNC <- function(pond_points, measured_depths){
       
@@ -251,7 +260,7 @@
       
       #Columns 
       pond_depths$source <- "measured"
-      pond_depths$pond <- pond_depths$Pond_Name
+      pond_depths$pond <- measured_depths$Pond
       
       # Calculate sediment depth in meters
       pond_depths$Sed_Thickness_m <- (pond_depths$Depth_to_btm_of_sediment_cm - pond_depths$Depth_to_top_of_Sediment_cm)/100
@@ -264,7 +273,11 @@
     }
         
    # Apply function over the points shape file and measured depths for each pond 
-    harrison_pond_depths <- Connect_Depth_LatLong_FUNC(harrison_pond_points, harrison_pond_depth_meas)
+    # Remove pond Name from measured depth 
+    boyce_meas_depths <-  subset(boyce_meas_depths, select = c("Measurement_Number", "Depth_to_top_of_Sediment_cm", "Depth_to_btm_of_sediment_cm")) 
+    
+    
+    boyce_pond_depths <- Connect_Depth_LatLong_FUNC(boyce_points, boyce_meas_depths)
     aquadro_pond_depths <- Connect_Depth_LatLong_FUNC(aquadro_pond_points, aquadro_pond_depth_meas)
     applegate_pond_depths <- Connect_Depth_LatLong_FUNC(applegate_pond_points, applegate_pond_depth_meas)
 
