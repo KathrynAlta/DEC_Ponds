@@ -32,7 +32,7 @@
     library(sf)
     library(ggspatial)
     
-    # install.packages("gstat")
+    install.packages("gstat")
     library(gstat)
     
     # install.packages("mgcv")
@@ -160,7 +160,7 @@
       transmute(source = "measured", pond = "Mt_Pleasant_SE") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
-    harrison_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Harrison_Points/Harrison_Pond_Points_030123.shp")   %>%   # Pull in shape file
+    harrison_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Harrison_Points_030123_noz/Harrison_Pond_Points_030123_1734.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Harrison") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
@@ -168,11 +168,11 @@
       transmute(source = "measured", pond = "Levine") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
-    aquadro_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Aquadro_Points/Aquadro_Pont_Points.shp")   %>%   # Pull in shape file
+    aquadro_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Aquadro_Points_030123_noz/Aquadro_Pond_Points_030123_noz.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Aquadro") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
-    applegate_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Applegate_Points/Applegate_Pont_Points.shp")   %>%   # Pull in shape file
+    applegate_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Applegate_Points_030123_noz/Applegate_Pond_Points_030123_noz.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Applegate") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
@@ -246,8 +246,8 @@
     # Write a function to connect the measured depths to the lat long in the shape file 
         
         # Dummy data to write function 
-        pond_points <- harrison_points
-        measured_depths <- harrison_meas_depths
+        pond_points <- aquadro_points
+        measured_depths <- aquadro_meas_depths
         
     Connect_Depth_LatLong_FUNC <- function(pond_points, measured_depths){
       
@@ -273,14 +273,13 @@
     }
         
    # Apply function over the points shape file and measured depths for each pond 
-    # Remove pond Name from measured depth 
-    boyce_meas_depths <-  subset(boyce_meas_depths, select = c("Measurement_Number", "Depth_to_top_of_Sediment_cm", "Depth_to_btm_of_sediment_cm")) 
     
+    boyce_depths <- Connect_Depth_LatLong_FUNC(boyce_points, boyce_meas_depths) #Doesn't work because incorrectly exported shape file 
     
-    boyce_pond_depths <- Connect_Depth_LatLong_FUNC(boyce_points, boyce_meas_depths)
-    aquadro_pond_depths <- Connect_Depth_LatLong_FUNC(aquadro_pond_points, aquadro_pond_depth_meas)
-    applegate_pond_depths <- Connect_Depth_LatLong_FUNC(applegate_pond_points, applegate_pond_depth_meas)
-
+    applegate_depths <- Connect_Depth_LatLong_FUNC(applegate_points, applegate_meas_depths)
+    aquadro_depths <- Connect_Depth_LatLong_FUNC(aquadro_points, aquadro_meas_depths)
+    harrison_depths <- Connect_Depth_LatLong_FUNC(harrison_points, harrison_meas_depths)
+    
    
 # 3. Plot measured depths and thickness on a basic map  
    
@@ -303,55 +302,56 @@
      }
    
    # Plot each pond 
-     Plot_Water_Depths_FUNC(aquadro_pond_boundary, aquadro_pond_depths)
-     Plot_Sed_Thick_FUNC(aquadro_pond_boundary, aquadro_pond_depths)
+     Plot_Water_Depths_FUNC(aquadro_polygon, aquadro_depths)
+     Plot_Sed_Thick_FUNC(aquadro_polygon, aquadro_depths)
      
-     Plot_Water_Depths_FUNC(applegate_pond_boundary, applegate_pond_depths)
-     Plot_Sed_Thick_FUNC(applegate_pond_boundary, applegate_pond_depths)
+     Plot_Water_Depths_FUNC(applegate_polygon, applegate_depths)
+     Plot_Sed_Thick_FUNC(applegate_polygon, applegate_depths)
      
-     Plot_Water_Depths_FUNC(harrison_pond_boundary, harrison_pond_depths)
-     Plot_Sed_Thick_FUNC(harrison_pond_boundary, harrison_pond_depths)
+     Plot_Water_Depths_FUNC(harrison_polygon, harrison_depths)
+     Plot_Sed_Thick_FUNC(harrison_polygon, harrison_depths)
    
    
 # 4. Add the coordinates of the boundary as columns and set the depth at the boundary to zero 
    
   # 4.1 ) For all ponds cast geometry to another type, change from polygon to points 
      # This has to be done individually because it throws a warning 
-     aquadro_pond_boundary_points <- st_cast(aquadro_pond_boundary, "POINT") 
-     applegate_pond_boundary_points <- st_cast(applegate_pond_boundary, "POINT")
-     harrison_pond_boundary_points <- st_cast(harrison_pond_boundary, "POINT")
+     applegate_polygon_cast <- st_cast(applegate_polygon, "POINT")
+     aquadro_polygon_cast <- st_cast(aquadro_polygon, "POINT") 
+     harrison_polygon_cast <- st_cast(harrison_polygon, "POINT")
      
   # 4.2) Write Function 
      
          # Dummy data to write function 
-           pond_boundary_points <- aquadro_pond_boundary_points  # this is just a long list of points on the boundary with depth set to zero 
-           pond_depths <- aquadro_pond_depths  # this is all of the points where we have measured water and sediment depths 
+           pond_boundary_points <- harrison_polygon_cast  # this is just a long list of points on the boundary with depth set to zero 
+           pond_depths <- harrison_depths  # this is all of the points where we have measured water and sediment depths 
            
      Coord_Bound_FUNC <- function(pond_boundary_points, pond_depths){
        
          # Format pond boundary points 
-         pond_name <- pond_depths[[1, "Pond_Name"]] #grabbing the pond name from the pond depths data frame 
+         pond_name <- pond_depths[[1, "pond"]] #grabbing the pond name from the pond depths data frame 
          formatted_pond_boundary_points <- pond_boundary_points %>% transmute(source = "boundary", Pond_Name = pond_name, Water_Depth_m = 0, Sed_Thickness_m = 0)
          
          # Bind together boundary and depth 
-         pond_depths <- subset(pond_depths, select = c("source", "Pond_Name", "Water_Depth_m", "Sed_Thickness_m", "geometry"))
-         pond_depths
+         pond_depths <- subset(pond_depths, select = c("source", "pond", "Water_Depth_m", "Sed_Thickness_m", "geometry"))
+         names(pond_depths)[names(pond_depths) == "pond"] <- "Pond_Name"
          formatted_pond_boundary_points
+         pond_depths
          full_pond_depths <- rbind(formatted_pond_boundary_points, pond_depths) %>%
            cbind(., st_coordinates(.))
          output <- full_pond_depths
        }
     
   # 4.3) Run function across all ponds 
-   aquadro_pond_full <- Coord_Bound_FUNC(aquadro_pond_boundary_points, aquadro_pond_depths)
-   applegate_pond_full <- Coord_Bound_FUNC(applegate_pond_boundary_points, applegate_pond_depths)
-   harrison_pond_full <- Coord_Bound_FUNC(harrison_pond_boundary_points, harrison_pond_depths)
+     applegate_full <- Coord_Bound_FUNC(applegate_polygon_cast, applegate_depths)
+     aquadro_full <- Coord_Bound_FUNC(aquadro_polygon_cast, aquadro_depths)
+     harrison_full <- Coord_Bound_FUNC(harrison_polygon_cast, harrison_depths)
    
    
 # 5. Create a grid to hold the raster output
   
    # Dummy data to write function 
-       thing1 <- as.character(aquadro_pond_full[1, "Pond_Name"])
+       thing1 <- as.character(aquadro_full[1, "Pond_Name"])
        thing1[1]
 
    # Write a function to create a grid 
@@ -368,12 +368,10 @@
    }
    
    # Run the Function for each pond 
-   aquadro_grid <- GridCreate_FUNC(aquadro_pond_full, aquadro_pond_boundary)
-   applegate_grid <- GridCreate_FUNC(applegate_pond_full, applegate_pond_boundary)
-   harrison_grid <- GridCreate_FUNC(harrison_pond_full, harrison_pond_boundary)
-   
-   #change pond name from Ellens pond to Harrison 
-   harrison_grid$Pond_Name <- "Harrison"
+   aquadro_grid <- GridCreate_FUNC(aquadro_full, aquadro_polygon)
+   applegate_grid <- GridCreate_FUNC(applegate_full, applegate_polygon)
+   harrison_grid <- GridCreate_FUNC(harrison_full, harrison_polygon)
+
    
    # Up to here is all set up, getting the grid made (place to put output from the model) and processing the input 
    #   data (make spatial, calc depth, add zero depth around boundary) getting ready to make a feed the model 
@@ -385,6 +383,7 @@
     
 # 6. Triangular Irregular Network Surface (TIN) 
 # _____________________________________________________________________________ 
+   # Need Interp function in R and can't get that to load on Mac right now 
    
    # Katie Mess with 
    TIN_sed_harrison_FIT <- interp::interpp(
@@ -425,9 +424,9 @@
     }
     
    # Apply function to build model for each pond for sediment thickness 
-    harrison_grid$TIN_sed_depth <- TIN_sed_FUNC(harrison_pond_full, harrison_grid)
-    aquadro_grid$TIN_sed_depth <- TIN_sed_FUNC(aquadro_pond_full, aquadro_grid)
-    applegate_grid$TIN_sed_depth <- TIN_sed_FUNC(applegate_pond_full, applegate_grid)
+    harrison_grid$TIN_sed_depth <- TIN_sed_FUNC(harrison_full, harrison_grid)
+    aquadro_grid$TIN_sed_depth <- TIN_sed_FUNC(aquadro_full, aquadro_grid)
+    applegate_grid$TIN_sed_depth <- TIN_sed_FUNC(applegate_full, applegate_grid)
     
     # Apply function to build model for each pond for water depth 
     harrison_grid$TIN_water_depth <- TIN_bathym_FUNC(harrison_pond_full, harrison_grid)
@@ -451,9 +450,9 @@
          }
        
       # Apply the model function for each pond that you are interested in and save the model output as FIT  
-           IDW_bathym_harrison_FIT <- IDW_bathym_FUNC(harrison_pond_full) # Model based on inverse distance weighted (IDW) predicting the bathymetry (water depth) of harrison pond (farm and res pond named by last name of land owner)
-           IDW_bathym_applegate_FIT <- IDW_bathym_FUNC(applegate_pond_full)
-           IDW_bathym_aquadro_FIT <- IDW_bathym_FUNC(aquadro_pond_full)
+           IDW_bathym_harrison_FIT <- IDW_bathym_FUNC(harrison_full) # Model based on inverse distance weighted (IDW) predicting the bathymetry (water depth) of harrison pond (farm and res pond named by last name of land owner)
+           IDW_bathym_applegate_FIT <- IDW_bathym_FUNC(applegate_full)
+           IDW_bathym_aquadro_FIT <- IDW_bathym_FUNC(aquadro_full)
            
       # Write a function that uses the spatial model to predict the water depth & adds predicted values to the grid 
         IDW_predict_FUNC <- function(model_FIT, name_grid){
