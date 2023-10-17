@@ -8,7 +8,8 @@
 # 0. Set up R environment and Load Data 
 
     #Set working directory: 
-    setwd("~/DEC_Ponds") 
+    # setwd("~/DEC_Ponds") 
+    setwd("~/OneDrive/Holgerson_Lab/DEC_Ponds") # Mac 
     getwd()
     
     # Load packages: 
@@ -37,8 +38,8 @@
     # install.packages("mgcv")
     library(mgcv)
     
-    # install.packages("interp")
-    library(interp)
+   # install.packages("interp")
+    library(interp)  # could not install properly on Mac? "compilation failed" 
     
     # Not compatible wiht this version of R 
           # install.packages("installr")
@@ -49,7 +50,7 @@
 # 1. Input all data
 #####    
   # Points data 
-    # Intensive 
+    # Intensive Desktop 
     boyce_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Boyce_Points.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Boyce") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
@@ -115,6 +116,12 @@
     applegate_pond_depth_meas <- read_xlsx("Depth_Measurements/Applegate_Pond_Depth_Measurements.xlsx")
     aquadro_pond_depth_meas <- read_xlsx("Depth_Measurements/Aquadro_Pond_Depth_Measurements.xlsx")
     
+  #### Input data Mac     
+    shelterbelt_points <- read_sf("~/OneDrive/Holgerson_Lab/DEC_Ponds_Sediment_Data/Shelterbelt_Points/Shelterbelt_Points.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Shelterbelt") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature 
+    
+
 #####    
 # 2. Connect the lat long from the pond depths shape file to the measuremed depths from seperate df --> make spatial
    
