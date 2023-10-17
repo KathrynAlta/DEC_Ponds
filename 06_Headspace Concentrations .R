@@ -93,46 +93,71 @@
         str(gc_data_co2_ch4)
         gc_data <- full_join(gc_data_co2_ch4, gc_nitrous)
         
+    # Check column formatting
+        str(gc_data)
+        gc_data$CO2_Area <- as.numeric(gc_data$CO2_Area)
+        gc_data$CH4_Area <- as.numeric(gc_data$CH4_Area)
+        gc_data$N2O_Area <- as.numeric(gc_data$N2O_Area)
+        gc_data$Sample_Name <- as.factor(gc_data$Sample_Name)
+        gc_data$Sample_ID <- as.numeric(gc_data$Sample_ID)
+        gc_data$Date_Run <- as.factor(gc_data$Date_Run)
+        gc_data$Type <- as.factor(gc_data$Type)
+        
     # Add date of GC run as a column 
         gc_data$Date_Run <- data_gc_run  # Now on line 97 you finally have a clean organized df 
         
 # 2. Standard curves 
-        # NOTE: working just with N2O for now because it is the simplist, I will come back through and add CO2 and CH4
-    
+        
   # 2.1 Pull just the standards to make a seperate data frame and format 
-        gc_nitrous$Type <- ifelse(grepl("A-", gc_nitrous$Sample_Name), "sample", "standard")  #make a column that differentiates standards from samples, I had to do this with the "A-" because for some reason the code was funky about using $ 
-        gc_nitrous_standards <- gc_nitrous[gc_nitrous$Type == "standard" , ]
-        gc_nitrous_standards <- subset(gc_nitrous_standards, Sample_Name != "zero" )
+        gc_data$Type <- ifelse(grepl("A-", gc_data$Sample_Name), "sample", "standard")  #make a column that differentiates standards from samples, I had to do this with the "A-" because for some reason the code was funky about using $ 
+        gc_data_standards <- gc_data[gc_data$Type == "standard" , ]
+        gc_data_standards <- subset(gc_data_standards, Sample_Name != "zero" )
         
         # Seperate out to make columns for the concentrations of the standard gasses 
         
         # Replace the $ because they throw off the code 
-        gc_nitrous_standards$St_Con_All <- gsub("\\$", "_", gc_nitrous_standards$Sample_Name)
-        head(gc_nitrous_standards)
+        gc_data_standards$St_Con_All <- gsub("\\$", "_", gc_data_standards$Sample_Name)
+        head(gc_data_standards)
 
         # Make a column of CO2 Concentration 
-        gc_nitrous_standards$St_Con_CO2 <- gsub("_.*", "\\1", gc_nitrous_standards$St_Con_All) # Get rid of everything after the first _
-        head(gc_nitrous_standards)      
+        gc_data_standards$St_Con_CO2 <- gsub("_.*", "\\1", gc_data_standards$St_Con_All) # Get rid of everything after the first _
+        head(gc_data_standards)      
         
         # make a column of N2O Concentration 
-        gc_nitrous_standards$St_Con_N2O <- gsub(".*_", "\\1", gc_nitrous_standards$St_Con_All)  # get rid of everything before the last _ 
-        head(gc_nitrous_standards)
+        gc_data_standards$St_Con_N2O <- gsub(".*_", "\\1", gc_data_standards$St_Con_All)  # get rid of everything before the last _ 
+        head(gc_data_standards)
         
         # make a column of CH4 Concentrations 
           #  This might be the silliest work around I have ever coded substring name, start at the number of characters in first name plus one, stop at the total number of characters minus the number of characters in last name plus one 
-        gc_nitrous_standards$St_Con_CH4 <- substring(gc_nitrous_standards$St_Con_All, (nchar(gc_nitrous_standards$St_Con_CO2)+2), (nchar(gc_nitrous_standards$St_Con_All) - (nchar(gc_nitrous_standards$St_Con_N2O) + 1)) ) 
+        gc_data_standards$St_Con_CH4 <- substring(gc_data_standards$St_Con_All, (nchar(gc_data_standards$St_Con_CO2)+2), (nchar(gc_data_standards$St_Con_All) - (nchar(gc_data_standards$St_Con_N2O) + 1)) ) 
         
         # Zero air is a concentration of O for all three gases 
-        gc_nitrous_standards$St_Con_CH4 <- ifelse(gc_nitrous_standards$St_Con_All == "zero air", 0, gc_nitrous_standards$St_Con_CH4)
-        gc_nitrous_standards$St_Con_CO2 <- ifelse(gc_nitrous_standards$St_Con_All == "zero air", 0, gc_nitrous_standards$St_Con_CO2)
-        gc_nitrous_standards$St_Con_N2O <- ifelse(gc_nitrous_standards$St_Con_All == "zero air", 0, gc_nitrous_standards$St_Con_N2O)
+        gc_data_standards$St_Con_CH4 <- ifelse(gc_data_standards$St_Con_All == "zero air", 0, gc_data_standards$St_Con_CH4)
+        gc_data_standards$St_Con_CO2 <- ifelse(gc_data_standards$St_Con_All == "zero air", 0, gc_data_standards$St_Con_CO2)
+        gc_data_standards$St_Con_N2O <- ifelse(gc_data_standards$St_Con_All == "zero air", 0, gc_data_standards$St_Con_N2O)
         
-    #2.2 Plot standard curve 
-        plot(gc_nitrous_standards$St_Con_N2O, gc_nitrous_standards$Area, main="N2O Standard Curve",
-             xlab="Standard Concentration", ylab="Area", pch=19)
+        str(gc_data_standards)
+        gc_data_standards$St_Con_CH4 <- as.numeric(gc_data_standards$St_Con_CH4)
+        gc_data_standards$St_Con_CO2 <- as.numeric(gc_data_standards$St_Con_CO2)
+        gc_data_standards$St_Con_N2O <- as.numeric(gc_data_standards$St_Con_N2O)
+        
+        #Subset down to just the standards 
+        
+    #2.2 Plot standard curves
+        gc_data_standard_sub <- subset(gc_data_standards, gc_data_standards$Sample_ID <= 14)
+        
+       N2O_standard_curve <- plot(gc_data_standards$St_Con_N2O, gc_data_standards$N2O_Area, main="N2O Standard Curve",
+             xlab="N2O Standard Concentration", ylab="N2O Peak Area")
+       
+       CH4_standard_curve <- plot(gc_data_standards$St_Con_CH4, gc_data_standards$CH4_Area , main="CH4 Standard Curve",
+                                  xlab="CH4 Standard Concentration", ylab="CH4 Peak Area", pch=19)
+       
+       CO2_standard_curve <- plot(gc_data_standards$St_Con_CO2, gc_data_standards$CO2_Area, main="CO2 Standard Curve",
+                                  xlab="CO2 Standard Concentration", ylab="CO2 Peak Area", pch=19)
   
-        
-        
+       CO2_standard_curve <- plot(gc_data_standard_sub$St_Con_CO2, gc_data_standard_sub$CO2_Area, main="CO2 Standard Curve",
+                                  xlab="CO2 Standard Concentration", ylab="CO2 Peak Area", pch=19)
+       
         
 # 3. Drift 
         
