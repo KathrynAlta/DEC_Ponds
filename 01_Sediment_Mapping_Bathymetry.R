@@ -227,11 +227,29 @@
       st_transform(26920) %>%
       st_zm()
       #####
+   
     
-    ## * put all of the points shape dfs into a list 
-    ## * put all of the polygon shape df into a list 
+    ## Put all of the points shape df into a list 
+    pond_points_list <- list(boyce_points, white_points, howarth_points, edwards_points,
+                              shelterbelt_points, mtpleasantse_points, harrison_points, levine_points, 
+                              aquadro_points, longhouse_points, ecovillage_points, dybowski_points, 
+                              applegate_points, mtpleasantne_points, barber_points, stickandstone_points,
+                              englishshallow_points, engst_points, rogers_points, carpenter_points, 
+                              walnutridge_points, lucas_points, collmer_points, vesa_points, 
+                              conley_points, hahn_points, marks_points, englishdeep_points)
+    
+    
+    # Put all of the polygon shape df into a list 
+    pond_polygon_list <- list(boyce_polygon, white_polygon, howarth_polygon, edwards_polygon,
+                                 shelterbelt_polygon, mtpleasantse_polygon, harrison_polygon, levine_polygon, 
+                                 aquadro_polygon, longhouse_polygon, ecovillage_polygon, dybowski_polygon, 
+                                 applegate_polygon, mtpleasantne_polygon, barber_polygon, stickandstone_polygon,
+                                 englishshallow_polygon, engst_polygon, rogers_polygon, carpenter_polygon, 
+                                 walnutridge_polygon, lucas_polygon, collmer_polygon, vesa_polygon, 
+                                 conley_polygon, hahn_polygon, marks_polygon, englishdeep_polygon)
+    
 
-#####    
+   
 # 2. Connect the lat long from the pond depths shape file to the measuremed depths from seperate df --> make spatial
 #_______________________________________________________________________________    
     # Seperate Sediment depth data out by pond 
@@ -419,15 +437,15 @@
      
      # Run the function individually for each pond 
        applegate_full <- Coord_Bound_FUNC(applegate_polygon_cast, applegate_depths_latlong)
-       aquadro_full <- Coord_Bound_FUNC(aquadro_polygon_cast, aquadro_meas_depths)
-       harrison_full <- Coord_Bound_FUNC(harrison_polygon_cast, harrison_meas_depths)
+       aquadro_full <- Coord_Bound_FUNC(aquadro_polygon_cast, aquadro_depths_latlong)
+       harrison_full <- Coord_Bound_FUNC(harrison_polygon_cast, harrison_depths_latlong)
        
      # Try Running the function across multiple ponds using mapply 
      cast_boundaries_list <- list(applegate_polygon_cast, aquadro_polygon_cast, harrison_polygon_cast)
      meas_depths_latlong_list <- list(applegate_depths_latlong, aquadro_depths_latlong, harrison_depths_latlong)
    
      # Run function over the two lists 
-     depths_full_list <- mapply(Coord_Bound_FUNC, cast_boundaries_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+     pond_full_list <- mapply(Coord_Bound_FUNC, cast_boundaries_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
    
      
 # 5. Create a grid to hold the raster output
@@ -450,10 +468,16 @@
    }
    
    # Run the Function for each pond 
-   aquadro_grid <- GridCreate_FUNC(aquadro_full, aquadro_polygon)
    applegate_grid <- GridCreate_FUNC(applegate_full, applegate_polygon)
+   aquadro_grid <- GridCreate_FUNC(aquadro_full, aquadro_polygon)
    harrison_grid <- GridCreate_FUNC(harrison_full, harrison_polygon)
-
+   
+   # Run the function for all ponds using mapply 
+       # (make for subset that you are using)
+       pond_polygon_list <- list(applegate_polygon, aquadro_polygon, harrison_polygon)
+  # Run function over the two lists 
+   pond_grid_list <- mapply(GridCreate_FUNC, pond_full_list, pond_polygon_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+   
    
    # Up to here is all set up, getting the grid made (place to put output from the model) and processing the input 
    #   data (make spatial, calc depth, add zero depth around boundary) getting ready to make a feed the model 
