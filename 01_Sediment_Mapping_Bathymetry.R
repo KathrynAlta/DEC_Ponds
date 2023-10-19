@@ -696,20 +696,31 @@
 # 9. Soap Film Smooth (SFS)   
 # ______________________________________________________________________________ 
    
-   
 # Writing code to scale 9/29/23 
    
-   # 9.1. Make Linestring for each pond (throws an air but works)
-   harrison_linestring <- harrison_pond_boundary %>% st_cast("LINESTRING") %>% st_buffer(10)  # Need to make line string one at a time up here, it makes it but will throw an error 
-   aquadro_linestring <- aquadro_pond_boundary %>% st_cast("LINESTRING") %>% st_buffer(10)  # Need to make line string one at a time up here, it makes it but will throw an error 
-   applegate_linestring <- applegate_pond_boundary %>% st_cast("LINESTRING") %>% st_buffer(10)  # Need to make line string one at a time up here, it makes it but will throw an error 
-
-  # 9.2 Create Gam bound for each pond
+   # 9.1. Make Linestring for each pond (throws a warning but works) -- might have to do individually for each pond? 
+            
+            # Individually for each pond (check)
+            harrison_linestring <- harrison_polygon %>% st_cast("LINESTRING") %>% st_buffer(10)  
+            aquadro_linestring <- aquadro_polygon %>% st_cast("LINESTRING") %>% st_buffer(10)  
+            applegate_linestring <- applegate_polygon %>% st_cast("LINESTRING") %>% st_buffer(10)  
+       
+        # Write a function to create linestrings for each pond  
+        Linestring_FUNC <- function(pond_polygon){
+          pond_linestring <- pond_polygon %>% st_cast("LINESTRING") %>% st_buffer(10)
+        }
+              # Check function works 
+                harrison_linestring <- Linestring_FUNC(harrison_polygon)
+                
+        # Apply function across list of polygons 
+          # mapply structure: output_list <- mapply(Name_FUNC, first_list, second_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+          pond_linestring_list <- mapply(Linestring_FUNC, pond_polygon_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+          
+   
+  # 9.2 make a Gam bound for each pond
       # 9.2.a write a function to create gam bound 
       SOAP_gam_bound_FUNC <- function(pond_boundary){ 
-        
         boundary_coords <- st_coordinates(pond_boundary)
-        
         gam_bound <- list(
           list(
             X = boundary_coords[-1, "X"], 
@@ -719,11 +730,17 @@
         )
         }
    
-      # 9.2.b apply function to create a gam boutnd for each pond  
-      harrison_gam_bound <- SOAP_gam_bound_FUNC(harrison_pond_boundary)
-      applegate_gam_bound <- SOAP_gam_bound_FUNC(applegate_pond_boundary)
-      aquadro_gam_bound <- SOAP_gam_bound_FUNC(aquadro_pond_boundary)
-   
+      # 9.2.b apply function to create a gam bound for each pond individually (check)
+        
+        # Check that function works 
+        harrison_gam_bound <- SOAP_gam_bound_FUNC(harrison_polygon)
+        applegate_gam_bound <- SOAP_gam_bound_FUNC(applegate_polygon)
+        aquadro_gam_bound <- SOAP_gam_bound_FUNC(aquadro_polygon)
+      
+      # Apply function to create gam boundary across the list of pond polygons 
+        # mapply structure: output_list <- mapply(Name_FUNC, first_list, second_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+        gam_bound_list <- mapply(SOAP_gam_bound_FUNC, pond_polygon_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+
    
   # 9.3. Create knot points for each pond 
       
@@ -735,7 +752,7 @@
                # FUNC Step 1. Make knot points 
                knot_points_1 <- st_make_grid(
                  pond_boundary,      
-                 n = c(10, 10),
+                 n = c(7, 7),
                  what = "centers"
                ) %>%
                  st_as_sf() %>%
@@ -754,11 +771,16 @@
                  cbind(., st_coordinates(.))
          }
    
-       # 9.3.b Apply Knot Points Function to Each Pond 
-       harrison_knot_points <- SOAP_knot_points_FUNC(harrison_pond_boundary, harrison_linestring )
-       aquadro_knot_points <- SOAP_knot_points_FUNC(aquadro_pond_boundary, aquadro_linestring )
-       applegate_knot_points <- SOAP_knot_points_FUNC(applegate_pond_boundary, applegate_linestring )
-   
+           #  Check Knot Points Function works
+           harrison_knot_points <- SOAP_knot_points_FUNC(harrison_polygon, harrison_linestring )
+           aquadro_knot_points <- SOAP_knot_points_FUNC(aquadro_polygon, aquadro_linestring )
+           applegate_knot_points <- SOAP_knot_points_FUNC(applegate_polygon, applegate_linestring )
+       
+       # 9.3.b Apply function to create knot points across the list of pond polygons 
+       # mapply structure: output_list <- mapply(Name_FUNC, first_list, second_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+       knot_points_list <- mapply(SOAP_knot_points_FUNC, pond_polygon_list, pond_linestring_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+       
+       
    # 9.5. Bathymetry GAM model 
        
        # 9.5.a Write a function to fit a GAM model for bathymetry 
@@ -775,11 +797,16 @@
            }
            
       # 9.5.b Use bathym model function to make a bathymetry GAM model for each lake 
-           SOAP_bathym_harrison_FIT <- SOAP_bathym_model_FUNC(harrison_pond_full, harrison_pond_boundary, harrison_knot_points, harrison_gam_bound)
-           SOAP_bathym_aquadro_FIT <- SOAP_bathym_model_FUNC(aquadro_pond_full, aquadro_pond_boundary, aquadro_knot_points, aquadro_gam_bound)
-           SOAP_bathym_applegate_FIT <- SOAP_bathym_model_FUNC(applegate_pond_full, applegate_pond_boundary, applegate_knot_points, applegate_gam_bound)
            
-          
+           # Apply function one at a time (check)
+           SOAP_bathym_harrison_FIT <- SOAP_bathym_model_FUNC(harrison_full, harrison_polygon, harrison_knot_points, harrison_gam_bound)
+           SOAP_bathym_aquadro_FIT <- SOAP_bathym_model_FUNC(aquadro_full, aquadro_polygon, aquadro_knot_points, aquadro_gam_bound)
+           SOAP_bathym_applegate_FIT <- SOAP_bathym_model_FUNC(applegate_full, applegate_polygon, applegate_knot_points, applegate_gam_bound)
+           
+           # Use mapply to apply bathymetry model over all ponds in a list 
+           # mapply structure: output_list <- mapply(Name_FUNC, first_list, second_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+           SOAP_bathym_FIT_list <- mapply(SOAP_bathym_model_FUNC, pond_full_list, pond_polygon_list, knot_points_list, gam_bound_list,  USE.NAMES = TRUE, SIMPLIFY = FALSE)
+           
    # 9.6. Sediment GAM Model 
       #9.6.a  Write a function to fit a GAM model for sediment thickness 
          SOAP_seddepth_model_FUNC <- function(pond_full, pond_boundary, pond_knot_points, pond_gam_bound){
@@ -794,10 +821,18 @@
          }
          
       #9.6.b Use sediment model function to make a sediment GAM model for each lake
-        SOAP_seddepth_harrison_FIT <- SOAP_seddepth_model_FUNC(harrison_pond_full, harrison_pond_boundary, harrison_knot_points, harrison_gam_bound)
-        SOAP_seddepth_aquadro_FIT <- SOAP_seddepth_model_FUNC(aquadro_pond_full, aquadro_pond_boundary, aquadro_knot_points, aquadro_gam_bound)
-        SOAP_seddepth_applegate_FIT <- SOAP_seddepth_model_FUNC(applegate_pond_full, applegate_pond_boundary, applegate_knot_points, applegate_gam_bound)
         
+            # Run one at a time to check that function works 
+            SOAP_seddepth_harrison_FIT <- SOAP_seddepth_model_FUNC(harrison_full, harrison_polygon, harrison_knot_points, harrison_gam_bound)
+            SOAP_seddepth_aquadro_FIT <- SOAP_seddepth_model_FUNC(aquadro_full, aquadro_polygon, aquadro_knot_points, aquadro_gam_bound)
+            SOAP_seddepth_applegate_FIT <- SOAP_seddepth_model_FUNC(applegate_full, applegate_polygon, applegate_knot_points, applegate_gam_bound)
+        
+        # Use mapply to apply bathymetry model over all ponds in a list 
+        # mapply structure: output_list <- mapply(Name_FUNC, first_list, second_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+        SOAP_seddepth_FIT_list <- mapply(SOAP_seddepth_model_FUNC, pond_full_list, pond_polygon_list, knot_points_list, gam_bound_list,  USE.NAMES = TRUE, SIMPLIFY = FALSE)
+        
+        
+            
    # 9.7 Use models to predict sediment and water depth 
         # 9.7.a  Use bathymetry GAM model to predict water depth for each pond 
         harrison_grid$SOAP_water_depth <- predict.gam(SOAP_bathym_harrison_FIT, newdata = harrison_grid, type = "response")
