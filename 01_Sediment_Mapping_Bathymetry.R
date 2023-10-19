@@ -28,6 +28,7 @@
     library(writexl)
     library(purrr)
     library(EnvStats)
+    library(ggplot2)
     
     library(sf)
     library(ggspatial)
@@ -316,8 +317,11 @@
       
     # Applying function over all ponds using mapply()
     
-      # Make a list of points dfs and a list of depths dfs 
+      # Make a list of points dfs and a list of depths dfs for the subset of ponds you are workign with 
       points_shp_list <- list(applegate_points, aquadro_points, harrison_points)
+      
+      # Make a list of points dfs and a list of depths dfs for the subset of ponds you are workign with 
+      # pond_polygon_list <- list(applegate_polygon, aquadro_polygon, harrison_polygon)
       
       # Run function over the two lists 
       meas_depths_latlong_list <- mapply(Connect_Depth_LatLong_FUNC, points_shp_list, meas_depths_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
@@ -440,7 +444,7 @@
        aquadro_full <- Coord_Bound_FUNC(aquadro_polygon_cast, aquadro_depths_latlong)
        harrison_full <- Coord_Bound_FUNC(harrison_polygon_cast, harrison_depths_latlong)
        
-     # Try Running the function across multiple ponds using mapply 
+     # Running the function across multiple ponds using mapply 
      cast_boundaries_list <- list(applegate_polygon_cast, aquadro_polygon_cast, harrison_polygon_cast)
      meas_depths_latlong_list <- list(applegate_depths_latlong, aquadro_depths_latlong, harrison_depths_latlong)
    
@@ -458,7 +462,7 @@
    GridCreate_FUNC <- function(name_pond_full, name_pond_boundary){
      pond_name <- as.character(name_pond_full[1,"Pond_Name"])
      pond_name_form <- pond_name[1]
-     pond_grid_step1 <- st_make_grid(name_pond_full, cellsize = c(1, 1), what = "centers")   #I made a bigger grid here (well smaller squares, more points)
+     pond_grid_step1 <- st_make_grid(name_pond_full, cellsize = c(2, 2), what = "centers")   #I made a bigger grid here (well smaller squares, more points)
      pond_grid_step2 <- st_as_sf(pond_grid_step1)
      pond_grid_step3 <- st_contains(name_pond_boundary, pond_grid_step2, sparse = FALSE)
      pond_grid_step4 <- pond_grid_step2[pond_grid_step3 == "TRUE" , ]
@@ -491,61 +495,87 @@
 # _____________________________________________________________________________ 
    # Need Interp function in R and can't get that to load on Mac right now 
    
-   # Katie Mess with 
-   TIN_sed_harrison_FIT <- interp::interpp(
-     x = harrison_pond_full$X,
-     y = harrison_pond_full$Y,
-     z = harrison_pond_full$Sed_Thickness_m,
-     xo = harrison_grid$X,
-     yo = harrison_grid$Y,
-     duplicate = "strip"
-   )
+   # 6.1) Write Function to fit TIN model 
    
-   harrison_grid$TIN_sed_depth <- TIN_sed_harrison_FIT$z
-   
-   # Write a function to fit a TIN model to sediment depths 
-    TIN_sed_FUNC <- function(pond_full, pond_grid){
-      TIN_model <- interp::interpp(
-        x = pond_full$X,
-        y = pond_full$Y,
-        z = pond_full$Sed_Thickness_m,
-        xo = pond_grid$X,
-        yo = pond_grid$Y,
-        duplicate = "strip"
-      )
-      output <- TIN_model$z
-    }
-    
-    # Write a function to fit a TIN model to water depths 
-    TIN_bathym_FUNC <- function(pond_full, pond_grid){
-      TIN_model <- interp::interpp(
-        x = pond_full$X,
-        y = pond_full$Y,
-        z = pond_full$Water_Depth_m,
-        xo = pond_grid$X,
-        yo = pond_grid$Y,
-        duplicate = "strip"
-      )
-      output <- TIN_model$z
-    }
-    
-   # Apply function to build model for each pond for sediment thickness 
-    harrison_grid$TIN_sed_depth <- TIN_sed_FUNC(harrison_full, harrison_grid)
-    aquadro_grid$TIN_sed_depth <- TIN_sed_FUNC(aquadro_full, aquadro_grid)
-    applegate_grid$TIN_sed_depth <- TIN_sed_FUNC(applegate_full, applegate_grid)
-    
-    # Apply function to build model for each pond for water depth 
-    harrison_grid$TIN_water_depth <- TIN_bathym_FUNC(harrison_pond_full, harrison_grid)
-    aquadro_grid$TIN_water_depth <- TIN_bathym_FUNC(aquadro_pond_full, aquadro_grid)
-    applegate_grid$TIN_water_depth <- TIN_bathym_FUNC(applegate_pond_full, applegate_grid)
+     # 6.1.a) Write a function to fit a TIN model to sediment thickness  
+        TIN_sed_FUNC <- function(pond_full, pond_grid){
+          TIN_model <- interp::interpp(
+            x = pond_full$X,
+            y = pond_full$Y,
+            z = pond_full$Sed_Thickness_m,
+            xo = pond_grid$X,
+            yo = pond_grid$Y,
+            duplicate = "strip"
+          )
+          output <- TIN_model$z
+        }
+            # Check that model works for sediment thickness 
+            harrison_grid$TIN_sed_depth <- TIN_sed_FUNC(harrison_full, harrison_grid)
+            aquadro_grid$TIN_sed_depth <- TIN_sed_FUNC(aquadro_full, aquadro_grid)
+            applegate_grid$TIN_sed_depth <- TIN_sed_FUNC(applegate_full, applegate_grid)
+            
+            ##### Edited 10/18/23 can't check without program  
+            TIN_sed_FUNC <- function(pond_full, pond_grid){
+              TIN_model <- interp::interpp(
+                x = pond_full$X,
+                y = pond_full$Y,
+                z = pond_full$Sed_Thickness_m,
+                xo = pond_grid$X,
+                yo = pond_grid$Y,
+                duplicate = "strip"
+              )
+              pond_grid$TIN_sed_depth <- TIN_model$z  # Change output formatt 
+            }
+        
+      # 6.1.b) Write a function to fit a TIN model to water depths 
+        TIN_bathym_FUNC <- function(pond_full, pond_grid){
+          TIN_model <- interp::interpp(
+            x = pond_full$X,
+            y = pond_full$Y,
+            z = pond_full$Water_Depth_m,
+            xo = pond_grid$X,
+            yo = pond_grid$Y,
+            duplicate = "strip"
+          )
+          output <- TIN_model$z
+        }
+        
+            # Check that model works for water depth 
+            harrison_grid$TIN_water_depth <- TIN_bathym_FUNC(harrison_full, harrison_grid)
+            aquadro_grid$TIN_water_depth <- TIN_bathym_FUNC(aquadro_full, aquadro_grid)
+            applegate_grid$TIN_water_depth <- TIN_bathym_FUNC(applegate_full, applegate_grid)
+            
+            ##### Edited 10/18/23 can't check without program 
+            TIN_bathym_FUNC <- function(pond_full, pond_grid){
+              TIN_model <- interp::interpp(
+                x = pond_full$X,
+                y = pond_full$Y,
+                z = pond_full$Water_Depth_m,
+                xo = pond_grid$X,
+                yo = pond_grid$Y,
+                duplicate = "strip"
+              )
+              pond_grid$TIN_water_depth <- TIN_model$z  # Change output formatt 
+            }
+            
+   # 6.2) Use TIN Model to predict water depth and Sed thickeness and add to grid
+        
+      # Sediment Thickness -- Apply that TIN function across the list of ponds 
+        pond_grid_list <- mapply(TIN_sed_FUNC, pond_full_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+          # Note that in this configuration you will have one pond_grid_list that you will pass through each model and update it as you go 
   
+      # Water Depth 
+        pond_grid_list <- mapply(TIN_bathym_FUNC, pond_full_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+    
     
 # 7. Inverse Distance Weighting (IDW) 
 # _____________________________________________________________________________  
    
    # 7.1) BATHYMETRY 
    
-     # Write a function to build a model for water depth using IDW
+     # 7.1.1) Build a model for water depth using IDW
+        
+        # Write a function to build a model for water depth using IDW
          IDW_bathym_FUNC <- function(name_pond_full){
            output <- gstat::gstat(
              formula = Water_Depth_m ~ 1,
@@ -555,46 +585,83 @@
            )
          }
        
-      # Apply the model function for each pond that you are interested in and save the model output as FIT  
-           IDW_bathym_harrison_FIT <- IDW_bathym_FUNC(harrison_full) # Model based on inverse distance weighted (IDW) predicting the bathymetry (water depth) of harrison pond (farm and res pond named by last name of land owner)
-           IDW_bathym_applegate_FIT <- IDW_bathym_FUNC(applegate_full)
-           IDW_bathym_aquadro_FIT <- IDW_bathym_FUNC(aquadro_full)
+            # Check that the function works 
+               IDW_bathym_harrison_FIT <- IDW_bathym_FUNC(harrison_full) # Model based on inverse distance weighted (IDW) predicting the bathymetry (water depth) of harrison pond (farm and res pond named by last name of land owner)
+               IDW_bathym_applegate_FIT <- IDW_bathym_FUNC(applegate_full)
+               IDW_bathym_aquadro_FIT <- IDW_bathym_FUNC(aquadro_full)
+               
+          # Apply the IDW bathym function across all ponds in the list 
+               IDW_bathym_FIT_list <- mapply(IDW_bathym_FUNC, pond_full_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
            
-      # Write a function that uses the spatial model to predict the water depth & adds predicted values to the grid 
-        IDW_predict_FUNC <- function(model_FIT, name_grid){
-          predicted_formal_class <- predict(model_FIT, newdata = as(name_grid, "Spatial"))
-          predicted_sf <- st_as_sf(predicted_formal_class)
-          output <- predicted_sf$var1.pred
-        }
+      # 7.1.2 Use the FIT for each pond to predict water depth & adds predicted values to the grid 
         
-      # Apply the predict function to each pond to get predictions 
-        harrison_grid$IDW_water_depth <- IDW_predict_FUNC(IDW_bathym_harrison_FIT, harrison_grid)
-        aquadro_grid$IDW_water_depth <- IDW_predict_FUNC(IDW_bathym_aquadro_FIT, aquadro_grid)
-        applegate_grid$IDW_water_depth <- IDW_predict_FUNC(IDW_bathym_applegate_FIT, applegate_grid)
-        
+        # OLD
+               #Write a function to predict bathymetry based on FIT -- OLD 
+                  IDW_predict_FUNC <- function(model_FIT, name_grid){
+                    predicted_formal_class <- predict(model_FIT, newdata = as(name_grid, "Spatial"))
+                    predicted_sf <- st_as_sf(predicted_formal_class)
+                    output <- predicted_sf$var1.pred
+                  }
+  
+                # Check that the IDW bathym predict function works 
+                  harrison_grid$IDW_water_depth <- IDW_predict_FUNC(IDW_bathym_harrison_FIT, harrison_grid)
+                  aquadro_grid$IDW_water_depth <- IDW_predict_FUNC(IDW_bathym_aquadro_FIT, aquadro_grid)
+                  applegate_grid$IDW_water_depth <- IDW_predict_FUNC(IDW_bathym_applegate_FIT, applegate_grid)
+                  
+      # UPDATED: 10/18 can't check without package so don't want to delete old 
+                  
+          #Write a function to predict bathymetry based on FIT -- Edited 10/18 cant't check with out programe 
+            IDW_predict_bathym_FUNC <- function(model_FIT, name_grid){
+              predicted_formal_class <- predict(model_FIT, newdata = as(name_grid, "Spatial"))
+              predicted_sf <- st_as_sf(predicted_formal_class)
+              name_grid$IDW_water_depth <- predicted_sf$var1.pred
+            }
+            
+        # Apply the IDW predict bathymetry function across all ponds in the list 
+            pond_grid_list <- mapply(IDW_predict_bathym_FUNC, IDW_bathym_FIT_list, pond_grid_list)
         
   # 7.2) SED THICKNESS 
-        # Write a function to build a model for sed depth using IDW
-        IDW_sed_FUNC <- function(name_pond_full){
-          output <- gstat::gstat(
-            formula = Sed_Thickness_m ~ 1,
-            data = as(name_pond_full, "Spatial"),
-            nmax = 10, nmin = 3,
-            set = list(idp = 0.5)
-          )
-        }
+            
+      # 7.2.1) Build a model for water depth using IDW
+            
+          # Write a function to build a model for sed thickness using IDW
+            IDW_sed_FUNC <- function(name_pond_full){
+              output <- gstat::gstat(
+                formula = Sed_Thickness_m ~ 1,
+                data = as(name_pond_full, "Spatial"),
+                nmax = 10, nmin = 3,
+                set = list(idp = 0.5)
+              )
+            }
+            
+              # Check that the IDW sediment Function works 
+              IDW_sed_harrison_FIT <- IDW_sed_FUNC(harrison_pond_full) # Model based on inverse distance weighted (IDW) predicting the bathymetry (water depth) of harrison pond (farm and res pond named by last name of land owner)
+              IDW_sed_applegate_FIT <- IDW_sed_FUNC(applegate_pond_full)
+              IDW_sed_aquadro_FIT <- IDW_sed_FUNC(aquadro_pond_full)
         
-        # Apply the Model function for each pond that you are interested in and save the output model as FIT  
-        IDW_sed_harrison_FIT <- IDW_sed_FUNC(harrison_pond_full) # Model based on inverse distance weighted (IDW) predicting the bathymetry (water depth) of harrison pond (farm and res pond named by last name of land owner)
-        IDW_sed_applegate_FIT <- IDW_sed_FUNC(applegate_pond_full)
-        IDW_sed_aquadro_FIT <- IDW_sed_FUNC(aquadro_pond_full)
-        
-        # Apply the predict function to each pond to get predictions 
-        harrison_grid$IDW_sed_depth <- IDW_predict_FUNC(IDW_sed_harrison_FIT, harrison_grid)
-        aquadro_grid$IDW_sed_depth <- IDW_predict_FUNC(IDW_sed_aquadro_FIT, aquadro_grid)
-        applegate_grid$IDW_sed_depth <- IDW_predict_FUNC(IDW_sed_applegate_FIT, applegate_grid)
-        
-   
+        # Apply the IDW bathym function across all ponds in the list 
+              IDW_seddepth_FIT_list <- mapply(IDW_sed_FUNC, pond_full_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+         
+    # 7.2.2 Use the FIT for each pond to predict water depth & adds predicted values to the grid 
+            
+          # OLD 
+              # Apply the predict function to each pond to get predictions -- OLD 
+              harrison_grid$IDW_sed_depth <- IDW_predict_FUNC(IDW_sed_harrison_FIT, harrison_grid)
+              aquadro_grid$IDW_sed_depth <- IDW_predict_FUNC(IDW_sed_aquadro_FIT, aquadro_grid)
+              applegate_grid$IDW_sed_depth <- IDW_predict_FUNC(IDW_sed_applegate_FIT, applegate_grid)
+              
+          # UPDATED 10/18: can't check without package so don't want to depete old 
+              
+            # Write a function to predict sediment depth based on FIT 
+                IDW_seddepth_predict_FUNC <- function(model_FIT, name_grid){
+                  predicted_formal_class <- predict(model_FIT, newdata = as(name_grid, "Spatial"))
+                  predicted_sf <- st_as_sf(predicted_formal_class)
+                  name_grid$IWD_sed_depth <- predicted_sf$var1.pred
+                }
+              
+            # Apply the IDW predict sediment thickness function across all ponds in the list 
+            pond_grid_list <- mapply(IDW_seddepth_predict_FUNC, IDW_seddepth_FIT_list, pond_grid_list)
+            
 # 8 Thin Plate Regression Spline (TPRS) 
 # ______________________________________________________________________________
    
@@ -622,7 +689,7 @@
       
     # 8.1.2) Use that TPRS model to get predictions and add them to the grid  
       # NOTE --> If this spits an error reinstall mgcv package and try again (no idea why that works but it does)
-          install.packages("mgcv")
+          # install.packages("mgcv")
           library(mgcv)
           
            # Predict One pond at a time (check)
@@ -637,9 +704,9 @@
           }
           
               # Apply that function one pond at a time (check)
-              update_pond_grid <- PredictTPRS_bathym_FUNC(TPRS_bathym_harrison_FIT, harrison_grid)
-              update_pond_grid <- PredictTPRS_bathym_FUNC(TPRS_bathym_applegate_FIT, applegate_grid)
-              update_pond_grid <- PredictTPRS_bathym_FUNC(TPRS_bathym_aquadro_FIT, aquadro_grid)
+              harrison_grid <- PredictTPRS_bathym_FUNC(TPRS_bathym_harrison_FIT, harrison_grid)
+              applegate_grid <- PredictTPRS_bathym_FUNC(TPRS_bathym_applegate_FIT, applegate_grid)
+              aquadro_grid <- PredictTPRS_bathym_FUNC(TPRS_bathym_aquadro_FIT, aquadro_grid)
               
       # Apply that TPRS bathrym prediction function across the list of ponds 
           pond_grid_list <- mapply(PredictTPRS_bathym_FUNC, TPRS_bathym_FIT_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
@@ -683,9 +750,9 @@
              }
              
              # Apply that function one pond at a time (check)
-             update_pond_grid <- PredictTPRS_seddepth_FUNC(TPRS_seddepth_harrison_FIT, harrison_grid)
-             update_pond_grid <- PredictTPRS_seddepth_FUNC(TPRS_seddepth_harrison_FIT, applegate_grid)
-             update_pond_grid <- PredictTPRS_seddepth_FUNC(TPRS_seddepth_harrison_FIT, aquadro_grid)
+             harrison_grid <- PredictTPRS_seddepth_FUNC(TPRS_seddepth_harrison_FIT, harrison_grid)
+             applegate_grid <- PredictTPRS_seddepth_FUNC(TPRS_seddepth_harrison_FIT, applegate_grid)
+             aquadro_grid <- PredictTPRS_seddepth_FUNC(TPRS_seddepth_harrison_FIT, aquadro_grid)
              
        # Apply that TPRS prediction function across the list of ponds 
        pond_grid_list <- mapply(PredictTPRS_seddepth_FUNC, TPRS_seddepth_FIT_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
@@ -711,6 +778,8 @@
         }
               # Check function works 
                 harrison_linestring <- Linestring_FUNC(harrison_polygon)
+                aquadro_linestring <- Linestring_FUNC(aquadro_polygon)
+                harrison_linestring <- Linestring_FUNC(applegate_polygon)
                 
         # Apply function across list of polygons 
           # mapply structure: output_list <- mapply(Name_FUNC, first_list, second_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
@@ -834,16 +903,49 @@
         
             
    # 9.7 Use models to predict sediment and water depth 
+        
         # 9.7.a  Use bathymetry GAM model to predict water depth for each pond 
-        harrison_grid$SOAP_water_depth <- predict.gam(SOAP_bathym_harrison_FIT, newdata = harrison_grid, type = "response")
-        aquadro_grid$SOAP_water_depth <- predict.gam(SOAP_bathym_aquadro_FIT, newdata = aquadro_grid, type = "response")
-        applegate_grid$SOAP_water_depth <- predict.gam(SOAP_bathym_applegate_FIT, newdata = applegate_grid, type = "response")
         
+              # Predict one pond at a time to check that it works 
+                harrison_grid$SOAP_water_depth <- predict.gam(SOAP_bathym_harrison_FIT, newdata = harrison_grid, type = "response")
+                aquadro_grid$SOAP_water_depth <- predict.gam(SOAP_bathym_aquadro_FIT, newdata = aquadro_grid, type = "response")
+                applegate_grid$SOAP_water_depth <- predict.gam(SOAP_bathym_applegate_FIT, newdata = applegate_grid, type = "response")
+                
+          # Write a function to use the GAM model to predict bathymetry and save to pond_grid 
+                PredictSOAP_bathym_FUNC <- function(SOAP_bathym_FIT, pond_grid){
+                  pond_grid$SOAP_water_depth <- predict(SOAP_bathym_FIT, newdata = pond_grid, type = "response")
+                  output <- pond_grid
+                }
+            
+              # Check that function works (run one at a time)
+                harrison_grid <- PredictSOAP_bathym_FUNC(SOAP_bathym_harrison_FIT, harrison_grid)
+                aquadro_grid <- PredictSOAP_bathym_FUNC(SOAP_bathym_aquadro_FIT, aquadro_grid)
+                applegate_grid <- PredictSOAP_bathym_FUNC(SOAP_bathym_applegate_FIT, applegate_grid)
+                
+          # Use mapply to apply prediction function across list of ponds
+                pond_grid_list <- mapply(PredictSOAP_bathym_FUNC, SOAP_bathym_FIT_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+                # Note that in this configuration you will have one pond_grid_list that you will pass through each model and update it as you go 
+              
         # 9.7.b USe sediment thickness GAM Model to predict sedimemt depth for each pond
-        harrison_grid$SOAP_sed_depth <- predict.gam(SOAP_seddepth_harrison_FIT, newdata = harrison_grid, type = "response")
-        aquadro_grid$SOAP_sed_depth <- predict.gam(SOAP_seddepth_aquadro_FIT, newdata = aquadro_grid, type = "response")
-        applegate_grid$SOAP_sed_depth <- predict.gam(SOAP_seddepth_applegate_FIT, newdata = applegate_grid, type = "response")
-        
+              # Predict one pond at a time to check that it works 
+                harrison_grid$SOAP_sed_depth <- predict.gam(SOAP_seddepth_harrison_FIT, newdata = harrison_grid, type = "response")
+                aquadro_grid$SOAP_sed_depth <- predict.gam(SOAP_seddepth_aquadro_FIT, newdata = aquadro_grid, type = "response")
+                applegate_grid$SOAP_sed_depth <- predict.gam(SOAP_seddepth_applegate_FIT, newdata = applegate_grid, type = "response")
+                
+          
+          # Write a function to use the GAM model to predict sediment depth and save to pond_grid 
+            PredictSOAP_seddepth_FUNC <- function(SOAP_seddepth_FIT, pond_grid){
+                  pond_grid$SOAP_sed_depth <- predict(SOAP_seddepth_FIT, newdata = pond_grid, type = "response")
+                  output <- pond_grid
+            }
+            
+            # Check that function works (run one at a time)
+            harrison_grid <- PredictSOAP_seddepth_FUNC(SOAP_seddepth_harrison_FIT, harrison_grid)
+            aquadro_grid <- PredictSOAP_seddepth_FUNC(SOAP_seddepth_aquadro_FIT, aquadro_grid)
+            applegate_grid <- PredictSOAP_seddepth_FUNC(SOAP_seddepth_applegate_FIT, applegate_grid)
+          
+          # Use mapply to apply prediction function across list of ponds 
+            pond_grid_list <- mapply(PredictSOAP_seddepth_FUNC, SOAP_seddepth_FIT_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
     
    
 #_______________________________________________________________________________
@@ -862,10 +964,10 @@
            st_set_geometry(NULL) %>% 
            summarise(
              Pond_Name = pond_name_form,
-             TIN_mean_sed_depth = mean(TIN_sed_depth),
-             TIN_sed_volume = mean(TIN_sed_depth) * pond_boundary_area,
-             IDW_mean_sed_depth = mean(IDW_sed_depth),
-             IDW_sed_volume = mean(IDW_sed_depth) * pond_boundary_area,
+             #TIN_mean_sed_depth = mean(TIN_sed_depth),
+             #TIN_sed_volume = mean(TIN_sed_depth) * pond_boundary_area,
+             #IDW_mean_sed_depth = mean(IDW_sed_depth),
+             #IDW_sed_volume = mean(IDW_sed_depth) * pond_boundary_area,
              TPRS_mean_sed_depth = mean(TPRS_sed_depth),
              TPRS_sed_volume = mean(TPRS_sed_depth) * pond_boundary_area, 
              SOAP_mean_sed_depth = mean(SOAP_sed_depth),
@@ -873,17 +975,21 @@
            )
        }
        
-       # Apply Function to calcualte sediment volume for each pond 
-       harrison_sed_vol <- sed_vol_calc_FUNC(harrison_pond_boundary, harrison_grid)
-       applegate_sed_vol <- sed_vol_calc_FUNC(applegate_pond_boundary, applegate_grid)
-       aquadro_sed_vol <- sed_vol_calc_FUNC(aquadro_pond_boundary, aquadro_grid)
-       harrison_sed_vol 
-       aquadro_sed_vol
-       applegate_sed_vol
+           # Check that the function works 
+               harrison_sed_vol <- sed_vol_calc_FUNC(harrison_polygon, harrison_grid)
+               applegate_sed_vol <- sed_vol_calc_FUNC(applegate_polygon, applegate_grid)
+               aquadro_sed_vol <- sed_vol_calc_FUNC(aquadro_polygon, aquadro_grid)
+               harrison_sed_vol 
+               aquadro_sed_vol
+               applegate_sed_vol
+               
+               # Create dataframe with the estimated sediment volume for all ponds for all models 
+               all_sed_vols <- rbind(harrison_sed_vol, aquadro_sed_vol, applegate_sed_vol)
        
-       # Create dataframe with the estimated sediment volume for all ponds for all models 
-       all_sed_vols <- rbind(harrison_sed_vol, aquadro_sed_vol, applegate_sed_vol)
-       
+       # Apply Function to calcualte sediment volume for each pond and put together into a df
+        pond_summary_sed_vol <- mapply(sed_vol_calc_FUNC, pond_polygon_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+        pond_summary_sed_vol <- Reduce(full_join,pond_summary_sed_vol)
+        
   # 10.2 Water Volume 
        # Write a function to calculate sediment volume for each pond 
        water_vol_calc_FUNC <- function(pond_boundary, pond_grid){
@@ -911,38 +1017,21 @@
        # Apply Function to calcualte sediment volume for each pond 
        harrison_water_vol <- water_vol_calc_FUNC(harrison_pond_boundary, harrison_grid)
        harrison_water_vol
-
+       
+ 
 #_______________________________________________________________________________       
-# 11. Contouring 
+# 11. Summary statistics of model outputs 
+  
+  # 11.1) Boxplots comparing each model 
+       
+       # Might need to make into long formatt 
+
+       #create vertical side-by-side boxplots
+       ggplot(pond_summary_sed_vol, aes(x=team, y=points, fill=team)) +
+         geom_boxplot() +
+         ggtitle('Points by Team')
    
-           # Katie can't figure out piping 
-           # depth_raster <- example_grid %>% 
-           #   st_set_geometry(NULL) %>% 
-           #   select(X, Y, IDW) %>% 
-           #   raster::rasterFromXYZ(crs = raster::crs("+init=epsg:26920"))
            
-           # Example Data 
-           depth_raster <- example_grid %>% 
-             st_set_geometry(NULL) 
-           depth_raster <- subset(depth_raster, select = c(X, Y, IDW)) %>% 
-             raster::rasterFromXYZ(crs = raster::crs("+init=epsg:26920"))
-           
-           depth_contours <- depth_raster %>% 
-             raster::rasterToContour(levels = c(0.5, 1, 1.5)) %>% 
-             st_as_sf()
-           
-           # Holgerson data 
-           pond_depth_raster <- pond_grid %>% 
-             st_set_geometry(NULL) 
-           
-           pond_depth_raster <- subset(pond_depth_raster, select = c(X, Y, IDW_sed_depth, IDW_water_depth)) %>% 
-             raster::rasterFromXYZ(crs = raster::crs("+init=epsg:26920"))
-           
-          #*******************************
-           # Can't get contours to work right now 2/14/23 KG 
-           pond_depth_contours <- pond_depth_raster %>% 
-             raster::rasterToContour(levels = c(0.5, 1, 1.5)) %>% 
-             st_as_sf()
    
 #_______________________________________________________________________________ 
 # 12. Plotting 
@@ -1004,12 +1093,10 @@
     # 12.5 Plot each model for each pond 
        
        # Applegate 
-        plot_sedmap_TIN_applegate <- Plot_sedmap_TIN_FUNC(applegate_grid, applegate_pond_boundary, applegate_pond_depths)
-        plot_sedmap_IDW_applegate <- Plot_sedmap_IDW_FUNC(applegate_grid, applegate_pond_boundary, applegate_pond_depths)
-        plot_sedmap_TPRS_applegate <- Plot_sedmap_TPRS_FUNC(applegate_grid, applegate_pond_boundary, applegate_pond_depths)
-        plot_sedmap_SOAP_applegate <- Plot_sedmap_SOAP_FUNC(applegate_grid, applegate_pond_boundary, applegate_pond_depths)
-            plot_sedmap_TIN_applegate 
-            plot_sedmap_IDW_applegate
+        plot_sedmap_TIN_applegate <- Plot_sedmap_TIN_FUNC(applegate_grid, applegate__polygon, applegate_meas_depths)
+        plot_sedmap_IDW_applegate <- Plot_sedmap_IDW_FUNC(applegate_grid, applegate__polygon, applegate_meas_depths)
+        plot_sedmap_TPRS_applegate <- Plot_sedmap_TPRS_FUNC(applegate_grid, applegate_polygon, applegate_meas_depths)
+        plot_sedmap_SOAP_applegate <- Plot_sedmap_SOAP_FUNC(applegate_grid, applegate_polygon, applegate_meas_depths)
             plot_sedmap_TPRS_applegate
             plot_sedmap_SOAP_applegate
      
@@ -1075,7 +1162,35 @@
   # OLD CODE 9/29/23
   ###########################################################################################################
      
+   # Contouring 
+         # Katie can't figure out piping 
+         # depth_raster <- example_grid %>% 
+         #   st_set_geometry(NULL) %>% 
+         #   select(X, Y, IDW) %>% 
+         #   raster::rasterFromXYZ(crs = raster::crs("+init=epsg:26920"))
          
+         # Example Data 
+         depth_raster <- example_grid %>% 
+           st_set_geometry(NULL) 
+         depth_raster <- subset(depth_raster, select = c(X, Y, IDW)) %>% 
+           raster::rasterFromXYZ(crs = raster::crs("+init=epsg:26920"))
+         
+         depth_contours <- depth_raster %>% 
+           raster::rasterToContour(levels = c(0.5, 1, 1.5)) %>% 
+           st_as_sf()
+         
+         # Holgerson data 
+         pond_depth_raster <- pond_grid %>% 
+           st_set_geometry(NULL) 
+         
+         pond_depth_raster <- subset(pond_depth_raster, select = c(X, Y, IDW_sed_depth, IDW_water_depth)) %>% 
+           raster::rasterFromXYZ(crs = raster::crs("+init=epsg:26920"))
+         
+         #*******************************
+         # Can't get contours to work right now 2/14/23 KG 
+         pond_depth_contours <- pond_depth_raster %>% 
+           raster::rasterToContour(levels = c(0.5, 1, 1.5)) %>% 
+           st_as_sf()
          
          
          
