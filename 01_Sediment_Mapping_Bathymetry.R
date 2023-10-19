@@ -227,6 +227,9 @@
       st_transform(26920) %>%
       st_zm()
       #####
+    
+    ## * put all of the points shape dfs into a list 
+    ## * put all of the polygon shape df into a list 
 
 #####    
 # 2. Connect the lat long from the pond depths shape file to the measuremed depths from seperate df --> make spatial
@@ -234,6 +237,14 @@
     # Seperate Sediment depth data out by pond 
     meas_depths_list <-split(sediment_depths, sediment_depths$Pond)  
       # this seperates the one big df of all the measured depths into a list with a seperate df for each pond 
+    
+    ## * put ponds in meas_depths_list into the same order as the other lists, or find a way to connect dfs by name rather than by order 
+    
+      # Practice subset 
+        applegate_meas_depths <- subset(sediment_depths, sediment_depths$Pond == "Applegate")
+        aquadro_meas_depths <- subset(sediment_depths, sediment_depths$Pond == "Aquadro")
+        harrison_meas_depths <- subset(sediment_depths, sediment_depths$Pond == "Harrison")
+        meas_depths_list <- list(applegate_meas_depths, aquadro_meas_depths, harrison_meas_depths)
     
     # Intensive by hand 
         boyce_meas_depths <- subset(sediment_depths, sediment_depths$Pond == "Boyce")
@@ -273,7 +284,7 @@
       pond_depths$Water_Depth_m <- pond_depths$Depth_to_top_of_Sediment_cm / 100
       
       # Output 
-      output <- as.data.frame(pond_depths)
+      output <- pond_depths
     }
         
    # Apply function over the points shape file and measured depths for each pond 
@@ -289,13 +300,12 @@
     
       # Make a list of points dfs and a list of depths dfs 
       points_shp_list <- list(applegate_points, aquadro_points, harrison_points)
-      meas_depths_list <- list(applegate_meas_depths, aquadro_meas_depths, harrison_meas_depths)
       
       # Run function over the two lists 
       meas_depths_latlong_list <- mapply(Connect_Depth_LatLong_FUNC, points_shp_list, meas_depths_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
       # Output is a list of dataframes with a df for each pond (I am a genius)
       
-#********* see if this works feeding into next steps 
+    ## * see if this works feeding into next steps 
     
 # 3. Plot measured depths and thickness on a basic map  
 #_______________________________________________________________________________   
@@ -332,9 +342,13 @@
 #_______________________________________________________________________________    
   # 4.1 ) For all ponds cast geometry to another type, change from polygon to points 
      # This has to be done individually because it throws a warning 
+    
+     # Example list 
      applegate_polygon_cast <- st_cast(applegate_polygon, "POINT")
      aquadro_polygon_cast <- st_cast(aquadro_polygon, "POINT") 
      harrison_polygon_cast <- st_cast(harrison_polygon, "POINT")
+     
+     cast_boundaries_list <- list(applegate_polygon_cast, aquadro_polygon_cast, harrison_polygon_cast)
      
      # Listing out for each pond 
      
@@ -382,8 +396,8 @@
   # 4.2) Write Function 
      
          # Dummy data to write function 
-           pond_boundary_points <- harrison_polygon_cast  # this is just a long list of points on the boundary with depth set to zero 
-           pond_depths <- harrison_depths  # this is all of the points where we have measured water and sediment depths 
+           pond_boundary_points <- applegate_polygon_cast  # this is just a long list of points on the boundary with depth set to zero 
+           pond_depths <- applegate_depths_latlong  # this is all of the points where we have measured water and sediment depths 
            
      Coord_Bound_FUNC <- function(pond_boundary_points, pond_depths){
        
@@ -404,17 +418,17 @@
   # 4.3) Run function across all ponds 
      
      # Run the function individually for each pond 
-     applegate_full <- Coord_Bound_FUNC(applegate_polygon_cast, applegate_depths)
-     aquadro_full <- Coord_Bound_FUNC(aquadro_polygon_cast, aquadro_depths)
-     harrison_full <- Coord_Bound_FUNC(harrison_polygon_cast, harrison_depths)
-     
+       applegate_full <- Coord_Bound_FUNC(applegate_polygon_cast, applegate_depths_latlong)
+       aquadro_full <- Coord_Bound_FUNC(aquadro_polygon_cast, aquadro_meas_depths)
+       harrison_full <- Coord_Bound_FUNC(harrison_polygon_cast, harrison_meas_depths)
+       
      # Try Running the function across multiple ponds using mapply 
      cast_boundaries_list <- list(applegate_polygon_cast, aquadro_polygon_cast, harrison_polygon_cast)
      meas_depths_latlong_list <- list(applegate_depths_latlong, aquadro_depths_latlong, harrison_depths_latlong)
    
      # Run function over the two lists 
      depths_full_list <- mapply(Coord_Bound_FUNC, cast_boundaries_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
-     ## This throws an error something about the geometry
+   
      
 # 5. Create a grid to hold the raster output
 #_______________________________________________________________________________  
