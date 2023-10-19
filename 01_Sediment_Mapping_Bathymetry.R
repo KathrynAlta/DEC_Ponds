@@ -600,34 +600,98 @@
    
   # 8.1) BATHYMETRY 
 
-    # create a model for water depth using TPRS
-      TPRS_bathym_harrison_FIT <- mgcv::gam(Water_Depth_m ~ s(X, Y, k = 60), data = harrison_pond_full, method = "REML")
-      TPRS_bathym_aquadro_FIT <- mgcv::gam(Water_Depth_m ~ s(X, Y, k = 60), data = aquadro_pond_full, method = "REML")
-      TPRS_bathym_applegate_FIT <- mgcv::gam(Water_Depth_m ~ s(X, Y, k = 60), data = applegate_pond_full, method = "REML")
+    # 8.1.1) create a model for water depth using TPRS 
+            # Create model one pond at a time (check)
+                TPRS_bathym_harrison_FIT <- mgcv::gam(Water_Depth_m ~ s(X, Y, k = 60), data = harrison_full, method = "REML")
+                TPRS_bathym_aquadro_FIT <- mgcv::gam(Water_Depth_m ~ s(X, Y, k = 60), data = aquadro_full, method = "REML")
+                TPRS_bathym_applegate_FIT <- mgcv::gam(Water_Depth_m ~ s(X, Y, k = 60), data = applegate_full, method = "REML")
+                
+      # Write a function to create the model for bathymetry 
+        CreateTPRSmodel_bathym_FUNC <- function(pond_full){
+          output_FIT <- mgcv::gam(Water_Depth_m ~ s(X, Y, k = 60), data = pond_full, method = "REML")
+        }
+        
+            # Apply that function to one pond at a time (check)
+            TPRS_bathym_harrison_FIT <- CreateTPRSmodel_bathym_FUNC(harrison_full)
+            TPRS_bathym_applegate_FIT <- CreateTPRSmodel_bathym_FUNC(applegate_full)
+            TPRS_bathym_aquadro_FIT <- CreateTPRSmodel_bathym_FUNC(aquadro_full)
+            
+        # Apply that function to the list of ponds 
+            # mapply structure: output_list <- mapply(Name_FUNC, first_list, second_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+        TPRS_bathym_FIT_list <- mapply(CreateTPRSmodel_bathym_FUNC, pond_full_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
       
-      
-      # Use that TPRS model to get predictions and add them to the grid  
+    # 8.1.2) Use that TPRS model to get predictions and add them to the grid  
       # NOTE --> If this spits an error reinstall mgcv package and try again (no idea why that works but it does)
-          #install.packages("mgcv")
+          install.packages("mgcv")
           library(mgcv)
-      
-       harrison_grid$TPRS_water_depth <- predict(TPRS_bathym_harrison_FIT, newdata = harrison_grid, type = "response")  
-       aquadro_grid$TPRS_water_depth <- predict(TPRS_bathym_aquadro_FIT, newdata = aquadro_grid, type = "response")  
-       applegate_grid$TPRS_water_depth <- predict(TPRS_bathym_applegate_FIT, newdata = applegate_grid, type = "response")  
+          
+           # Predict One pond at a time (check)
+           harrison_grid$TPRS_water_depth <- predict(TPRS_bathym_harrison_FIT, newdata = harrison_grid, type = "response")  
+           aquadro_grid$TPRS_water_depth <- predict(TPRS_bathym_aquadro_FIT, newdata = aquadro_grid, type = "response")  
+           applegate_grid$TPRS_water_depth <- predict(TPRS_bathym_applegate_FIT, newdata = applegate_grid, type = "response")  
+         
+      # Write a function to Predict Bathymetry -- to use the TPRS model for each pond to predict water depth for each pond in the list 
+          PredictTPRS_bathym_FUNC <- function(TPRS_bathym_FIT, pond_grid){
+            pond_grid$TPRS_water_depth <- predict(TPRS_bathym_FIT, newdata = pond_grid, type = "response")
+            output <- pond_grid
+          }
+          
+              # Apply that function one pond at a time (check)
+              update_pond_grid <- PredictTPRS_bathym_FUNC(TPRS_bathym_harrison_FIT, harrison_grid)
+              update_pond_grid <- PredictTPRS_bathym_FUNC(TPRS_bathym_applegate_FIT, applegate_grid)
+              update_pond_grid <- PredictTPRS_bathym_FUNC(TPRS_bathym_aquadro_FIT, aquadro_grid)
+              
+      # Apply that TPRS bathrym prediction function across the list of ponds 
+          pond_grid_list <- mapply(PredictTPRS_bathym_FUNC, TPRS_bathym_FIT_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+          # Note that in this configuration you will have one pond_grid_list that you will pass through each model and update it as you go 
+          
+  # 8.2) SEDIMENT THICKNESS 
+       
+    # 8.2.1) Create a model for Sediment thickness usign TPRS 
+        
+          # create a model for sediment thickness using TPRS one pond at a time (check)
+           TPRS_sedmap_harrison_FIT <- mgcv::gam(Sed_Thickness_m ~ s(X, Y, k = 60), data = harrison_full, method = "REML")
+           TPRS_sedmap_aquadro_FIT <- mgcv::gam(Sed_Thickness_m ~ s(X, Y, k = 60), data = aquadro_full, method = "REML")
+           TPRS_sedmap_applegate_FIT <- mgcv::gam(Sed_Thickness_m ~ s(X, Y, k = 60), data = applegate_full, method = "REML")
+           
+    # Write a function to create the model for sediment thickness for the full list of ponds  
+           CreateTPRSmodel_seddepth_FUNC <- function(pond_full){
+             output_FIT <- mgcv::gam(Sed_Thickness_m ~ s(X, Y, k = 60), data = pond_full, method = "REML")
+           }
+           
+           # Apply that function to one pond at a time (check)
+           TPRS_seddepth_harrison_FIT <- CreateTPRSmodel_seddepth_FUNC(harrison_full)
+           TPRS_seddepth_applegate_FIT <- CreateTPRSmodel_seddepth_FUNC(applegate_full)
+           TPRS_seddepth_aquadro_FIT <- CreateTPRSmodel_seddepth_FUNC(aquadro_full)
+           
+    # Apply that function to the list of ponds 
+     # mapply structure: output_list <- mapply(Name_FUNC, first_list, second_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+     TPRS_seddepth_FIT_list <- mapply(CreateTPRSmodel_seddepth_FUNC, pond_full_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
      
-  # 8.1) SEDIMENT DEPTH  
+           
+  # 8.2.2) Use the model for each pond to predct sediment thickness and add them to the grid
+           
+           # Predict one pond at a time (check)  
+             harrison_grid$TPRS_sed_depth <- predict(TPRS_seddepth_harrison_FIT, newdata = harrison_grid, type = "response")  
+             aquadro_grid$TPRS_sed_depth <- predict(TPRS_seddepth_aquadro_FIT, newdata = aquadro_grid, type = "response")  
+             applegate_grid$TPRS_sed_depth <- predict(TPRS_seddepth_applegate_FIT, newdata = applegate_grid, type = "response")  
+         
+      # Write a function to Predict Sediment Thickness-- to use the TPRS model for each pond to predict water depth for each pond in the list 
+             PredictTPRS_seddepth_FUNC <- function(TPRS_seddepth_FIT, pond_grid){
+               pond_grid$TPRS_sed_depth <- predict(TPRS_seddepth_FIT, newdata = pond_grid, type = "response")
+               output <- pond_grid
+             }
+             
+             # Apply that function one pond at a time (check)
+             update_pond_grid <- PredictTPRS_seddepth_FUNC(TPRS_seddepth_harrison_FIT, harrison_grid)
+             update_pond_grid <- PredictTPRS_seddepth_FUNC(TPRS_seddepth_harrison_FIT, applegate_grid)
+             update_pond_grid <- PredictTPRS_seddepth_FUNC(TPRS_seddepth_harrison_FIT, aquadro_grid)
+             
+       # Apply that TPRS prediction function across the list of ponds 
+       pond_grid_list <- mapply(PredictTPRS_seddepth_FUNC, TPRS_seddepth_FIT_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+          # Note that in this configuration you will have one pond_grid_list that you will pass through each model and update it as you go 
        
-    # create a model for water depth using TPRS
-       TPRS_sedmap_harrison_FIT <- mgcv::gam(Sed_Thickness_m ~ s(X, Y, k = 60), data = harrison_pond_full, method = "REML")
-       TPRS_sedmap_aquadro_FIT <- mgcv::gam(Sed_Thickness_m ~ s(X, Y, k = 60), data = aquadro_pond_full, method = "REML")
-       TPRS_sedmap_applegate_FIT <- mgcv::gam(Sed_Thickness_m ~ s(X, Y, k = 60), data = applegate_pond_full, method = "REML")
-       
-       
-    # Use that TPRS model to get predictions and add them to the grid  
-       harrison_grid$TPRS_sed_depth <- predict(TPRS_sedmap_harrison_FIT, newdata = harrison_grid, type = "response")  
-       aquadro_grid$TPRS_sed_depth <- predict(TPRS_sedmap_aquadro_FIT, newdata = aquadro_grid, type = "response")  
-       applegate_grid$TPRS_sed_depth <- predict(TPRS_sedmap_applegate_FIT, newdata = applegate_grid, type = "response")  
-       
+   
       
 # 9. Soap Film Smooth (SFS)   
 # ______________________________________________________________________________ 
