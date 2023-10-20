@@ -239,8 +239,21 @@
                               walnutridge_points, lucas_points, collmer_points, vesa_points, 
                               conley_points, hahn_points, marks_points, englishdeep_points)
     
+    names(pond_points_list ) <- c("Boyce", "White", "Howarth", "Edwards",
+                                   "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", 
+                                   "Aquadro", "Longhouse", "Ecovillage", "Dybowski", 
+                                   "Applegate", "Mt_Pleasant_NE", "Barber", "Stick_and_Stone",
+                                   "English_Shallow", "Engst", "Rodgers", "Carpenter", 
+                                   "Walnut_Ridge", "Lucas", "Collmer", "Vesa", 
+                                   "Conley", "Hahn", "Marks", "English_Deep")
     
     # Put all of the polygon shape df into a list 
+    
+        # Practice Subset 
+          pond_polygon_list <- list(applegate_polygon, aquadro_polygon, harrison_polygon)
+          names(pond_polygon_list) <- c("Applegate", "Aquadro", "Harrison")
+    
+          
     pond_polygon_list <- list(boyce_polygon, white_polygon, howarth_polygon, edwards_polygon,
                                  shelterbelt_polygon, mtpleasantse_polygon, harrison_polygon, levine_polygon, 
                                  aquadro_polygon, longhouse_polygon, ecovillage_polygon, dybowski_polygon, 
@@ -249,22 +262,48 @@
                                  walnutridge_polygon, lucas_polygon, collmer_polygon, vesa_polygon, 
                                  conley_polygon, hahn_polygon, marks_polygon, englishdeep_polygon)
     
-
+    names(pond_polygon_list ) <- c("Boyce", "White", "Howarth", "Edwards",
+                                  "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", 
+                                  "Aquadro", "Longhouse", "Ecovillage", "Dybowski", 
+                                  "Applegate", "Mt_Pleasant_NE", "Barber", "Stick_and_Stone",
+                                  "English_Shallow", "Engst", "Rodgers", "Carpenter", 
+                                  "Walnut_Ridge", "Lucas", "Collmer", "Vesa", 
+                                  "Conley", "Hahn", "Marks", "English_Deep")
+    
    
 # 2. Connect the lat long from the pond depths shape file to the measuremed depths from seperate df --> make spatial
 #_______________________________________________________________________________    
-    # Seperate Sediment depth data out by pond 
-    meas_depths_list <-split(sediment_depths, sediment_depths$Pond)  
-      # this seperates the one big df of all the measured depths into a list with a seperate df for each pond 
     
-    ## * put ponds in meas_depths_list into the same order as the other lists, or find a way to connect dfs by name rather than by order 
+    # 2.1 Formatt the Sediment Depth Data 
+      
+        # Remove ponds that you have sediment data for but that we did not include in study 
+        sediment_depths <- sediment_depths[!sediment_depths$Pond %in% c("Artibee", "Bensons", "Thru_the_Woods", "Whitmore" ), ]
+        sediment_depths$Pond <- as.factor(sediment_depths$Pond)
+        levels(sediment_depths$Pond)
+        sediment_depths$Pond <- as.character(sediment_depths$Pond)
+        
+        # Seperate Sediment depth data out by pond 
+        meas_depths_list <-split(sediment_depths, sediment_depths$Pond)  
+          # this seperates the one big df of all the measured depths into a list with a seperate df for each pond 
+        
+        # Order the dfs in the meas deths list so that the ponds are in the same order as in the other lists 
+        meas_depths_list_ordered <- meas_depths_list[c("Boyce", "White", "Howarth", "Edwards",
+                                                       "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", 
+                                                       "Aquadro", "Longhouse", "Ecovillage", "Dybowski", 
+                                                       "Applegate", "Mt_Pleasant_NE", "Barber", "Stick_and_Stone",
+                                                       "English_Shallow", "Engst", "Rodgers", "Carpenter", 
+                                                       "Walnut_Ridge", "Lucas", "Collmer", "Vesa", 
+                                                       "Conley", "Hahn", "Marks", "English_Deep")]
     
       # Practice subset 
         applegate_meas_depths <- subset(sediment_depths, sediment_depths$Pond == "Applegate")
         aquadro_meas_depths <- subset(sediment_depths, sediment_depths$Pond == "Aquadro")
         harrison_meas_depths <- subset(sediment_depths, sediment_depths$Pond == "Harrison")
+        
         meas_depths_list <- list(applegate_meas_depths, aquadro_meas_depths, harrison_meas_depths)
     
+        names(meas_depths_list) <- c("Applegate", "Aquadro", "Harrison")
+        
     # Intensive by hand 
         boyce_meas_depths <- subset(sediment_depths, sediment_depths$Pond == "Boyce")
         white_meas_depths <- subset(sediment_depths, sediment_depths$Pond == "White")
@@ -277,36 +316,36 @@
         applegate_meas_depths <- subset(sediment_depths, sediment_depths$Pond == "Applegate")
         aquadro_meas_depths <- subset(sediment_depths, sediment_depths$Pond == "Aquadro")
         
-    # Write a function to connect the measured depths to the lat long in the shape file 
+  # 2.2) Write a function to connect the measured depths to the lat long in the shape file 
         
-        # Dummy data to write function 
-        pond_points <- aquadro_points
-        measured_depths <- aquadro_meas_depths
+            # Dummy data to write function 
+            pond_points <- aquadro_points
+            measured_depths <- aquadro_meas_depths
+            
+        Connect_Depth_LatLong_FUNC <- function(pond_points, measured_depths){
+          
+          # Make a Measurement number in the points shape file that you can use to connect to 
+          pond_points$Measurement_Number <- seq(1:nrow(pond_points)) 
+          pond_points$Measurement_Number <- as.numeric(pond_points$Measurement_Number) #Change to a numeric so that it plays nicely with the Measurement Number from the other data frame 
+          
+          # Join the measured depths and the shape file of 
+          pond_depths <- full_join(pond_points, measured_depths)
+          
+          #Columns 
+          pond_depths$source <- "measured"
+          pond_depths$pond <- measured_depths$Pond
+          
+          # Calculate sediment depth in meters
+          pond_depths$Sed_Thickness_m <- (pond_depths$Depth_to_btm_of_sediment_cm - pond_depths$Depth_to_top_of_Sediment_cm)/100
+          
+          # Convert water depth to meters 
+          pond_depths$Water_Depth_m <- pond_depths$Depth_to_top_of_Sediment_cm / 100
+          
+          # Output 
+          output <- pond_depths
+        }
         
-    Connect_Depth_LatLong_FUNC <- function(pond_points, measured_depths){
-      
-      # Make a Measurement number in the points shape file that you can use to connect to 
-      pond_points$Measurement_Number <- seq(1:nrow(pond_points)) 
-      pond_points$Measurement_Number <- as.numeric(pond_points$Measurement_Number) #Change to a numeric so that it plays nicely with the Measurement Number from the other data frame 
-      
-      # Join the measured depths and the shape file of 
-      pond_depths <- full_join(pond_points, measured_depths)
-      
-      #Columns 
-      pond_depths$source <- "measured"
-      pond_depths$pond <- measured_depths$Pond
-      
-      # Calculate sediment depth in meters
-      pond_depths$Sed_Thickness_m <- (pond_depths$Depth_to_btm_of_sediment_cm - pond_depths$Depth_to_top_of_Sediment_cm)/100
-      
-      # Convert water depth to meters 
-      pond_depths$Water_Depth_m <- pond_depths$Depth_to_top_of_Sediment_cm / 100
-      
-      # Output 
-      output <- pond_depths
-    }
-        
-   # Apply function over the points shape file and measured depths for each pond 
+   # 2.3) Apply function over the points shape file and measured depths for each pond 
     
     # Applying function individually for each pond 
       boyce_depths <- Connect_Depth_LatLong_FUNC(boyce_points, boyce_meas_depths) #Doesn't work because incorrectly exported shape file 
@@ -358,21 +397,34 @@
      
      Plot_Water_Depths_FUNC(harrison_polygon, harrison_depths_latlong)
      Plot_Sed_Thick_FUNC(harrison_polygon, harrison_depths_latlong)
-   
+     
+    # Apply the plotting function over lists so that you don't have to write it out every time 
+     par(ask = TRUE)  #Setting par$ask equal to TRUE allows you to flip through all of the plots one at a a time 
+     mapply(Plot_Sed_Thick_FUNC, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+     par(ask = FALSE)
    
 # 4. Add the coordinates of the boundary as columns and set the depth at the boundary to zero 
 #_______________________________________________________________________________    
   # 4.1 ) For all ponds cast geometry to another type, change from polygon to points 
      # This has to be done individually because it throws a warning 
     
-     # Example list 
-     applegate_polygon_cast <- st_cast(applegate_polygon, "POINT")
-     aquadro_polygon_cast <- st_cast(aquadro_polygon, "POINT") 
-     harrison_polygon_cast <- st_cast(harrison_polygon, "POINT")
+         # Example list 
+         applegate_polygon_cast <- st_cast(applegate_polygon, "POINT")
+         aquadro_polygon_cast <- st_cast(aquadro_polygon, "POINT") 
+         harrison_polygon_cast <- st_cast(harrison_polygon, "POINT")
+         
+         cast_boundaries_list <- list(applegate_polygon_cast, aquadro_polygon_cast, harrison_polygon_cast)
+         
+     # Write a Function to cast all of the polygons 
+     CastPolygon_FUNC <- function(pond_polygon){
+       output <- st_cast(pond_polygon, "POINT")
+     }
      
-     cast_boundaries_list <- list(applegate_polygon_cast, aquadro_polygon_cast, harrison_polygon_cast)
+     # Apply cast function across all ponds (this works, it will just print a warning for each pond)
+     cast_boundaries_list <- mapply(CastPolygon_FUNC, pond_polygon_list, USE.NAMES = TRUE ,SIMPLIFY = FALSE)
      
-     # Listing out for each pond 
+    
+     # Listing out for each pond (because I thought the function wouldn't work)
      
        # Intensive 
          boyce_polygon_cast <- st_cast(boyce_polygon, "POINT")
@@ -415,6 +467,14 @@
                                       walnutridge_polygon_cast, lucas_polygon_cast, collmer_polygon_cast, vesa_polygon_cast, 
                                       conley_polygon_cast, hahn_polygon_cast, marks_polygon_cast, englishdeep_polygon_cast)
      
+         names(cast_boundaries_list) <- c("Boyce", "White", "Howarth", "Edwards",
+                                        "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", 
+                                        "Aquadro", "Longhouse", "Ecovillage", "Dybowski", 
+                                        "Applegate", "Mt_Pleasant_NE", "Barber", "Stick_and_Stone",
+                                        "English_Shallow", "Engst", "Rodgers", "Carpenter", 
+                                        "Walnut_Ridge", "Lucas", "Collmer", "Vesa", 
+                                        "Conley", "Hahn", "Marks", "English_Deep")
+         
   # 4.2) Write Function 
      
          # Dummy data to write function 
@@ -457,6 +517,9 @@
    # Dummy data to write function 
        thing1 <- as.character(aquadro_full[1, "Pond_Name"])
        thing1[1]
+       
+       name_pond_full <- harrison_full
+       name_pond_boundary <- harrison_polygon
 
    # Write a function to create a grid 
    GridCreate_FUNC <- function(name_pond_full, name_pond_boundary){
@@ -748,12 +811,7 @@
                pond_grid$TPRS_sed_depth <- predict(TPRS_seddepth_FIT, newdata = pond_grid, type = "response")
                output <- pond_grid
              }
-             
-             # Apply that function one pond at a time (check)
-             harrison_grid <- PredictTPRS_seddepth_FUNC(TPRS_seddepth_harrison_FIT, harrison_grid)
-             applegate_grid <- PredictTPRS_seddepth_FUNC(TPRS_seddepth_harrison_FIT, applegate_grid)
-             aquadro_grid <- PredictTPRS_seddepth_FUNC(TPRS_seddepth_harrison_FIT, aquadro_grid)
-             
+          
        # Apply that TPRS prediction function across the list of ponds 
        pond_grid_list <- mapply(PredictTPRS_seddepth_FUNC, TPRS_seddepth_FIT_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
           # Note that in this configuration you will have one pond_grid_list that you will pass through each model and update it as you go 
@@ -1024,14 +1082,29 @@
   
   # 11.1) Boxplots comparing each model 
        
-       # Might need to make into long formatt 
-
-       #create vertical side-by-side boxplots
-       ggplot(pond_summary_sed_vol, aes(x=team, y=points, fill=team)) +
+      # Format as long instead of wide format for plotting
+         pond_sum <- pond_summary_sed_vol
+         names(pond_sum)
+         pond_sum <- subset(pond_sum, select = c("Pond_Name", "TPRS_sed_volume", "SOAP_sed_volume"))
+         names(pond_sum)[names(pond_sum) == "TPRS_sed_volume"] <- "TPRS"
+         names(pond_sum)[names(pond_sum) == "SOAP_sed_volume"] <- "SOAP"
+         head(pond_sum)
+         pond_sum_long <- gather(pond_sum, model, sed_volume, TPRS:SOAP, factor_key=TRUE)
+         
+      # side-by-side boxplots all ponds comparing models 
+       ggplot(pond_sum_long, aes(x=model, y=sed_volume, fill=model)) +
          geom_boxplot() +
-         ggtitle('Points by Team')
-   
-           
+         ylab("Estimated Sediment Volume (m3)") + 
+         xlab("Model") + 
+         ggtitle("Estimates Sediment Volume by Model")
+       
+       # Plot estimated volume for each pond for each model 
+       ggplot(pond_sum_long, aes(x=model, y=sed_volume, fill=model)) +
+         geom_boxplot() +
+         ylab("Estimated Sediment Volume (m3)") + 
+         xlab("Model") +
+         facet_wrap(~Pond_Name) +
+         ggtitle("Estimated Sediment Volume by Model by Pond")
    
 #_______________________________________________________________________________ 
 # 12. Plotting 
@@ -1086,25 +1159,58 @@
            geom_sf_text(aes(label = Sed_Thickness_m), data = pond_depths, size = 3) + 
            annotation_scale(location = "br") +
            labs(title= paste(pond_name, "Sediment Depth (m) -- SOAP", sep = " "), x = NULL, y = NULL, fill = "Sediment Depth (m)")
+         output <- output_plot
        }
        
-           
-   
-    # 12.5 Plot each model for each pond 
+
+    # 12.5  # Apply the plotting function over lists so that you don't have to write it out every time 
+       #TIN 
+       par(ask = TRUE)  #Setting par$ask equal to TRUE allows you to flip through all of the plots one at a a time 
+       mapply(Plot_sedmap_TIN_FUNC, pond_grid_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+       par(ask = FALSE)
        
+       # IDW 
+         par(ask = TRUE)  #Setting par$ask equal to TRUE allows you to flip through all of the plots one at a a time 
+         mapply(Plot_sedmap_IDW_FUNC, pond_grid_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+         par(ask = FALSE)
+         
+         TPRS_plot_list <- mapply(Plot_sedmap_IDW_FUNC, pond_grid_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+         TPRS_plot_list[1]
+       
+       # TPRS 
+         par(ask = TRUE)  #Setting par$ask equal to TRUE allows you to flip through all of the plots one at a a time 
+         mapply(Plot_sedmap_TPRS_FUNC, pond_grid_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+         par(ask = FALSE)
+         
+         TPRS_plot_list <- mapply(Plot_sedmap_TPRS_FUNC, pond_grid_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+         TPRS_plot_list[2]
+       
+       # SOAP
+         par(ask = TRUE)  #Setting par$ask equal to TRUE allows you to flip through all of the plots one at a a time 
+         mapply(Plot_sedmap_SOAP_FUNC, pond_grid_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+         par(ask = FALSE)
+         
+         SOAP_plot_list <- mapply(Plot_sedmap_SOAP_FUNC, pond_grid_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+         SOAP_plot_list[3]
+         
+    # 12.6 Plot each model for a subset of pond, 
+       
+       # Will need to pull out the maps for other intensive ponds (also export them to a set size when you save them)
+       
+       # Practice Ponds 
        # Applegate 
-        plot_sedmap_TIN_applegate <- Plot_sedmap_TIN_FUNC(applegate_grid, applegate__polygon, applegate_meas_depths)
-        plot_sedmap_IDW_applegate <- Plot_sedmap_IDW_FUNC(applegate_grid, applegate__polygon, applegate_meas_depths)
-        plot_sedmap_TPRS_applegate <- Plot_sedmap_TPRS_FUNC(applegate_grid, applegate_polygon, applegate_meas_depths)
-        plot_sedmap_SOAP_applegate <- Plot_sedmap_SOAP_FUNC(applegate_grid, applegate_polygon, applegate_meas_depths)
+        plot_sedmap_TIN_applegate <- Plot_sedmap_TIN_FUNC(applegate_grid, applegate_polygon, applegate_depths_latlong)
+        plot_sedmap_IDW_applegate <- Plot_sedmap_IDW_FUNC(applegate_grid, applegate_polygon, applegate_depths_latlong)
+        plot_sedmap_TPRS_applegate <- Plot_sedmap_TPRS_FUNC(applegate_grid, applegate_polygon, applegate_depths_latlong)
+        plot_sedmap_SOAP_applegate <- Plot_sedmap_SOAP_FUNC(applegate_grid, applegate_polygon, applegate_depths_latlong)
             plot_sedmap_TPRS_applegate
             plot_sedmap_SOAP_applegate
      
         # Aquadro 
-        plot_sedmap_TIN_aquadro <- Plot_sedmap_TIN_FUNC(aquadro_grid, aquadro_pond_boundary, aquadro_pond_depths) 
-        plot_sedmap_IDW_aquadro <- Plot_sedmap_IDW_FUNC(aquadro_grid, aquadro_pond_boundary, aquadro_pond_depths)
-        plot_sedmap_TPRS_aquadro <- Plot_sedmap_TPRS_FUNC(aquadro_grid, aquadro_pond_boundary, aquadro_pond_depths)
-        plot_sedmap_SOAP_aquadro <- Plot_sedmap_SOAP_FUNC(aquadro_grid, aquadro_pond_boundary, aquadro_pond_depths)
+        plot_sedmap_TIN_aquadro <- Plot_sedmap_TIN_FUNC(aquadro_grid, aquadro_polygon, aquadro_depths_latlong) 
+        plot_sedmap_IDW_aquadro <- Plot_sedmap_IDW_FUNC(aquadro_grid, aquadro_polygon, aquadro_depths_latlong)
+        plot_sedmap_TPRS_aquadro <- Plot_sedmap_TPRS_FUNC(aquadro_grid, aquadro_polygon, aquadro_depths_latlong)
+        plot_sedmap_SOAP_aquadro <- Plot_sedmap_SOAP_FUNC(aquadro_grid, aquadro_polygon, aquadro_depths_latlong)
              plot_sedmap_TIN_aquadro
              plot_sedmap_IDW_aquadro
              plot_sedmap_TPRS_aquadro
@@ -1112,10 +1218,10 @@
      
              
         # Harrison      
-        plot_sedmap_TIN_harrison <- Plot_sedmap_TIN_FUNC(harrison_grid, harrison_pond_boundary, harrison_pond_depths)
-        plot_sedmap_IDW_harrison <- Plot_sedmap_IDW_FUNC(harrison_grid, harrison_pond_boundary, harrison_pond_depths)
-        plot_sedmap_TPRS_harrison <- Plot_sedmap_TPRS_FUNC(harrison_grid, harrison_pond_boundary, harrison_pond_depths)
-        plot_sedmap_SOAP_harrison <- Plot_sedmap_SOAP_FUNC(harrison_grid, harrison_pond_boundary, harrison_pond_depths)
+        plot_sedmap_TIN_harrison <- Plot_sedmap_TIN_FUNC(harrison_grid, harrison_polygon, harrison_depths_latlong)
+        plot_sedmap_IDW_harrison <- Plot_sedmap_IDW_FUNC(harrison_grid, harrison_polygon, harrison_depths_latlong)
+        plot_sedmap_TPRS_harrison <- Plot_sedmap_TPRS_FUNC(harrison_grid, harrison_polygon, harrison_depths_latlong)
+        plot_sedmap_SOAP_harrison <- Plot_sedmap_SOAP_FUNC(harrison_grid, harrison_polygon, harrison_depths_latlong)
               plot_sedmap_TIN_harrison
               plot_sedmap_IDW_harrison
               plot_sedmap_TPRS_harrison
