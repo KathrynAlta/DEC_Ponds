@@ -9,8 +9,8 @@
 # 0. Set up R environment and Load Data 
 
     #Set working directory: 
-    # setwd("~/DEC_Ponds") 
-    setwd("~/OneDrive/Holgerson_Lab/DEC_Ponds") # Mac 
+   setwd("~/DEC_Ponds") 
+    #setwd("~/OneDrive/Holgerson_Lab/DEC_Ponds") # Mac 
     getwd()
     
     # Load packages: 
@@ -52,8 +52,9 @@
 # 1. Input all data
     
     # Load Depths data 
-    sediment_depths <- read_xlsx("~/OneDrive/Holgerson_Lab/DEC_Ponds/Input_Files/DEC_Ponds_Sediment_Mapping_Depths.xlsx")
-      # Formatt 
+    # sediment_depths <- read_xlsx("~/OneDrive/Holgerson_Lab/DEC_Ponds/Input_Files/DEC_Ponds_Sediment_Mapping_Depths.xlsx")
+    sediment_depths <- read_xlsx("Input_Files/DEC_Ponds_Sediment_Mapping_Depths.xlsx")
+    # Formatt 
       names(sediment_depths)[names(sediment_depths) == "Pond Name"] <- "Pond"
       names(sediment_depths)[names(sediment_depths) == "Site Number"] <- "Measurement_Number"
       names(sediment_depths)[names(sediment_depths) == "Depth of top of sediments (cm)"] <- "Depth_to_top_of_Sediment_cm"
@@ -69,70 +70,108 @@
       #####    
   # Points data 
     # Intensive Desktop 
-    boyce_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Boyce_Points.shp")   %>%   # Pull in shape file
+    boyce_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Boyce_Points.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Boyce") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
-    white_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/White_Points.shp")   %>%   # Pull in shape file
+    white_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/White_Points.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "White") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
-    howarth_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Howarth_Points.shp")   %>%   # Pull in shape file
+    howarth_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Howarth_Points.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Howarth") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
-    edwards_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Edwards_Points.shp")   %>%   # Pull in shape file
+    edwards_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Edwards_Points.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Edwards") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
-    shelterbelt_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Shelterbelt_Points.shp")   %>%   # Pull in shape file
+    shelterbelt_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Shelterbelt_Points.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Shelterbelt") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
-    mtpleas_se_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Mt_Pleasant_SE_Points.shp")   %>%   # Pull in shape file
+    mtpleasantse_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Mt_Pleasant_SE_Points.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "MtPleasantSE") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
-    levine_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Levine_Points.shp")   %>%   # Pull in shape file
+    levine_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Levine_Points.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Levine") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
-    harrison_pond_points <- read_sf("Spatial_Data_SedimentMapping/Harrison_Pond_030123/Harrison_Pond_Points_030123_1734.shp")   %>%   # Pull in shape file
+    harrison_points <- read_sf("Spatial_Data_SedimentMapping/Harrison_Pond_030123/Harrison_Pond_Points_030123_1734.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Harrison") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
     # Extensive 
-    applegate_pond_points <- read_sf("Spatial_Data_SedimentMapping/Applegate_Pond_022723/Applegate_Pond_Points_030123_noz.shp")   %>%   # Pull in shape file
+    applegate_points <- read_sf("Spatial_Data_SedimentMapping/Applegate_Pond_022723/Applegate_Pond_Points_030123_noz.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Applegate") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
-    aquadro_pond_points <- read_sf("Spatial_Data_SedimentMapping/Aquadro_Pond_022723/Aquadro_Pond_Points_030123_noz.shp")   %>%   # Pull in shape file
+    aquadro_points <- read_sf("Spatial_Data_SedimentMapping/Aquadro_Pond_022723/Aquadro_Pond_Points_030123_noz.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Aquadro") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
    
     
-  # Polygons 
-    harrison_pond_boundary <- read_sf("Spatial_Data_SedimentMapping/Harrison_Pond_030123/Harrison_Pond_Poly_030123.shp") %>%  # read in polygon of pond 
+  # Polygons
+    
+    #Intensive 
+    boyce_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Boyce_Polygon.shp") %>%  # read in polygon of pond 
       transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
       st_transform(26920) %>%
       st_zm()
     
-    applegate_pond_boundary <- read_sf("Spatial_Data_SedimentMapping/Applegate_Pond_022723/Applegate_Pond_Poly.shp") %>%  # read in polygon of pond 
+    white_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/White_Polygon.shp") %>%  # read in polygon of pond 
       transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
       st_transform(26920) %>%
       st_zm()
     
-    aquadro_pond_boundary <- read_sf("Spatial_Data_SedimentMapping/Aquadro_Pond_022723/Aquadro_Pond_Poly_030123.shp") %>%  # read in polygon of pond 
+    howarth_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Howarth_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    edwards_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Edwards_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    shelterbelt_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Shelterbelt_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    mtpleasantse_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Mt_Pleasant_SE_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    harrison_polygon <- read_sf("Spatial_Data_SedimentMapping/Harrison_Pond_030123/Harrison_Pond_Poly_030123.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    levine_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Levine_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    # Extensive 
+    applegate_polygon <- read_sf("Spatial_Data_SedimentMapping/Applegate_Pond_022723/Applegate_Pond_Poly.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    aquadro_polygon <- read_sf("Spatial_Data_SedimentMapping/Aquadro_Pond_022723/Aquadro_Pond_Poly_030123.shp") %>%  # read in polygon of pond 
       transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
       st_transform(26920) %>%
       st_zm()
     
     
   # Depth Measurements
-    harrison_pond_depth_meas <- read_xlsx("Depth_Measurements/Harrison_Pond_Depth_Measurements.xlsx")
-    applegate_pond_depth_meas <- read_xlsx("Depth_Measurements/Applegate_Pond_Depth_Measurements.xlsx")
-    aquadro_pond_depth_meas <- read_xlsx("Depth_Measurements/Aquadro_Pond_Depth_Measurements.xlsx")
+    # harrison_pond_depth_meas <- read_xlsx("Depth_Measurements/Harrison_Pond_Depth_Measurements.xlsx")
+    # applegate_pond_depth_meas <- read_xlsx("Depth_Measurements/Applegate_Pond_Depth_Measurements.xlsx")
+    # aquadro_pond_depth_meas <- read_xlsx("Depth_Measurements/Aquadro_Pond_Depth_Measurements.xlsx")
       #####    
 
     # Input Spatial Files Mac 
@@ -240,6 +279,8 @@
                               walnutridge_points, lucas_points, collmer_points, vesa_points, 
                               conley_points, hahn_points, marks_points, englishdeep_points)
     
+    
+    
     names(pond_points_list ) <- c("Boyce", "White", "Howarth", "Edwards",
                                    "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", 
                                    "Aquadro", "Longhouse", "Ecovillage", "Dybowski", 
@@ -247,6 +288,15 @@
                                    "English_Shallow", "Engst", "Rodgers", "Carpenter", 
                                    "Walnut_Ridge", "Lucas", "Collmer", "Vesa", 
                                    "Conley", "Hahn", "Marks", "English_Deep")
+    
+    # Intensive Only 
+        pond_points_list <- list(boyce_points, white_points, howarth_points, edwards_points,
+                                 shelterbelt_points, mtpleasantse_points, harrison_points, levine_points, 
+                                 aquadro_points, applegate_points)
+        
+        names(pond_points_list ) <- c("Boyce", "White", "Howarth", "Edwards",
+                                      "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", 
+                                      "Aquadro", "Applegate")
     
     # Put all of the polygon shape df into a list 
     
@@ -271,6 +321,16 @@
                                   "Walnut_Ridge", "Lucas", "Collmer", "Vesa", 
                                   "Conley", "Hahn", "Marks", "English_Deep")
     
+    # Intensive Only 
+    pond_polygon_list <- list(boyce_polygon, white_polygon, howarth_polygon, edwards_polygon,
+                              shelterbelt_polygon, mtpleasantse_polygon, harrison_polygon, levine_polygon, 
+                              aquadro_polygon, applegate_polygon)
+    
+    names(pond_polygon_list ) <- c("Boyce", "White", "Howarth", "Edwards",
+                                   "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", 
+                                   "Aquadro", "Applegate")
+      
+    
    
 # 2. Connect the lat long from the pond depths shape file to the measuremed depths from seperate df --> make spatial
 #_______________________________________________________________________________    
@@ -279,6 +339,7 @@
       
         # Remove ponds that you have sediment data for but that we did not include in study 
         sediment_depths <- sediment_depths[!sediment_depths$Pond %in% c("Artibee", "Bensons", "Thru_the_Woods", "Whitmore" ), ]
+       # sediment_depths <- sediment_depths[sediment_depths$Pond %in% c("Boyce", "White", "Howarth", "Edwards", "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", "Aquadro", "Applegate") , ]
         sediment_depths$Pond <- as.factor(sediment_depths$Pond)
         levels(sediment_depths$Pond)
         sediment_depths$Pond <- as.character(sediment_depths$Pond)
@@ -288,13 +349,17 @@
           # this seperates the one big df of all the measured depths into a list with a seperate df for each pond 
         
         # Order the dfs in the meas deths list so that the ponds are in the same order as in the other lists 
-        meas_depths_list_ordered <- meas_depths_list[c("Boyce", "White", "Howarth", "Edwards",
+        meas_depths_list <- meas_depths_list[c("Boyce", "White", "Howarth", "Edwards",
                                                        "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", 
                                                        "Aquadro", "Longhouse", "Ecovillage", "Dybowski", 
                                                        "Applegate", "Mt_Pleasant_NE", "Barber", "Stick_and_Stone",
                                                        "English_Shallow", "Engst", "Rodgers", "Carpenter", 
                                                        "Walnut_Ridge", "Lucas", "Collmer", "Vesa", 
                                                        "Conley", "Hahn", "Marks", "English_Deep")]
+        # Intensive Only 
+        meas_depths_list <- meas_depths_list[c("Boyce", "White", "Howarth", "Edwards",
+                                                       "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", 
+                                                       "Aquadro","Applegate")]
     
       # Practice subset 
         applegate_meas_depths <- subset(sediment_depths, sediment_depths$Pond == "Applegate")
