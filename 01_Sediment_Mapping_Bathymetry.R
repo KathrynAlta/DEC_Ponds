@@ -760,7 +760,23 @@
             TPRS_bathym_applegate_FIT <- CreateTPRSmodel_bathym_FUNC(applegate_full)
             TPRS_bathym_aquadro_FIT <- CreateTPRSmodel_bathym_FUNC(aquadro_full)
             
-            # 
+            # Run each one at a time 
+            boyce_full <- pond_full_list[["Boyce"]]
+            white_full <- pond_full_list[["White"]]
+            shelterbelt_full <- pond_full_list[["Shelterbelt"]]
+            edwards_full <- pond_full_list[["Edwards"]]
+            TPRS_bathym_pumpkin_FIT <- CreateTPRSmodel_bathym_FUNC(edwards_full)
+            TPRS_bathym_harrison_FIT <- CreateTPRSmodel_bathym_FUNC(harrison_full)
+            
+            str(boyce_full)
+            str(applegate_full)
+            str(harrison_full)
+            
+            summary(boyce_full$Sed_Thickness_m)
+            summary(harrison_full$Sed_Thickness_m)
+            summary(white_full$Sed_Thickness_m)
+            
+       
             
         # Apply that function to the list of ponds 
             # mapply structure: output_list <- mapply(Name_FUNC, first_list, second_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
