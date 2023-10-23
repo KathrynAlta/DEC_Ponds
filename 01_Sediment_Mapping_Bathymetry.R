@@ -580,7 +580,8 @@
     
 # 6. Triangular Irregular Network Surface (TIN) 
 # _____________________________________________________________________________ 
-   
+ ######
+     
    # 6.1) Write Function to fit TIN model 
    
      # 6.1.a) Write a function to fit a TIN model to sediment thickness  
@@ -614,6 +615,29 @@
           output <- TIN_model$z
         }
         
+        
+          # Trouble Shooting 
+          pond_full <- harrison_full
+          pond_grid <- harrison_grid
+          str(pond_grid)
+        
+              TIN_bathym_FUNC <- function(pond_full, pond_grid){
+                TIN_model <- interp::interpp(
+                  x = pond_full$X,
+                  y = pond_full$Y,
+                  z = pond_full$Water_Depth_m,
+                  xo = pond_grid$X,
+                  yo = pond_grid$Y,
+                  duplicate = "strip"
+                )
+                result <- as.data.frame(TIN_model$z)
+                names(result)[names(result) == "TIN_model$z"] <- "Extracted_TIN_Estimate"
+                pond_grid$TIN_water_depth <- result$Extracted_TIN_Estimate
+                output <- pond_grid
+                
+              }
+             
+              
             # Check that model works for water depth 
             harrison_grid$TIN_water_depth <- TIN_bathym_FUNC(harrison_full, harrison_grid)
             aquadro_grid$TIN_water_depth <- TIN_bathym_FUNC(aquadro_full, aquadro_grid)
@@ -627,8 +651,10 @@
           # Note that in this configuration you will have one pond_grid_list that you will pass through each model and update it as you go 
   
       # Water Depth 
-        TIN_bath_ouput_list <- mapply(TIN_bathym_FUNC, pond_full_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+        pond_grid_list <- mapply(TIN_bathym_FUNC, pond_full_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
     
+       ###### 
+        
     
 # 7. Inverse Distance Weighting (IDW) 
 # _____________________________________________________________________________  
@@ -646,7 +672,6 @@
              set = list(idp = 0.5)
            )
          }
-       
             # Check that the function works 
                IDW_bathym_harrison_FIT <- IDW_bathym_FUNC(harrison_full) # Model based on inverse distance weighted (IDW) predicting the bathymetry (water depth) of harrison pond (farm and res pond named by last name of land owner)
                IDW_bathym_applegate_FIT <- IDW_bathym_FUNC(applegate_full)
@@ -657,30 +682,20 @@
            
       # 7.1.2 Use the FIT for each pond to predict water depth & adds predicted values to the grid 
         
-        # OLD
-               #Write a function to predict bathymetry based on FIT -- OLD 
-                  IDW_predict_FUNC <- function(model_FIT, name_grid){
-                    predicted_formal_class <- predict(model_FIT, newdata = as(name_grid, "Spatial"))
-                    predicted_sf <- st_as_sf(predicted_formal_class)
-                    output <- predicted_sf$var1.pred
-                  }
-  
+           #Write a function to predict bathymetry based on FIT -- Edited 10/18 cant't check with out programe 
+           IDW_predict_bathym_FUNC <- function(model_FIT, name_grid){
+             predicted_formal_class <- predict(model_FIT, newdata = as(name_grid, "Spatial"))
+             predicted_sf <- st_as_sf(predicted_formal_class)
+             name_grid$IDW_water_depth <- predicted_sf$var1.pred
+           }
                 # Check that the IDW bathym predict function works 
                   harrison_grid$IDW_water_depth <- IDW_predict_FUNC(IDW_bathym_harrison_FIT, harrison_grid)
                   aquadro_grid$IDW_water_depth <- IDW_predict_FUNC(IDW_bathym_aquadro_FIT, aquadro_grid)
                   applegate_grid$IDW_water_depth <- IDW_predict_FUNC(IDW_bathym_applegate_FIT, applegate_grid)
-                  
-      # UPDATED: 10/18 can't check without package so don't want to delete old 
-                  
-          #Write a function to predict bathymetry based on FIT -- Edited 10/18 cant't check with out programe 
-            IDW_predict_bathym_FUNC <- function(model_FIT, name_grid){
-              predicted_formal_class <- predict(model_FIT, newdata = as(name_grid, "Spatial"))
-              predicted_sf <- st_as_sf(predicted_formal_class)
-              name_grid$IDW_water_depth <- predicted_sf$var1.pred
-            }
             
         # Apply the IDW predict bathymetry function across all ponds in the list 
             pond_grid_list <- mapply(IDW_predict_bathym_FUNC, IDW_bathym_FIT_list, pond_grid_list)
+            
         
   # 7.2) SED THICKNESS 
             
@@ -744,6 +759,8 @@
             TPRS_bathym_harrison_FIT <- CreateTPRSmodel_bathym_FUNC(harrison_full)
             TPRS_bathym_applegate_FIT <- CreateTPRSmodel_bathym_FUNC(applegate_full)
             TPRS_bathym_aquadro_FIT <- CreateTPRSmodel_bathym_FUNC(aquadro_full)
+            
+            # 
             
         # Apply that function to the list of ponds 
             # mapply structure: output_list <- mapply(Name_FUNC, first_list, second_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
