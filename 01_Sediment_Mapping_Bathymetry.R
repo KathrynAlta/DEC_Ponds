@@ -344,9 +344,7 @@
       
         # Remove ponds that you have sediment data for but that we did not include in study 
         sediment_depths <- sediment_depths[!sediment_depths$Pond %in% c("Artibee", "Bensons", "Thru_the_Woods", "Whitmore" ), ]
-       # sediment_depths <- sediment_depths[sediment_depths$Pond %in% c("Boyce", "White", "Howarth", "Edwards", "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", "Aquadro", "Applegate") , ]
-        sediment_depths$Pond <- as.factor(sediment_depths$Pond)
-        levels(sediment_depths$Pond)
+        sediment_depths <- sediment_depths[sediment_depths$Pond %in% c("Boyce", "White", "Howarth", "Edwards", "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", "Aquadro", "Applegate") , ]
         sediment_depths$Pond <- as.character(sediment_depths$Pond)
         
         # Seperate Sediment depth data out by pond 
@@ -539,6 +537,8 @@
        
        name_pond_full <- harrison_full
        name_pond_boundary <- harrison_polygon
+       
+       harrison_full$Pond_Name
 
    # Write a function to create a grid 
    GridCreate_FUNC <- function(name_pond_full, name_pond_boundary){
@@ -553,10 +553,15 @@
      pond_grid <- pond_grid_step5
    }
    
-   # Run the Function for each pond 
-   applegate_grid <- GridCreate_FUNC(applegate_full, applegate_polygon)
-   aquadro_grid <- GridCreate_FUNC(aquadro_full, aquadro_polygon)
-   harrison_grid <- GridCreate_FUNC(harrison_full, harrison_polygon)
+       # Run the Function for each pond to check 
+       str(applegate_full)
+       applegate_full$Pond_Name <- as.character(applegate_full$Pond_Name)
+       aquadro_full$Pond_Name <- as.character(aquadro_full$Pond_Name)
+       harrison_full$Pond_Name <- as.character(harrison_full$Pond_Name)
+       
+       applegate_grid <- GridCreate_FUNC(applegate_full, applegate_polygon)
+       aquadro_grid <- GridCreate_FUNC(aquadro_full, aquadro_polygon)
+       harrison_grid <- GridCreate_FUNC(harrison_full, harrison_polygon)
    
    # Run the function for all ponds using mapply 
        # (make for subset that you are using)
@@ -575,7 +580,6 @@
     
 # 6. Triangular Irregular Network Surface (TIN) 
 # _____________________________________________________________________________ 
-   # Need Interp function in R and can't get that to load on Mac right now 
    
    # 6.1) Write Function to fit TIN model 
    
@@ -596,18 +600,6 @@
             aquadro_grid$TIN_sed_depth <- TIN_sed_FUNC(aquadro_full, aquadro_grid)
             applegate_grid$TIN_sed_depth <- TIN_sed_FUNC(applegate_full, applegate_grid)
             
-            ##### Edited 10/18/23 can't check without program  
-            TIN_sed_FUNC <- function(pond_full, pond_grid){
-              TIN_model <- interp::interpp(
-                x = pond_full$X,
-                y = pond_full$Y,
-                z = pond_full$Sed_Thickness_m,
-                xo = pond_grid$X,
-                yo = pond_grid$Y,
-                duplicate = "strip"
-              )
-              pond_grid$TIN_sed_depth <- TIN_model$z  # Change output formatt 
-            }
         
       # 6.1.b) Write a function to fit a TIN model to water depths 
         TIN_bathym_FUNC <- function(pond_full, pond_grid){
@@ -627,18 +619,6 @@
             aquadro_grid$TIN_water_depth <- TIN_bathym_FUNC(aquadro_full, aquadro_grid)
             applegate_grid$TIN_water_depth <- TIN_bathym_FUNC(applegate_full, applegate_grid)
             
-            ##### Edited 10/18/23 can't check without program 
-            TIN_bathym_FUNC <- function(pond_full, pond_grid){
-              TIN_model <- interp::interpp(
-                x = pond_full$X,
-                y = pond_full$Y,
-                z = pond_full$Water_Depth_m,
-                xo = pond_grid$X,
-                yo = pond_grid$Y,
-                duplicate = "strip"
-              )
-              pond_grid$TIN_water_depth <- TIN_model$z  # Change output formatt 
-            }
             
    # 6.2) Use TIN Model to predict water depth and Sed thickeness and add to grid
         
@@ -647,7 +627,7 @@
           # Note that in this configuration you will have one pond_grid_list that you will pass through each model and update it as you go 
   
       # Water Depth 
-        pond_grid_list <- mapply(TIN_bathym_FUNC, pond_full_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+        TIN_bath_ouput_list <- mapply(TIN_bathym_FUNC, pond_full_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
     
     
 # 7. Inverse Distance Weighting (IDW) 
