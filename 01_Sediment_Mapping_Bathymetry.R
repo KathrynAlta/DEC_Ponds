@@ -169,9 +169,9 @@
     
     
   # Depth Measurements
-    # harrison_pond_depth_meas <- read_xlsx("Depth_Measurements/Harrison_Pond_Depth_Measurements.xlsx")
-    # applegate_pond_depth_meas <- read_xlsx("Depth_Measurements/Applegate_Pond_Depth_Measurements.xlsx")
-    # aquadro_pond_depth_meas <- read_xlsx("Depth_Measurements/Aquadro_Pond_Depth_Measurements.xlsx")
+    harrison_meas_depths <- read_xlsx("Depth_Measurements/Harrison_Pond_Depth_Measurements.xlsx")
+    applegate_meas_depths <- read_xlsx("Depth_Measurements/Applegate_Pond_Depth_Measurements.xlsx")
+    aquadro_meas_depths <- read_xlsx("Depth_Measurements/Aquadro_Pond_Depth_Measurements.xlsx")
       #####    
 
     # Input Spatial Files Mac 
@@ -288,6 +288,9 @@
                                    "English_Shallow", "Engst", "Rodgers", "Carpenter", 
                                    "Walnut_Ridge", "Lucas", "Collmer", "Vesa", 
                                    "Conley", "Hahn", "Marks", "English_Deep")
+    # Remove the Z component 
+    pond_points_list <- mapply(st_zm, pond_points_list, drop = TRUE, what = "ZM", USE.NAMES = TRUE, SIMPLIFY = FALSE)
+    
     
     # Intensive Only 
         pond_points_list <- list(boyce_points, white_points, howarth_points, edwards_points,
@@ -297,6 +300,8 @@
         names(pond_points_list ) <- c("Boyce", "White", "Howarth", "Edwards",
                                       "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", 
                                       "Aquadro", "Applegate")
+        # Remove the Z component 
+        pond_points_list <- mapply(st_zm, pond_points_list, drop = TRUE, what = "ZM", USE.NAMES = TRUE, SIMPLIFY = FALSE)
     
     # Put all of the polygon shape df into a list 
     
@@ -321,14 +326,14 @@
                                   "Walnut_Ridge", "Lucas", "Collmer", "Vesa", 
                                   "Conley", "Hahn", "Marks", "English_Deep")
     
-    # Intensive Only 
-    pond_polygon_list <- list(boyce_polygon, white_polygon, howarth_polygon, edwards_polygon,
-                              shelterbelt_polygon, mtpleasantse_polygon, harrison_polygon, levine_polygon, 
-                              aquadro_polygon, applegate_polygon)
-    
-    names(pond_polygon_list ) <- c("Boyce", "White", "Howarth", "Edwards",
-                                   "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", 
-                                   "Aquadro", "Applegate")
+        # Intensive Only 
+        pond_polygon_list <- list(boyce_polygon, white_polygon, howarth_polygon, edwards_polygon,
+                                  shelterbelt_polygon, mtpleasantse_polygon, harrison_polygon, levine_polygon, 
+                                  aquadro_polygon, applegate_polygon)
+        
+        names(pond_polygon_list ) <- c("Boyce", "White", "Howarth", "Edwards",
+                                       "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", 
+                                       "Aquadro", "Applegate")
       
     
    
@@ -423,13 +428,13 @@
     # Applying function over all ponds using mapply()
     
       # Make a list of points dfs and a list of depths dfs for the subset of ponds you are workign with 
-      points_shp_list <- list(applegate_points, aquadro_points, harrison_points)
+      # points_shp_list <- list(applegate_points, aquadro_points, harrison_points)
       
       # Make a list of points dfs and a list of depths dfs for the subset of ponds you are workign with 
       # pond_polygon_list <- list(applegate_polygon, aquadro_polygon, harrison_polygon)
       
       # Run function over the two lists 
-      meas_depths_latlong_list <- mapply(Connect_Depth_LatLong_FUNC, points_shp_list, meas_depths_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+      meas_depths_latlong_list <- mapply(Connect_Depth_LatLong_FUNC, pond_points_list, meas_depths_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
       # Output is a list of dataframes with a df for each pond (I am a genius)
       
     ## * see if this works feeding into next steps 
@@ -488,58 +493,6 @@
      
      # Apply cast function across all ponds (this works, it will just print a warning for each pond)
      cast_boundaries_list <- mapply(CastPolygon_FUNC, pond_polygon_list, USE.NAMES = TRUE ,SIMPLIFY = FALSE)
-     
-    
-     # Listing out for each pond (because I thought the function wouldn't work)
-     
-       # Intensive 
-         boyce_polygon_cast <- st_cast(boyce_polygon, "POINT")
-         white_polygon_cast <- st_cast(white_polygon, "POINT")
-         howarth_polygon_cast <- st_cast(howarth_polygon, "POINT")
-         edwards_polygon_cast <- st_cast(edwards_polygon, "POINT")
-         shelterbelt_polygon_cast <- st_cast(shelterbelt_polygon, "POINT")
-         mtpleasantse_polygon_cast <- st_cast(mtpleasantse_polygon, "POINT")
-         harrison_polygon_cast <- st_cast(harrison_polygon, "POINT")
-         levine_polygon_cast <- st_cast(levine_polygon, "POINT")
-     
-      #Extensive 
-         aquadro_polygon_cast <- st_cast(aquadro_polygon, "POINT")
-         longhouse_polygon_cast <- st_cast(longhouse_polygon, "POINT")
-         ecovillage_polygon_cast <- st_cast(ecovillage_polygon, "POINT")
-         dybowski_polygon_cast <- st_cast(dybowski_polygon, "POINT")
-         applegate_polygon_cast <- st_cast(applegate_polygon, "POINT")
-         mtpleasantne_polygon_cast <- st_cast(mtpleasantne_polygon, "POINT")
-         barber_polygon_cast <- st_cast(barber_polygon, "POINT")
-         stickandstone_polygon_cast <- st_cast(stickandstone_polygon, "POINT")
-         englishshallow_polygon_cast <- st_cast(englishshallow_polygon, "POINT")
-         engst_polygon_cast <- st_cast(engst_polygon, "POINT")
-         rogers_polygon_cast <- st_cast(rogers_polygon, "POINT")
-         carpenter_polygon_cast <- st_cast(carpenter_polygon, "POINT")
-         walnutridge_polygon_cast <- st_cast(walnutridge_polygon, "POINT")
-         lucas_polygon_cast <- st_cast(lucas_polygon, "POINT")
-         collmer_polygon_cast <- st_cast(collmer_polygon, "POINT")
-         vesa_polygon_cast <- st_cast(vesa_polygon, "POINT")
-         conley_polygon_cast <- st_cast(conley_polygon, "POINT")
-         hahn_polygon_cast <- st_cast(hahn_polygon, "POINT")
-         marks_polygon_cast <- st_cast(marks_polygon, "POINT")
-         englishdeep_polygon_cast <- st_cast(englishdeep_polygon, "POINT")
-         
-      # Put all of the cast boundaries together into a list 
-         cast_boundaries_list <- list(boyce_polygon_cast, white_polygon_cast, howarth_polygon_cast, edwards_polygon_cast,
-                                      shelterbelt_polygon_cast, mtpleasantse_polygon_cast, harrison_polygon_cast, levine_polygon_cast, 
-                                      aquadro_polygon_cast, longhouse_polygon_cast, ecovillage_polygon_cast, dybowski_polygon_cast, 
-                                      applegate_polygon_cast, mtpleasantne_polygon_cast, barber_polygon_cast, stickandstone_polygon_cast,
-                                      englishshallow_polygon_cast, engst_polygon_cast, rogers_polygon_cast, carpenter_polygon_cast, 
-                                      walnutridge_polygon_cast, lucas_polygon_cast, collmer_polygon_cast, vesa_polygon_cast, 
-                                      conley_polygon_cast, hahn_polygon_cast, marks_polygon_cast, englishdeep_polygon_cast)
-     
-         names(cast_boundaries_list) <- c("Boyce", "White", "Howarth", "Edwards",
-                                        "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", 
-                                        "Aquadro", "Longhouse", "Ecovillage", "Dybowski", 
-                                        "Applegate", "Mt_Pleasant_NE", "Barber", "Stick_and_Stone",
-                                        "English_Shallow", "Engst", "Rodgers", "Carpenter", 
-                                        "Walnut_Ridge", "Lucas", "Collmer", "Vesa", 
-                                        "Conley", "Hahn", "Marks", "English_Deep")
          
   # 4.2) Write Function 
      
@@ -607,7 +560,7 @@
    
    # Run the function for all ponds using mapply 
        # (make for subset that you are using)
-       pond_polygon_list <- list(applegate_polygon, aquadro_polygon, harrison_polygon)
+       # pond_polygon_list <- list(applegate_polygon, aquadro_polygon, harrison_polygon)
   # Run function over the two lists 
    pond_grid_list <- mapply(GridCreate_FUNC, pond_full_list, pond_polygon_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
    
