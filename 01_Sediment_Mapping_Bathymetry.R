@@ -492,7 +492,7 @@
      # Apply cast function across all ponds (this works, it will just print a warning for each pond)
      cast_boundaries_list <- mapply(CastPolygon_FUNC, pond_polygon_list, USE.NAMES = TRUE ,SIMPLIFY = FALSE)
          
-  # 4.2) Write Function 
+  # 4.2) Write Function to add boundary coordinates to the points 
      
          # Dummy data to write function 
            pond_boundary_points <- applegate_polygon_cast  # this is just a long list of points on the boundary with depth set to zero 
@@ -544,7 +544,7 @@
    GridCreate_FUNC <- function(name_pond_full, name_pond_boundary){
      pond_name <- as.character(name_pond_full[1,"Pond_Name"])
      pond_name_form <- pond_name[1]
-     pond_grid_step1 <- st_make_grid(name_pond_full, cellsize = c(2, 2), what = "centers")   #I made a bigger grid here (well smaller squares, more points)
+     pond_grid_step1 <- st_make_grid(name_pond_full, cellsize = c(5, 5), what = "centers")   # as of 10/24 this was set to a cellsixe of c(2,2) I changed that from code from onine to make more points 
      pond_grid_step2 <- st_as_sf(pond_grid_step1)
      pond_grid_step3 <- st_contains(name_pond_boundary, pond_grid_step2, sparse = FALSE)
      pond_grid_step4 <- pond_grid_step2[pond_grid_step3 == "TRUE" , ]
@@ -569,14 +569,17 @@
   # Run function over the two lists 
    pond_grid_list <- mapply(GridCreate_FUNC, pond_full_list, pond_polygon_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
    
-   
    # Up to here is all set up, getting the grid made (place to put output from the model) and processing the input 
    #   data (make spatial, calc depth, add zero depth around boundary) getting ready to make a feed the model 
 
    # Now there are multiple models that you can build that use different methods (math) to interpolate the water
    #   and sediment depths at each point on the grid. You are going to build and run multiple models and look at the
    #   output, then make a decision about what model to use for your final estimates 
-      
+  
+# 5.5 Pull out all of the grids and all of the fulls and save them individuallsy 
+   
+   harrison_full <- as.data.frame(pond_full_list["Harrison"])
+   harrison_grid <- as.data.frame(pond_grid_list["Harrison"])
     
 # 6. Triangular Irregular Network Surface (TIN) 
 # _____________________________________________________________________________ 
@@ -600,6 +603,8 @@
             harrison_grid$TIN_sed_depth <- TIN_sed_FUNC(harrison_full, harrison_grid)
             aquadro_grid$TIN_sed_depth <- TIN_sed_FUNC(aquadro_full, aquadro_grid)
             applegate_grid$TIN_sed_depth <- TIN_sed_FUNC(applegate_full, applegate_grid)
+            
+            boyce_grid$TIN_sed_depth <- TIN_sed_FUNC(boyce_full, boyce_grid)
             
         
       # 6.1.b) Write a function to fit a TIN model to water depths 
@@ -647,11 +652,13 @@
    # 6.2) Use TIN Model to predict water depth and Sed thickeness and add to grid
         
       # Sediment Thickness -- Apply that TIN function across the list of ponds 
-        pond_grid_list <- mapply(TIN_sed_FUNC, pond_full_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+        pond_grid_list_TIN_sed <- pond_grid_list
+        pond_grid_list_TIN_sed <- mapply(TIN_sed_FUNC, pond_full_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
           # Note that in this configuration you will have one pond_grid_list that you will pass through each model and update it as you go 
   
       # Water Depth 
-        pond_grid_list <- mapply(TIN_bathym_FUNC, pond_full_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+        pond_grid_list_TIN_water <- pond_grid_list
+        pond_grid_list_TIN_water <- mapply(TIN_bathym_FUNC, pond_full_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
     
        ###### 
         
@@ -694,7 +701,8 @@
                   applegate_grid$IDW_water_depth <- IDW_predict_FUNC(IDW_bathym_applegate_FIT, applegate_grid)
             
         # Apply the IDW predict bathymetry function across all ponds in the list 
-            pond_grid_list <- mapply(IDW_predict_bathym_FUNC, IDW_bathym_FIT_list, pond_grid_list)
+            pond_grid_list_IDW_water <- pond_grid_list
+            pond_grid_list_IDW_water <- mapply(IDW_predict_bathym_FUNC, IDW_bathym_FIT_list, pond_grid_list)
             
         
   # 7.2) SED THICKNESS 
@@ -737,7 +745,8 @@
                 }
               
             # Apply the IDW predict sediment thickness function across all ponds in the list 
-            pond_grid_list <- mapply(IDW_seddepth_predict_FUNC, IDW_seddepth_FIT_list, pond_grid_list)
+            pond_grid_list_IDW_sed <- pond_grid_list
+            pond_grid_list_IDW_sed <- mapply(IDW_seddepth_predict_FUNC, IDW_seddepth_FIT_list, pond_grid_list)
             
 # 8 Thin Plate Regression Spline (TPRS) 
 # ______________________________________________________________________________
@@ -810,11 +819,23 @@
   # 8.2) SEDIMENT THICKNESS 
        
     # 8.2.1) Create a model for Sediment thickness usign TPRS 
-        
+          
+          # Trouble shooting 10/24
+          harrison_full <- as.data.frame(pond_full_list["Harrison"])
+          test_full <- as.data.frame(pond_full_list["Applegate"])
+          names(test_full) <- c("source", "Pond_Name", "Water_Depth_m", "Sed_Thickness_m", "X", "Y", "geometry")
+          head(test_full)
+          TPRS_sedmap_boyce_FIT <- mgcv::gam(Sed_Thickness_m ~ s(X, Y, k = 60), data = test_full, method = "REML")
+          
+          
           # create a model for sediment thickness using TPRS one pond at a time (check)
            TPRS_sedmap_harrison_FIT <- mgcv::gam(Sed_Thickness_m ~ s(X, Y, k = 60), data = harrison_full, method = "REML")
            TPRS_sedmap_aquadro_FIT <- mgcv::gam(Sed_Thickness_m ~ s(X, Y, k = 60), data = aquadro_full, method = "REML")
            TPRS_sedmap_applegate_FIT <- mgcv::gam(Sed_Thickness_m ~ s(X, Y, k = 60), data = applegate_full, method = "REML")
+           
+           TPRS_sedmap_harrison_FIT <- mgcv::gam(Harrison.Sed_Thickness_m ~ s(Harrison.X, Harrison.Y, k = 60), data = harrison_full, method = "REML")
+           TPRS_sedmap_boyce_FIT <- mgcv::gam(Sed_Thickness_m ~ s(X, Y, k = 60), data = boyce_full, method = "REML")
+           
            
     # Write a function to create the model for sediment thickness for the full list of ponds  
            CreateTPRSmodel_seddepth_FUNC <- function(pond_full){
@@ -1013,6 +1034,9 @@
                 applegate_grid <- PredictSOAP_bathym_FUNC(SOAP_bathym_applegate_FIT, applegate_grid)
                 
           # Use mapply to apply prediction function across list of ponds
+                #install.packages("mgcv")
+                library(mgcv)
+                pond_grid_list_SOAP_water <- pond_grid_list
                 pond_grid_list <- mapply(PredictSOAP_bathym_FUNC, SOAP_bathym_FIT_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
                 # Note that in this configuration you will have one pond_grid_list that you will pass through each model and update it as you go 
               
@@ -1038,6 +1062,11 @@
             pond_grid_list <- mapply(PredictSOAP_seddepth_FUNC, SOAP_seddepth_FIT_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
     
    
+        # Add TIN and IDW to columns in grid for all 10 ponds
+            pumpkin_grid <- as.data.frame(pond_grid_list["Boyce"])
+            pumpkin <- as.data.frame(pond_grid_list_IDW_sed["Boyce"])
+            pumpkin_grid_plus <- cbind(pumpkin_grid, pumpkin)
+            
 #_______________________________________________________________________________
 # 10. Compute Volume of water and volume of sediment 
    
