@@ -596,12 +596,10 @@
           output <- TIN_model$z
         }
             # Check that model works for sediment thickness 
-            harrison_grid$TIN_sed_depth <- TIN_sed_FUNC(harrison_full, harrison_grid)
-            aquadro_grid$TIN_sed_depth <- TIN_sed_FUNC(aquadro_full, aquadro_grid)
-            applegate_grid$TIN_sed_depth <- TIN_sed_FUNC(applegate_full, applegate_grid)
-            
-            boyce_grid$TIN_sed_depth <- TIN_sed_FUNC(boyce_full, boyce_grid)
-            
+                  # harrison_grid$TIN_sed_depth <- TIN_sed_FUNC(harrison_full, harrison_grid)
+                  # aquadro_grid$TIN_sed_depth <- TIN_sed_FUNC(aquadro_full, aquadro_grid)
+                  # applegate_grid$TIN_sed_depth <- TIN_sed_FUNC(applegate_full, applegate_grid)
+          
         
       # 6.1.b) Write a function to fit a TIN model to water depths 
         TIN_bathym_FUNC <- function(pond_full, pond_grid){
@@ -626,12 +624,12 @@
         
       # Sediment Thickness -- Apply that TIN function across the list of ponds 
         pond_grid_list_TIN_sed <- pond_grid_list
-        pond_grid_list_TIN_sed <- mapply(TIN_sed_FUNC, pond_full_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+        TIN_sed_thickness <- mapply(TIN_sed_FUNC, pond_full_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
           # Note that in this configuration you will have one pond_grid_list that you will pass through each model and update it as you go 
   
       # Water Depth 
         pond_grid_list_TIN_water <- pond_grid_list
-        pond_grid_list_TIN_water <- mapply(TIN_bathym_FUNC, pond_full_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+        TIN_water_depth <- mapply(TIN_bathym_FUNC, pond_full_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
     
        ###### 
     
@@ -674,7 +672,7 @@
             
         # Apply the IDW predict bathymetry function across all ponds in the list 
             pond_grid_list_IDW_water <- pond_grid_list
-            pond_grid_list_IDW_water <- mapply(IDW_predict_bathym_FUNC, IDW_bathym_FIT_list, pond_grid_list)
+            IDW_water_depth <- mapply(IDW_predict_bathym_FUNC, IDW_bathym_FIT_list, pond_grid_list)
             
         
   # 7.2) SED THICKNESS 
@@ -710,7 +708,7 @@
               
             # Apply the IDW predict sediment thickness function across all ponds in the list 
             pond_grid_list_IDW_sed <- pond_grid_list
-            pond_grid_list_IDW_sed <- mapply(IDW_seddepth_predict_FUNC, IDW_seddepth_FIT_list, pond_grid_list)
+            IDW_sed_thickness <- mapply(IDW_seddepth_predict_FUNC, IDW_seddepth_FIT_list, pond_grid_list)
             
 # 8 Thin Plate Regression Spline (TPRS) 
 # ______________________________________________________________________________
@@ -835,7 +833,7 @@
        
    
       
-# 9. Soap Film Smooth (SFS)   
+# 9. Soap Film Smooth (SOAP)   
 # ______________________________________________________________________________ 
    
 # Writing code to scale 9/29/23 
@@ -1001,7 +999,7 @@
                 # install.packages("mgcv")
                 library(mgcv)
                 pond_grid_list_SOAP_water <- pond_grid_list
-                pond_grid_list_SOAP_water <- mapply(PredictSOAP_bathym_FUNC, SOAP_bathym_FIT_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+                pond_grid_list_SOAP <- mapply(PredictSOAP_bathym_FUNC, SOAP_bathym_FIT_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
                 # Note that in this configuration you will have one pond_grid_list that you will pass through each model and update it as you go 
               
         # 9.7.b USe sediment thickness GAM Model to predict sedimemt depth for each pond
@@ -1023,58 +1021,85 @@
                 # applegate_grid <- PredictSOAP_seddepth_FUNC(SOAP_seddepth_applegate_FIT, applegate_grid)
           
           # Use mapply to apply prediction function across list of ponds 
-            pond_grid_list_SOAP_sed <- pond_grid_list
-            pond_grid_list_SOAP_sed <- mapply(PredictSOAP_seddepth_FUNC, SOAP_seddepth_FIT_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+            # pond_grid_list_SOAP_sed <- pond_grid_list
+            pond_grid_list_SOAP <- mapply(PredictSOAP_seddepth_FUNC, SOAP_seddepth_FIT_list, pond_grid_list_SOAP, USE.NAMES = TRUE, SIMPLIFY = FALSE)
     
 
 #_______________________________________________________________________________
 # 10.Add the estimated sediment and water depths from the output lists to the grid for each pond                
-  
+    
+    # Write functions 
             
-            pumpkin_grid <- as.data.frame(pond_grid_list["Boyce"])
-            pumpkin <- as.data.frame(pond_grid_list_IDW_sed["Boyce"])
-            pumpkin_grid_plus <- cbind(pumpkin_grid, pumpkin)
+        # Compile IDW and TIN
+            Compile_estimates_FUNC <- function(pond_grid_list_SOAP, IDW_sed_thickness, IDW_water_depth, TIN_sed_thickness, TIN_water_depth){
+              names(pond_grid_list_SOAP) <- c("X", "Y", "Geometry", "Pond_Name", "SOAP_water_depth", "SOAP_sed_thickness")
+              output <- cbind(pond_grid_list_SOAP, IDW_sed_thickness, IDW_water_depth, TIN_sed_thickness, TIN_water_depth)
+            }
+            
+        
+        pond_grid_results_list <- mapply(Compile_estimates_FUNC, pond_grid_list_SOAP, IDW_sed_thickness, IDW_water_depth, TIN_sed_thickness, TIN_water_depth, USE.NAMES = TRUE, SIMPLIFY = FALSE)
             
 #_______________________________________________________________________________
 # 11. Compute Volume of water and volume of sediment 
    
    # 11.1 Compute Sediment Volume 
-       # Write a function to calculate sediment volume for each pond 
-       sed_vol_calc_FUNC <- function(pond_boundary, pond_grid){
+        
+    # Calculate pond areas and save a separate list 
+        Calc_Pond_Area_FUNC <- function(pond_boundary){
+          pond_boundary_area <- as.numeric(st_area(pond_boundary)) 
+          output <- pond_boundary_area
+        }
+        
+        pond_polygon_area_list <- mapply(Calc_Pond_Area_FUNC, pond_polygon_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+        pond_polygon_area_list["Boyce"]
+        
+      
+  # Write a function to calculate sediment volume for each pond 
+        
+        # Trouble Shooting 
+        pond_results <- pond_grid_results_list["Boyce"]
+        pond_results <- as.data.frame(pond_results)
+        head(pond_results)
+        
+        pond_results <- as.data.frame(pond_results)
+        
+        pond_polygon_area <- pond_polygon_area_list["Boyce"]
+        pond_polygon_area <- as.data.frame(pond_polygon_area)
+        
+        
+        # FUNC 
+       sed_vol_calc_FUNC <- function(pond_polygon_area, pond_results){
          
-         pond_name <- as.character(pond_grid[1, "Pond_Name"])  # save pond name to use in the title of the plot 
+         pond_results <- as.data.frame(pond_results)
+         names(pond_results) <- c("X", "Y", "Geometry", "Pond_Name", "SOAP_water_depth", "SOAP_sed_thickness", "IDW_sed_thickness", "IDW_water_depth", "TIN_sed_thickness", "TIN_water_depth")
+         pond_results <- subset(pond_results, select = c("Pond_Name", "SOAP_water_depth", "SOAP_sed_thickness", "IDW_sed_thickness", "IDW_water_depth", "TIN_sed_thickness", "TIN_water_depth"))
+         
+         pond_polygon_area_df <- as.data.frame(pond_polygon_area)
+         names(pond_polygon_area_df) <- "Surface_Area"
+         surface_area <- pond_polygon_area_df$Surface_Area
+         
+         pond_name <- as.character(pond_results[1, "Pond_Name"])  # save pond name to use in the title of the plot 
          pond_name_form <- pond_name[1] # format pond name 
          
-         pond_boundary_area <- as.numeric(st_area(pond_boundary)) 
+         #pond_boundary_area <- as.numeric(st_area(pond_boundary)) 
          
-         output <- pond_grid %>% 
-           st_set_geometry(NULL) %>% 
+         output <- pond_results %>% 
+           #st_set_geometry(NULL) %>% 
            summarise(
              Pond_Name = pond_name_form,
-             #TIN_mean_sed_depth = mean(TIN_sed_depth),
-             #TIN_sed_volume = mean(TIN_sed_depth) * pond_boundary_area,
-             #IDW_mean_sed_depth = mean(IDW_sed_depth),
-             #IDW_sed_volume = mean(IDW_sed_depth) * pond_boundary_area,
-             TPRS_mean_sed_depth = mean(TPRS_sed_depth),
-             TPRS_sed_volume = mean(TPRS_sed_depth) * pond_boundary_area, 
-             SOAP_mean_sed_depth = mean(SOAP_sed_depth),
-             SOAP_sed_volume = mean(SOAP_sed_depth) * pond_boundary_area, 
+             TIN_mean_sed_depth = mean(TIN_sed_thickness),
+             TIN_sed_volume = mean(TIN_sed_thickness) * surface_area,
+             IDW_mean_sed_depth = mean(IDW_sed_thickness),
+             IDW_sed_volume = mean(IDW_sed_thickness) * surface_area,
+             #TPRS_mean_sed_depth = mean(TPRS_sed_depth),
+             # TPRS_sed_volume = mean(TPRS_sed_depth) * pond_boundary_area, 
+             SOAP_mean_sed_depth = mean(SOAP_sed_thickness),
+             SOAP_sed_volume = mean(SOAP_sed_thickness) * surface_area, 
            )
        }
-       
-           # Check that the function works 
-               harrison_sed_vol <- sed_vol_calc_FUNC(harrison_polygon, harrison_grid)
-               applegate_sed_vol <- sed_vol_calc_FUNC(applegate_polygon, applegate_grid)
-               aquadro_sed_vol <- sed_vol_calc_FUNC(aquadro_polygon, aquadro_grid)
-               harrison_sed_vol 
-               aquadro_sed_vol
-               applegate_sed_vol
-               
-               # Create dataframe with the estimated sediment volume for all ponds for all models 
-               all_sed_vols <- rbind(harrison_sed_vol, aquadro_sed_vol, applegate_sed_vol)
-       
+    
        # Apply Function to calcualte sediment volume for each pond and put together into a df
-        pond_summary_sed_vol <- mapply(sed_vol_calc_FUNC, pond_polygon_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+        pond_summary_sed_vol <- mapply(sed_vol_calc_FUNC, pond_polygon_area_list, pond_grid_results_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
         pond_summary_sed_vol <- Reduce(full_join,pond_summary_sed_vol)
         
   # 11.2 Water Volume 
@@ -1114,11 +1139,12 @@
       # Format as long instead of wide format for plotting
          pond_sum <- pond_summary_sed_vol
          names(pond_sum)
-         pond_sum <- subset(pond_sum, select = c("Pond_Name", "TPRS_sed_volume", "SOAP_sed_volume"))
-         names(pond_sum)[names(pond_sum) == "TPRS_sed_volume"] <- "TPRS"
+         pond_sum <- subset(pond_sum, select = c("Pond_Name", "TIN_sed_volume","IDW_sed_volume" , "SOAP_sed_volume"))
+         names(pond_sum)[names(pond_sum) == "TIN_sed_volume"] <- "TIN"
+         names(pond_sum)[names(pond_sum) == "IDW_mean_sed_depth"] <- "IDW"
          names(pond_sum)[names(pond_sum) == "SOAP_sed_volume"] <- "SOAP"
          head(pond_sum)
-         pond_sum_long <- gather(pond_sum, model, sed_volume, TPRS:SOAP, factor_key=TRUE)
+         pond_sum_long <- gather(pond_sum, model, sed_volume, TIN:SOAP, factor_key=TRUE)
          
       # side-by-side boxplots all ponds comparing models 
        ggplot(pond_sum_long, aes(x=model, y=sed_volume, fill=model)) +
@@ -1132,7 +1158,7 @@
          geom_boxplot() +
          ylab("Estimated Sediment Volume (m3)") + 
          xlab("Model") +
-         facet_wrap(~Pond_Name) +
+         facet_wrap(~Pond_Name, scales = "free") +
          ggtitle("Estimated Sediment Volume by Model by Pond")
    
 #_______________________________________________________________________________ 
@@ -1144,7 +1170,7 @@
          pond_name_form <- pond_name[1] # format pond name 
          output_plot <- ggplot(name_grid) +
            geom_sf(data = name_boundary) +
-           geom_raster(aes(X, Y, fill = TIN_sed_depth)) +
+           geom_raster(aes(X, Y, fill = TIN_sed_thickness)) +
            scale_fill_viridis_c() +
            geom_sf_text(aes(label = Sed_Thickness_m), data = pond_depths, size = 3) + 
            annotation_scale(location = "br") +
@@ -1157,7 +1183,7 @@
          pond_name_form <- pond_name[1] # format pond name 
          output_plot <- ggplot(name_grid) +
            geom_sf(data = name_boundary) +
-           geom_raster(aes(X, Y, fill = IDW_sed_depth)) +
+           geom_raster(aes(X, Y, fill = IDW_sed_thickness)) +
            scale_fill_viridis_c() +
            geom_sf_text(aes(label = Sed_Thickness_m), data = pond_depths, size = 3) + 
            annotation_scale(location = "br") +
@@ -1170,7 +1196,7 @@
          pond_name_form <- pond_name[1] # format pond name 
          output_plot <- ggplot(name_grid) +
            geom_sf(data = name_boundary) +
-           geom_raster(aes(X, Y, fill = TPRS_sed_depth)) +
+           geom_raster(aes(X, Y, fill = TPRS_sed_thickness)) +
            scale_fill_viridis_c(option = "D") +
            geom_sf_text(aes(label = Sed_Thickness_m), data = pond_depths, size = 3) + 
            annotation_scale(location = "br") +
@@ -1183,7 +1209,7 @@
          pond_name_form <- pond_name[1] # format pond name 
          output_plot <- ggplot(name_grid) +
            geom_sf(data = name_boundary) +
-           geom_raster(aes(X, Y, fill = SOAP_sed_depth)) +
+           geom_raster(aes(X, Y, fill = SOAP_sed_thickness)) +
            scale_fill_viridis_c(option = "D") +
            geom_sf_text(aes(label = Sed_Thickness_m), data = pond_depths, size = 3) + 
            annotation_scale(location = "br") +
@@ -1195,7 +1221,7 @@
     # 13.5  # Apply the plotting function over lists so that you don't have to write it out every time 
        #TIN 
        par(ask = TRUE)  #Setting par$ask equal to TRUE allows you to flip through all of the plots one at a a time 
-       mapply(Plot_sedmap_TIN_FUNC, pond_grid_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+       mapply(Plot_sedmap_TIN_FUNC, pond_grid_results_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
        par(ask = FALSE)
        
        # IDW 
