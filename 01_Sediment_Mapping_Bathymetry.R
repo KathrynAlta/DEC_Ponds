@@ -1204,7 +1204,6 @@
          
          IDW_plot_list <- mapply(Plot_sedmap_IDW_FUNC, pond_grid_results_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
          IDW_plot_list[1]
-         ggsave("Output_Figures/Sediment_Volume/IDW_plot_list_102723.png", IDW_plot_list, height = 6, width = 9)
        
        # TPRS 
          par(ask = TRUE)  #Setting par$ask equal to TRUE allows you to flip through all of the plots one at a a time 
@@ -1222,39 +1221,11 @@
          SOAP_plot_list <- mapply(Plot_sedmap_SOAP_FUNC, pond_grid_results_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
          SOAP_plot_list[3]
          
-    # 13.6 Plot each model for a subset of pond, 
+    # 13.6 Plot each model for a subset of pond
+         # Write a function to save all maps from a list 
+         
        
-       # Will need to pull out the maps for other intensive ponds (also export them to a set size when you save them)
        
-       # Practice Ponds 
-       # Applegate 
-        plot_sedmap_TIN_applegate <- Plot_sedmap_TIN_FUNC(applegate_grid, applegate_polygon, applegate_depths_latlong)
-        plot_sedmap_IDW_applegate <- Plot_sedmap_IDW_FUNC(applegate_grid, applegate_polygon, applegate_depths_latlong)
-        plot_sedmap_TPRS_applegate <- Plot_sedmap_TPRS_FUNC(applegate_grid, applegate_polygon, applegate_depths_latlong)
-        plot_sedmap_SOAP_applegate <- Plot_sedmap_SOAP_FUNC(applegate_grid, applegate_polygon, applegate_depths_latlong)
-            plot_sedmap_TPRS_applegate
-            plot_sedmap_SOAP_applegate
-     
-        # Aquadro 
-        plot_sedmap_TIN_aquadro <- Plot_sedmap_TIN_FUNC(aquadro_grid, aquadro_polygon, aquadro_depths_latlong) 
-        plot_sedmap_IDW_aquadro <- Plot_sedmap_IDW_FUNC(aquadro_grid, aquadro_polygon, aquadro_depths_latlong)
-        plot_sedmap_TPRS_aquadro <- Plot_sedmap_TPRS_FUNC(aquadro_grid, aquadro_polygon, aquadro_depths_latlong)
-        plot_sedmap_SOAP_aquadro <- Plot_sedmap_SOAP_FUNC(aquadro_grid, aquadro_polygon, aquadro_depths_latlong)
-             plot_sedmap_TIN_aquadro
-             plot_sedmap_IDW_aquadro
-             plot_sedmap_TPRS_aquadro
-             plot_sedmap_SOAP_aquadro
-     
-             
-        # Harrison      
-        plot_sedmap_TIN_harrison <- Plot_sedmap_TIN_FUNC(harrison_grid, harrison_polygon, harrison_depths_latlong)
-        plot_sedmap_IDW_harrison <- Plot_sedmap_IDW_FUNC(harrison_grid, harrison_polygon, harrison_depths_latlong)
-        plot_sedmap_TPRS_harrison <- Plot_sedmap_TPRS_FUNC(harrison_grid, harrison_polygon, harrison_depths_latlong)
-        plot_sedmap_SOAP_harrison <- Plot_sedmap_SOAP_FUNC(harrison_grid, harrison_polygon, harrison_depths_latlong)
-              plot_sedmap_TIN_harrison
-              plot_sedmap_IDW_harrison
-              plot_sedmap_TPRS_harrison
-              plot_sedmap_SOAP_harrison
   
 # _______________________________________________________________________________________________________________   
 # 14. Save maps for each pond 
