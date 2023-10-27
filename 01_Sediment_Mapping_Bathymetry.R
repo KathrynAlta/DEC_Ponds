@@ -1039,6 +1039,9 @@
         
         pond_grid_results_list <- mapply(Compile_estimates_FUNC, pond_grid_list_SOAP, IDW_sed_thickness, IDW_water_depth, TIN_sed_thickness, TIN_water_depth, USE.NAMES = TRUE, SIMPLIFY = FALSE)
             
+        # write_xlsx(pond_grid_results_list , "Output_Files/Sediment_Volume/pond_grid_results_list_102723.xlsx")
+        
+        
 #_______________________________________________________________________________
 # 11. Compute Volume of water and volume of sediment 
    
@@ -1102,33 +1105,7 @@
         pond_summary_sed_vol <- mapply(sed_vol_calc_FUNC, pond_polygon_area_list, pond_grid_results_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
         pond_summary_sed_vol <- Reduce(full_join,pond_summary_sed_vol)
         
-  # 11.2 Water Volume 
-       # Write a function to calculate sediment volume for each pond 
-       water_vol_calc_FUNC <- function(pond_boundary, pond_grid){
-         
-         pond_name <- as.character(pond_grid[1, "Pond_Name"])  # save pond name to use in the title of the plot 
-         pond_name_form <- pond_name[1] # format pond name 
-         
-         pond_boundary_area <- as.numeric(st_area(pond_boundary)) 
-         
-         output <- pond_grid %>% 
-           st_set_geometry(NULL) %>% 
-           summarise(
-             Pond_Name = pond_name_form,
-             TIN_mean_water_depth = mean(TIN_water_depth),
-             TIN_water_volume = mean(TIN_water_depth) * pond_boundary_area,
-             IDW_mean_water_depth = mean(IDW_water_depth),
-             IDW_water_volume = mean(IDW_water_depth) * pond_boundary_area,
-             TPRS_mean_water_depth = mean(TPRS_water_depth),
-             TPRS_water_volume = mean(TPRS_water_depth) * pond_boundary_area,
-             SOAP_mean_water_depth = mean(SOAP_water_depth),
-             SOAP_water_volume = mean(SOAP_water_depth) * pond_boundary_area,
-           )
-       }
-       
-       # Apply Function to calcualte sediment volume for each pond 
-       harrison_water_vol <- water_vol_calc_FUNC(harrison_pond_boundary, harrison_grid)
-       harrison_water_vol
+        write_xlsx(pond_summary_sed_vol , "Output_Files/Sediment_Volume/pond_summary_sed_vol_102723.xlsx")
        
  
 #_______________________________________________________________________________       
@@ -1147,19 +1124,27 @@
          pond_sum_long <- gather(pond_sum, model, sed_volume, TIN:SOAP, factor_key=TRUE)
          
       # side-by-side boxplots all ponds comparing models 
-       ggplot(pond_sum_long, aes(x=model, y=sed_volume, fill=model)) +
+        plot_vol_est_by_model <- ggplot(pond_sum_long, aes(x=model, y=sed_volume, fill=model)) +
          geom_boxplot() +
          ylab("Estimated Sediment Volume (m3)") + 
          xlab("Model") + 
          ggtitle("Estimates Sediment Volume by Model")
+        plot_vol_est_by_model
+       getwd()
+       
+       # ggsave("Output_Figures/Sediment_Volume/Estimates_sed_vol_by_model.png", plot_vol_est_by_model, height = 6, width = 9)
        
        # Plot estimated volume for each pond for each model 
-       ggplot(pond_sum_long, aes(x=model, y=sed_volume, fill=model)) +
+       plot_vol_est_by_model_facet <- ggplot(pond_sum_long, aes(x=model, y=sed_volume, fill=model)) +
          geom_boxplot() +
          ylab("Estimated Sediment Volume (m3)") + 
          xlab("Model") +
          facet_wrap(~Pond_Name, scales = "free") +
          ggtitle("Estimated Sediment Volume by Model by Pond")
+       plot_vol_est_by_model_facet
+       
+       ggsave("Output_Figures/Sediment_Volume/Estimates_sed_vol_by_model_facet.png", plot_vol_est_by_model_facet, height = 6, width = 9)
+       
    
 #_______________________________________________________________________________ 
 # 13. Plotting 
