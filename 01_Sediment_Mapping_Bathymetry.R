@@ -539,7 +539,7 @@
    GridCreate_FUNC <- function(name_pond_full, name_pond_boundary){
      pond_name <- as.character(name_pond_full[1,"Pond_Name"])
      pond_name_form <- pond_name[1]
-     pond_grid_step1 <- st_make_grid(name_pond_full, cellsize = c(5, 5), what = "centers")   # as of 10/24 this was set to a cellsixe of c(2,2) I changed that from code from onine to make more points 
+     pond_grid_step1 <- st_make_grid(name_pond_full, cellsize = c(2, 2), what = "centers")   # as of 10/24 this was set to a cellsixe of c(2,2) I changed that from code from onine to make more points 
      pond_grid_step2 <- st_as_sf(pond_grid_step1)
      pond_grid_step3 <- st_contains(name_pond_boundary, pond_grid_step2, sparse = FALSE)
      pond_grid_step4 <- pond_grid_step2[pond_grid_step3 == "TRUE" , ]
@@ -1039,7 +1039,7 @@
         
         pond_grid_results_list <- mapply(Compile_estimates_FUNC, pond_grid_list_SOAP, IDW_sed_thickness, IDW_water_depth, TIN_sed_thickness, TIN_water_depth, USE.NAMES = TRUE, SIMPLIFY = FALSE)
             
-        # write_xlsx(pond_grid_results_list , "Output_Files/Sediment_Volume/pond_grid_results_list_102723.xlsx")
+        # write_xlsx(pond_grid_results_list , "Output_Files/Sediment_Volume/pond_grid_results_list_BiggerGrid_102723.xlsx")
         
         
 #_______________________________________________________________________________
@@ -1059,17 +1059,6 @@
       
   # Write a function to calculate sediment volume for each pond 
         
-        # Trouble Shooting 
-        pond_results <- pond_grid_results_list["Boyce"]
-        pond_results <- as.data.frame(pond_results)
-        head(pond_results)
-        
-        pond_results <- as.data.frame(pond_results)
-        
-        pond_polygon_area <- pond_polygon_area_list["Boyce"]
-        pond_polygon_area <- as.data.frame(pond_polygon_area)
-        
-        
         # FUNC 
        sed_vol_calc_FUNC <- function(pond_polygon_area, pond_results){
          
@@ -1084,10 +1073,7 @@
          pond_name <- as.character(pond_results[1, "Pond_Name"])  # save pond name to use in the title of the plot 
          pond_name_form <- pond_name[1] # format pond name 
          
-         #pond_boundary_area <- as.numeric(st_area(pond_boundary)) 
-         
          output <- pond_results %>% 
-           #st_set_geometry(NULL) %>% 
            summarise(
              Pond_Name = pond_name_form,
              TIN_mean_sed_depth = mean(TIN_sed_thickness),
@@ -1105,7 +1091,7 @@
         pond_summary_sed_vol <- mapply(sed_vol_calc_FUNC, pond_polygon_area_list, pond_grid_results_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
         pond_summary_sed_vol <- Reduce(full_join,pond_summary_sed_vol)
         
-        write_xlsx(pond_summary_sed_vol , "Output_Files/Sediment_Volume/pond_summary_sed_vol_102723.xlsx")
+        # write_xlsx(pond_summary_sed_vol , "Output_Files/Sediment_Volume/pond_summary_sed_vol_102723.xlsx")
        
  
 #_______________________________________________________________________________       
@@ -1118,7 +1104,7 @@
          names(pond_sum)
          pond_sum <- subset(pond_sum, select = c("Pond_Name", "TIN_sed_volume","IDW_sed_volume" , "SOAP_sed_volume"))
          names(pond_sum)[names(pond_sum) == "TIN_sed_volume"] <- "TIN"
-         names(pond_sum)[names(pond_sum) == "IDW_mean_sed_depth"] <- "IDW"
+         names(pond_sum)[names(pond_sum) == "IDW_sed_volume"] <- "IDW"
          names(pond_sum)[names(pond_sum) == "SOAP_sed_volume"] <- "SOAP"
          head(pond_sum)
          pond_sum_long <- gather(pond_sum, model, sed_volume, TIN:SOAP, factor_key=TRUE)
@@ -1130,9 +1116,9 @@
          xlab("Model") + 
          ggtitle("Estimates Sediment Volume by Model")
         plot_vol_est_by_model
-       getwd()
        
-       # ggsave("Output_Figures/Sediment_Volume/Estimates_sed_vol_by_model.png", plot_vol_est_by_model, height = 6, width = 9)
+       
+      # ggsave("Output_Figures/Sediment_Volume/Estimates_sed_vol_by_model.png", plot_vol_est_by_model, height = 6, width = 9)
        
        # Plot estimated volume for each pond for each model 
        plot_vol_est_by_model_facet <- ggplot(pond_sum_long, aes(x=model, y=sed_volume, fill=model)) +
@@ -1209,28 +1195,31 @@
        mapply(Plot_sedmap_TIN_FUNC, pond_grid_results_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
        par(ask = FALSE)
        
+        TIN_plot_list <-  mapply(Plot_sedmap_TIN_FUNC, pond_grid_results_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+       
        # IDW 
          par(ask = TRUE)  #Setting par$ask equal to TRUE allows you to flip through all of the plots one at a a time 
-         mapply(Plot_sedmap_IDW_FUNC, pond_grid_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+         mapply(Plot_sedmap_IDW_FUNC, pond_grid_results_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
          par(ask = FALSE)
          
-         TPRS_plot_list <- mapply(Plot_sedmap_IDW_FUNC, pond_grid_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
-         TPRS_plot_list[1]
+         IDW_plot_list <- mapply(Plot_sedmap_IDW_FUNC, pond_grid_results_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+         IDW_plot_list[1]
+         ggsave("Output_Figures/Sediment_Volume/IDW_plot_list_102723.png", IDW_plot_list, height = 6, width = 9)
        
        # TPRS 
          par(ask = TRUE)  #Setting par$ask equal to TRUE allows you to flip through all of the plots one at a a time 
-         mapply(Plot_sedmap_TPRS_FUNC, pond_grid_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+         mapply(Plot_sedmap_TPRS_FUNC, pond_grid_results_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
          par(ask = FALSE)
          
-         TPRS_plot_list <- mapply(Plot_sedmap_TPRS_FUNC, pond_grid_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+         TPRS_plot_list <- mapply(Plot_sedmap_TPRS_FUNC, pond_grid_results_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
          TPRS_plot_list[2]
        
        # SOAP
          par(ask = TRUE)  #Setting par$ask equal to TRUE allows you to flip through all of the plots one at a a time 
-         mapply(Plot_sedmap_SOAP_FUNC, pond_grid_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+         mapply(Plot_sedmap_SOAP_FUNC, pond_grid_results_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
          par(ask = FALSE)
          
-         SOAP_plot_list <- mapply(Plot_sedmap_SOAP_FUNC, pond_grid_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+         SOAP_plot_list <- mapply(Plot_sedmap_SOAP_FUNC, pond_grid_results_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
          SOAP_plot_list[3]
          
     # 13.6 Plot each model for a subset of pond, 
