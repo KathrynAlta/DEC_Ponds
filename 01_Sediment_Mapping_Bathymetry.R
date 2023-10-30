@@ -539,7 +539,7 @@
    GridCreate_FUNC <- function(name_pond_full, name_pond_boundary){
      pond_name <- as.character(name_pond_full[1,"Pond_Name"])
      pond_name_form <- pond_name[1]
-     pond_grid_step1 <- st_make_grid(name_pond_full, cellsize = c(2, 2), what = "centers")   # as of 10/24 this was set to a cellsixe of c(2,2) I changed that from code from onine to make more points 
+     pond_grid_step1 <- st_make_grid(name_pond_full, cellsize = c(1, 1), what = "centers")   # as of 10/24 this was set to a cellsixe of c(2,2) I changed that from code from onine to make more points 
      pond_grid_step2 <- st_as_sf(pond_grid_step1)
      pond_grid_step3 <- st_contains(name_pond_boundary, pond_grid_step2, sparse = FALSE)
      pond_grid_step4 <- pond_grid_step2[pond_grid_step3 == "TRUE" , ]
@@ -1054,7 +1054,6 @@
         }
         
         pond_polygon_area_list <- mapply(Calc_Pond_Area_FUNC, pond_polygon_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
-        pond_polygon_area_list["Boyce"]
         
       
   # Write a function to calculate sediment volume for each pond 
@@ -1129,7 +1128,7 @@
          ggtitle("Estimated Sediment Volume by Model by Pond")
        plot_vol_est_by_model_facet
        
-       ggsave("Output_Figures/Sediment_Volume/Estimates_sed_vol_by_model_facet.png", plot_vol_est_by_model_facet, height = 6, width = 9)
+       # ggsave("Output_Figures/Sediment_Volume/Estimates_sed_vol_by_model_facet.png", plot_vol_est_by_model_facet, height = 6, width = 9)
        
    
 #_______________________________________________________________________________ 
@@ -1206,12 +1205,12 @@
          IDW_plot_list[1]
        
        # TPRS 
-         par(ask = TRUE)  #Setting par$ask equal to TRUE allows you to flip through all of the plots one at a a time 
-         mapply(Plot_sedmap_TPRS_FUNC, pond_grid_results_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
-         par(ask = FALSE)
+        #  par(ask = TRUE)  #Setting par$ask equal to TRUE allows you to flip through all of the plots one at a a time 
+        #  mapply(Plot_sedmap_TPRS_FUNC, pond_grid_results_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+        #  par(ask = FALSE)
          
-         TPRS_plot_list <- mapply(Plot_sedmap_TPRS_FUNC, pond_grid_results_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
-         TPRS_plot_list[2]
+        #  TPRS_plot_list <- mapply(Plot_sedmap_TPRS_FUNC, pond_grid_results_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+        #  TPRS_plot_list[2]
        
        # SOAP
          par(ask = TRUE)  #Setting par$ask equal to TRUE allows you to flip through all of the plots one at a a time 
@@ -1229,20 +1228,18 @@
   
 # _______________________________________________________________________________________________________________   
 # 14. Save maps for each pond 
-      # Applegate 
-         ggsave("Output_Figures/plot_sedmap_TIN_applegate_230830.png", plot_sedmap_TIN_applegate)
-         ggsave("Output_Figures/plot_sedmap_IDW_applegate_230828.png", plot_sedmap_IDW_applegate)
-         ggsave("Output_Figures/plot_sedmap_TRPS_applegate_230828.png", plot_sedmap_TPRS_applegate)
-        
-      # Aquadro 
-         ggsave("Output_Figures/plot_sedmap_TIN_aquadro_230830.png", plot_sedmap_TIN_aquadro)
-         ggsave("Output_Figures/plot_sedmap_IDW_aquadro_230828.png", plot_sedmap_IDW_aquadro)
-         ggsave("Output_Figures/plot_sedmap_TRPS_aquadro_230828.png", plot_sedmap_TPRS_aquadro)
          
-      # Harrison 
-         ggsave("Output_Figures/plot_sedmap_TIN_harrison_230830.png", plot_sedmap_TIN_harrison)
-         ggsave("Output_Figures/plot_sedmap_IDW_harrison_230828.png", plot_sedmap_IDW_harrison)
-         ggsave("Output_Figures/plot_sedmap_TRPS_harrison_230828.png", plot_sedmap_TPRS_harrison)
+      # TIN 
+         tin_plot <- TIN_plot_list[[8]]
+         tin_plot
+         ggsave("Output_Figures/Sediment_Volume/tin_plot_103023_levine.png", tin_plot, height = 6, width = 9)
+         
+      # IDW
+         idw_plot <- IDW_plot_list[[8]]
+         idw_plot
+         ggsave("Output_Figures/Sediment_Volume/idw_plot_103023_levine.png", tin_plot, height = 6, width = 9)
+        
+      
          
      
      
