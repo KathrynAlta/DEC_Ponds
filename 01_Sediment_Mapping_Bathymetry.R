@@ -1230,14 +1230,19 @@
 # 14. Save maps for each pond 
          
       # TIN 
-         tin_plot <- TIN_plot_list[[8]]
+         tin_plot <- TIN_plot_list[[10]]
          tin_plot
-         ggsave("Output_Figures/Sediment_Volume/tin_plot_103023_levine.png", tin_plot, height = 6, width = 9)
+         ggsave("Output_Figures/Sediment_Volume/tin_plot_applegate_103023.png", tin_plot, height = 6, width = 9)
          
       # IDW
-         idw_plot <- IDW_plot_list[[8]]
+         idw_plot <- IDW_plot_list[[10]]
          idw_plot
-         ggsave("Output_Figures/Sediment_Volume/idw_plot_103023_levine.png", tin_plot, height = 6, width = 9)
+         ggsave("Output_Figures/Sediment_Volume/idw_plot_applegate_103023.png", idw_plot, height = 6, width = 9)
+         
+      # SOAP
+         soap_plot <- SOAP_plot_list[[10]]
+         soap_plot
+         ggsave("Output_Figures/Sediment_Volume/soap_plot_103023_applegate.png", soap_plot, height = 6, width = 9)
         
       
          
