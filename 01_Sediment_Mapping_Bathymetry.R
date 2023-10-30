@@ -1242,7 +1242,7 @@
       # SOAP
          soap_plot <- SOAP_plot_list[[10]]
          soap_plot
-         ggsave("Output_Figures/Sediment_Volume/soap_plot_103023_applegate.png", soap_plot, height = 6, width = 9)
+         ggsave("Output_Figures/Sediment_Volume/soap_plot_applegate_103023.png", soap_plot, height = 6, width = 9)
         
       
          
