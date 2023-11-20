@@ -331,7 +331,7 @@
       st_transform(26920) %>%
       st_zm()
     
-    hanh_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Hahn_Polygon.shp") %>%  # read in polygon of pond 
+    hahn_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Hahn_Polygon.shp") %>%  # read in polygon of pond 
       transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
       st_transform(26920) %>%
       st_zm()
@@ -440,38 +440,38 @@
    
     
     ## Put all of the points shape df into a list 
-    # pond_points_list <- list(boyce_points, white_points, howarth_points, edwards_points,
-    #                        shelterbelt_points, mtpleasantse_points, harrison_points, levine_points, 
-    #                         aquadro_points, longhouse_points, ecovillage_points, dybowski_points, 
-    #                         applegate_points, mtpleasantne_points, barber_points, stickandstone_points,
-    #                        englishshallow_points, engst_points, rogers_points, carpenter_points, 
-    #                         walnutridge_points, lucas_points, collmer_points, vesa_points, 
-    #                         conley_points, hahn_points, marks_points, englishdeep_points)
+     pond_points_list <- list(boyce_points, white_points, howarth_points, edwards_points,
+                            shelterbelt_points, mtpleasantse_points, harrison_points, levine_points, 
+                             aquadro_points, longhouse_points, ecovillage_points, dybowski_points, 
+                             applegate_points, mtpleasantne_points, barber_points, stickstone_points,
+                             englishsh_points, engst_points, rogers_points, carpenter_points, 
+                             walnut_points, lucas_points, collmer_points, vesa_points, 
+                             conley_points, hahn_points, marks_points)
     
     
     
-    # names(pond_points_list ) <- c("Boyce", "White", "Howarth", "Edwards",
-    #                             "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", 
-    #                              "Aquadro", "Longhouse", "Ecovillage", "Dybowski", 
-    #                              "Applegate", "Mt_Pleasant_NE", "Barber", "Stick_and_Stone",
-    #                              "English_Shallow", "Engst", "Rodgers", "Carpenter", 
-    #                              "Walnut_Ridge", "Lucas", "Collmer", "Vesa", 
-    #                              "Conley", "Hahn", "Marks", "English_Deep")
+    names(pond_points_list ) <- c("Boyce", "White", "Howarth", "Edwards",
+                                  "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", 
+                                  "Aquadro", "Longhouse", "Ecovillage", "Dybowski", 
+                                  "Applegate", "Mt_Pleasant_NE", "Barber", "Stick_and_Stone",
+                                  "English_Shallow", "Engst", "Rodgers", "Carpenter", 
+                                  "Walnut_Ridge", "Lucas", "Collmer", "Vesa", 
+                                  "Conley", "Hahn", "Marks")
     
     # Remove the Z component 
-   #  pond_points_list <- mapply(st_zm, pond_points_list, drop = TRUE, what = "ZM", USE.NAMES = TRUE, SIMPLIFY = FALSE)
+    pond_points_list <- mapply(st_zm, pond_points_list, drop = TRUE, what = "ZM", USE.NAMES = TRUE, SIMPLIFY = FALSE)
     
     
     # Intensive Only 
-        pond_points_list <- list(boyce_points, white_points, howarth_points, edwards_points,
-                                 shelterbelt_points, mtpleasantse_points, harrison_points, levine_points, 
-                                 aquadro_points, applegate_points)
+        # pond_points_list <- list(boyce_points, white_points, howarth_points, edwards_points,
+        #                         shelterbelt_points, mtpleasantse_points, harrison_points, levine_points, 
+        #                         aquadro_points, applegate_points)
         
-        names(pond_points_list ) <- c("Boyce", "White", "Howarth", "Edwards",
-                                      "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", 
-                                      "Aquadro", "Applegate")
+        # names(pond_points_list ) <- c("Boyce", "White", "Howarth", "Edwards",
+        #                              "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", 
+        #                              "Aquadro", "Applegate")
         # Remove the Z component 
-        pond_points_list <- mapply(st_zm, pond_points_list, drop = TRUE, what = "ZM", USE.NAMES = TRUE, SIMPLIFY = FALSE)
+        # pond_points_list <- mapply(st_zm, pond_points_list, drop = TRUE, what = "ZM", USE.NAMES = TRUE, SIMPLIFY = FALSE)
     
     # Put all of the polygon shape df into a list 
     
@@ -480,30 +480,30 @@
          #  names(pond_polygon_list) <- c("Applegate", "Aquadro", "Harrison")
     
           
-   #  pond_polygon_list <- list(boyce_polygon, white_polygon, howarth_polygon, edwards_polygon,
-    #                             shelterbelt_polygon, mtpleasantse_polygon, harrison_polygon, levine_polygon, 
-    #                            aquadro_polygon, longhouse_polygon, ecovillage_polygon, dybowski_polygon, 
-    #                            applegate_polygon, mtpleasantne_polygon, barber_polygon, stickandstone_polygon,
-    #                            englishshallow_polygon, engst_polygon, rogers_polygon, carpenter_polygon, 
-    #                            walnutridge_polygon, lucas_polygon, collmer_polygon, vesa_polygon, 
-    #                            conley_polygon, hahn_polygon, marks_polygon, englishdeep_polygon)
+     pond_polygon_list <- list(boyce_polygon, white_polygon, howarth_polygon, edwards_polygon,
+                                shelterbelt_polygon, mtpleasantse_polygon, harrison_polygon, levine_polygon, 
+                                aquadro_polygon, longhouse_polygon, ecovillage_polygon, dybowski_polygon, 
+                                applegate_polygon, mtpleasantne_polygon, barber_polygon, stickstone_polygon,
+                                englishsh_polygon, engst_polygon, rogers_polygon, carpenter_polygon, 
+                                walnut_polygon, lucas_polygon, collmer_polygon, vesa_polygon, 
+                                conley_polygon, hahn_polygon, marks_polygon)
     
-    # names(pond_polygon_list ) <- c("Boyce", "White", "Howarth", "Edwards",
-    #                            "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", 
-    #                             "Aquadro", "Longhouse", "Ecovillage", "Dybowski", 
-    #                            "Applegate", "Mt_Pleasant_NE", "Barber", "Stick_and_Stone",
-    #                            "English_Shallow", "Engst", "Rodgers", "Carpenter", 
-    #                             "Walnut_Ridge", "Lucas", "Collmer", "Vesa", 
-    #                             "Conley", "Hahn", "Marks", "English_Deep")
+     names(pond_polygon_list ) <- c("Boyce", "White", "Howarth", "Edwards",
+                                    "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", 
+                                    "Aquadro", "Longhouse", "Ecovillage", "Dybowski", 
+                                    "Applegate", "Mt_Pleasant_NE", "Barber", "Stick_and_Stone",
+                                    "English_Shallow", "Engst", "Rodgers", "Carpenter", 
+                                    "Walnut_Ridge", "Lucas", "Collmer", "Vesa", 
+                                    "Conley", "Hahn", "Marks")
     
         # Intensive Only 
-        pond_polygon_list <- list(boyce_polygon, white_polygon, howarth_polygon, edwards_polygon,
-                                  shelterbelt_polygon, mtpleasantse_polygon, harrison_polygon, levine_polygon, 
-                                  aquadro_polygon, applegate_polygon)
+        # pond_polygon_list <- list(boyce_polygon, white_polygon, howarth_polygon, edwards_polygon,
+        #                          shelterbelt_polygon, mtpleasantse_polygon, harrison_polygon, levine_polygon, 
+        #                          aquadro_polygon, applegate_polygon)
         
-        names(pond_polygon_list ) <- c("Boyce", "White", "Howarth", "Edwards",
-                                       "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", 
-                                       "Aquadro", "Applegate")
+        # names(pond_polygon_list ) <- c("Boyce", "White", "Howarth", "Edwards",
+        #                               "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", 
+        #                               "Aquadro", "Applegate")
       
     
    
@@ -513,29 +513,30 @@
     # 2.1 Formatt the Sediment Depth Data 
       
         # Remove ponds that you have sediment data for but that we did not include in study 
-        sediment_depths <- sediment_depths[!sediment_depths$Pond %in% c("Artibee", "Bensons", "Thru_the_Woods", "Whitmore" ), ]
+        sediment_depths <- sediment_depths[!sediment_depths$Pond %in% c("Artibee", "Bensons", "Thru_the_Woods", "Whitmore", "English_Deep" ), ]
+        sediment_depths <- sediment_depths[!is.na(sediment_depths$Pond) , ]
         
-        # Subset to only intensive 
-        sediment_depths <- sediment_depths[sediment_depths$Pond %in% c("Boyce", "White", "Howarth", "Edwards", "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", "Aquadro", "Applegate") , ]
-        sediment_depths$Pond <- as.character(sediment_depths$Pond)
+              # Subset to only intensive 
+              # sediment_depths <- sediment_depths[sediment_depths$Pond %in% c("Boyce", "White", "Howarth", "Edwards", "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", "Aquadro", "Applegate") , ]
+              # sediment_depths$Pond <- as.character(sediment_depths$Pond)
         
         # Seperate Sediment depth data out by pond 
         meas_depths_list <-split(sediment_depths, sediment_depths$Pond)  
           # this seperates the one big df of all the measured depths into a list with a seperate df for each pond 
         
         # Order the dfs in the meas deths list so that the ponds are in the same order as in the other lists 
-        # meas_depths_list <- meas_depths_list[c("Boyce", "White", "Howarth", "Edwards",
-          #                                             "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", 
-          #                                             "Aquadro", "Longhouse", "Ecovillage", "Dybowski", 
-          #                                             "Applegate", "Mt_Pleasant_NE", "Barber", "Stick_and_Stone",
-          #                                            "English_Shallow", "Engst", "Rodgers", "Carpenter", 
-          #                                             "Walnut_Ridge", "Lucas", "Collmer", "Vesa", 
-          #                                             "Conley", "Hahn", "Marks", "English_Deep")]
+         meas_depths_list <- meas_depths_list[c("Boyce", "White", "Howarth", "Edwards",
+                                                       "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", 
+                                                       "Aquadro", "Longhouse", "Ecovillage", "Dybowski", 
+                                                       "Applegate", "Mt_Pleasant_NE", "Barber", "Stick_and_Stone",
+                                                      "English_Shallow", "Engst", "Rodgers", "Carpenter", 
+                                                       "Walnut_Ridge", "Lucas", "Collmer", "Vesa", 
+                                                       "Conley", "Hahn", "Marks")]
         
         # Intensive Only 
-        meas_depths_list <- meas_depths_list[c("Boyce", "White", "Howarth", "Edwards",
-                                                       "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", 
-                                                       "Aquadro","Applegate")]
+        # meas_depths_list <- meas_depths_list[c("Boyce", "White", "Howarth", "Edwards",
+        #                                               "Shelterbelt", "Mt_Pleasant_SE", "Harrison", "Levine", 
+        #                                               "Aquadro","Applegate")]
     
       # Practice subset 
         # applegate_meas_depths <- subset(sediment_depths, sediment_depths$Pond == "Applegate")
@@ -561,8 +562,8 @@
   # 2.2) Write a function to connect the measured depths to the lat long in the shape file 
         
             # Dummy data to write function pond_points_list, meas_depths_list
-            pond_points <- pond_points_list[["Harrison"]]
-            measured_depths <- meas_depths_list[["Harrison"]]
+                # pond_points <- pond_points_list[["Harrison"]]
+                # measured_depths <- meas_depths_list[["Harrison"]]
             
         Connect_Depth_LatLong_FUNC <- function(pond_points, measured_depths){
           
