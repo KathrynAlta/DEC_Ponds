@@ -121,15 +121,86 @@
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
     # Extensive 
-    applegate_points <- read_sf("Spatial_Data_SedimentMapping/Applegate_Pond_022723/Applegate_Pond_Points_030123_noz.shp")   %>%   # Pull in shape file
-      transmute(source = "measured", pond = "Applegate") %>% # Subset to only columns that you need 
-      st_transform(26920) # Transform or convert coordinates of simple feature 
     
     aquadro_points <- read_sf("Spatial_Data_SedimentMapping/Aquadro_Pond_022723/Aquadro_Pond_Points_030123_noz.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Aquadro") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature
+    
+    longhouse_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Longhouse_Points.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Longhouse") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature
+    
+    ecovillage_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Ecovillage_Points.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Ecovillage") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature
+    
+    dybowski_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Dybowski_Points.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Dybowski") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature
+    
+    dybowski_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Dybowski_Points.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Dybowski") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature
+    
+    applegate_points <- read_sf("Spatial_Data_SedimentMapping/Applegate_Pond_022723/Applegate_Pond_Points_030123_noz.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Applegate") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature
+    
+    mtpleasantne_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Mt_Pleasant_NE_Points.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Mt_Pleasant_NE") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
-   
+    barber_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Barber_Points.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Barber") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature 
+    
+    stickstone_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Stickstone_Points.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Stick_and_Stone") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature 
+    
+    englishsh_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/English_Shallow_Points.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "English_Shallow") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature 
+    
+    engst_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Engst_Points.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Engst") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature 
+    
+    rogers_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Rogers_Points.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Rogers") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature
+    
+    carpenter_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Carpenter_Points.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Carpenter") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature
+    
+    walnut_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Walnut_Ridge_Points.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Walnut_Ridge") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature
+    
+    lucas_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Lucas_Points.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Lucas") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature
+    
+    collmer_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Collmer_Points.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Collmer") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature
+    
+    vesa_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Vesa_Points.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Vesa") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature
+    
+    conley_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Conley_Points.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Conley") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature
+    
+    hahn_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Hahn_Points.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Hahn") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature
+    
+    marks_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Marks_Points.shp")   %>%   # Pull in shape file
+      transmute(source = "measured", pond = "Marks") %>% # Subset to only columns that you need 
+      st_transform(26920) # Transform or convert coordinates of simple feature
     
   # Polygons
     
@@ -175,17 +246,100 @@
       st_zm()
     
     # Extensive 
-    applegate_polygon <- read_sf("Spatial_Data_SedimentMapping/Applegate_Pond_022723/Applegate_Pond_Poly.shp") %>%  # read in polygon of pond 
-      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
-      st_transform(26920) %>%
-      st_zm()
-    
     aquadro_polygon <- read_sf("Spatial_Data_SedimentMapping/Aquadro_Pond_022723/Aquadro_Pond_Poly_030123.shp") %>%  # read in polygon of pond 
       transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
       st_transform(26920) %>%
       st_zm()
     
+    longhouse_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Longhouse_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
     
+    ecovillage_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Ecovillage_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    dybowski_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Dybowski_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    applegate_polygon <- read_sf("Spatial_Data_SedimentMapping/Applegate_Pond_022723/Applegate_Pond_Poly.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    mtpleasantne_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Mt_Pleasant_NE_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    barber_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Barber_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    stickstone_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Stickstone_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    englishsh_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/English_Shallow_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    engst_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Engst_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    rogers_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Rogers_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    carpenter_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Carpenter_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    walnut_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Walnutridge_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    lucas_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Lucas_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    collmer_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Collmer_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    vesa_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Vesa_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    conley_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Conley_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    hanh_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Hahn_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
+    
+    marks_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Marks_Polygon.shp") %>%  # read in polygon of pond 
+      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      st_transform(26920) %>%
+      st_zm()
   
       #####    
 
