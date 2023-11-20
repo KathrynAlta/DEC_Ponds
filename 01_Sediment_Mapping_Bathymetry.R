@@ -64,6 +64,13 @@
       sediment_depths$Depth_to_btm_of_sediment_cm <- as.numeric(sediment_depths$Depth_to_btm_of_sediment_cm)
       sediment_depths <- subset(sediment_depths, select = c( "Pond", "Measurement_Number", "Depth_to_top_of_Sediment_cm", "Depth_to_btm_of_sediment_cm"))
       
+    # Remove points that have negative sediment depth values 
+      sediment_depths$sed_thickness <- sediment_depths$Depth_to_btm_of_sediment_cm - sediment_depths$Depth_to_top_of_Sediment_cm
+      sediment_depths <- sediment_depths[!sediment_depths$sed_thickness < 0 , ]
+      sediment_depths
+      
+    # Set to 1 any sediment depth values that were measured to be 0 later down in function 
+      
       # Checking typos 
       sd_df <- as.data.frame(sediment_depths)
       head(sd_df)
@@ -399,9 +406,9 @@
         
   # 2.2) Write a function to connect the measured depths to the lat long in the shape file 
         
-            # Dummy data to write function 
-            # pond_points <- aquadro_points
-            # measured_depths <- aquadro_meas_depths
+            # Dummy data to write function pond_points_list, meas_depths_list
+            pond_points <- pond_points_list[["Boyce"]]
+            measured_depths <- meas_depths_list[["Boyce"]]
             
         Connect_Depth_LatLong_FUNC <- function(pond_points, measured_depths){
           
@@ -418,6 +425,9 @@
           
           # Calculate sediment depth in meters
           pond_depths$Sed_Thickness_m <- (pond_depths$Depth_to_btm_of_sediment_cm - pond_depths$Depth_to_top_of_Sediment_cm)/100
+          
+          # If the calculated sediment depth is 0 set it to one cm 
+          pond_depths$Sed_Thickness_m <- ifelse(pond_depths$Sed_Thickness_m == 0 , 0.05, pond_depths$Sed_Thickness_m)
           
           # Convert water depth to meters 
           pond_depths$Water_Depth_m <- pond_depths$Depth_to_top_of_Sediment_cm / 100
@@ -725,9 +735,9 @@
 
     # 8.1.1) create a model for water depth using TPRS 
             # Create model one pond at a time (check)
-                TPRS_bathym_harrison_FIT <- mgcv::gam(Water_Depth_m ~ s(X, Y, k = 60), data = harrison_full, method = "REML")
-                TPRS_bathym_aquadro_FIT <- mgcv::gam(Water_Depth_m ~ s(X, Y, k = 60), data = aquadro_full, method = "REML")
-                TPRS_bathym_applegate_FIT <- mgcv::gam(Water_Depth_m ~ s(X, Y, k = 60), data = applegate_full, method = "REML")
+                # TPRS_bathym_harrison_FIT <- mgcv::gam(Water_Depth_m ~ s(X, Y, k = 60), data = harrison_full, method = "REML")
+                # TPRS_bathym_aquadro_FIT <- mgcv::gam(Water_Depth_m ~ s(X, Y, k = 60), data = aquadro_full, method = "REML")
+                # TPRS_bathym_applegate_FIT <- mgcv::gam(Water_Depth_m ~ s(X, Y, k = 60), data = applegate_full, method = "REML")
                 
       # Write a function to create the model for bathymetry 
         CreateTPRSmodel_bathym_FUNC <- function(pond_full){
@@ -735,25 +745,25 @@
         }
         
             # Apply that function to one pond at a time (check)
-            TPRS_bathym_harrison_FIT <- CreateTPRSmodel_bathym_FUNC(harrison_full)
-            TPRS_bathym_applegate_FIT <- CreateTPRSmodel_bathym_FUNC(applegate_full)
-            TPRS_bathym_aquadro_FIT <- CreateTPRSmodel_bathym_FUNC(aquadro_full)
+               #  TPRS_bathym_harrison_FIT <- CreateTPRSmodel_bathym_FUNC(harrison_full)
+               #  TPRS_bathym_applegate_FIT <- CreateTPRSmodel_bathym_FUNC(applegate_full)
+               #  TPRS_bathym_aquadro_FIT <- CreateTPRSmodel_bathym_FUNC(aquadro_full)
             
             # Run each one at a time 
-            boyce_full <- pond_full_list[["Boyce"]]
-            white_full <- pond_full_list[["White"]]
-            shelterbelt_full <- pond_full_list[["Shelterbelt"]]
-            edwards_full <- pond_full_list[["Edwards"]]
-            TPRS_bathym_pumpkin_FIT <- CreateTPRSmodel_bathym_FUNC(edwards_full)
-            TPRS_bathym_harrison_FIT <- CreateTPRSmodel_bathym_FUNC(harrison_full)
-            
-            str(boyce_full)
-            str(applegate_full)
-            str(harrison_full)
-            
-            summary(boyce_full$Sed_Thickness_m)
-            summary(harrison_full$Sed_Thickness_m)
-            summary(white_full$Sed_Thickness_m)
+               #    boyce_full <- pond_full_list[["Boyce"]]
+               #    white_full <- pond_full_list[["White"]]
+               #    shelterbelt_full <- pond_full_list[["Shelterbelt"]]
+               #    edwards_full <- pond_full_list[["Edwards"]]
+               #    TPRS_bathym_pumpkin_FIT <- CreateTPRSmodel_bathym_FUNC(edwards_full)
+               #    TPRS_bathym_harrison_FIT <- CreateTPRSmodel_bathym_FUNC(harrison_full)
+                  
+               #    str(boyce_full)
+               #    str(applegate_full)
+               #    str(harrison_full)
+                  
+               #    summary(boyce_full$Sed_Thickness_m)
+               #    summary(harrison_full$Sed_Thickness_m)
+               #    summary(white_full$Sed_Thickness_m)
             
        
             
@@ -1004,7 +1014,7 @@
                     # applegate_grid <- PredictSOAP_bathym_FUNC(SOAP_bathym_applegate_FIT, applegate_grid)
                     
           # Use mapply to apply prediction function across list of ponds
-                # install.packages("mgcv")
+                install.packages("mgcv")
                 library(mgcv)
                 pond_grid_list_SOAP_water <- pond_grid_list
                 pond_grid_list_SOAP <- mapply(PredictSOAP_bathym_FUNC, SOAP_bathym_FIT_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
@@ -1098,7 +1108,7 @@
         pond_summary_sed_vol <- mapply(sed_vol_calc_FUNC, pond_polygon_area_list, pond_grid_results_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
         pond_summary_sed_vol <- Reduce(full_join,pond_summary_sed_vol)
         
-        # write_xlsx(pond_summary_sed_vol , "Output_Files/Sediment_Volume/pond_summary_sed_vol_102723.xlsx")
+        # write_xlsx(pond_summary_sed_vol , "Output_Files/Sediment_Volume/pond_summary_sed_vol_112023.xlsx")
        
  
 #_______________________________________________________________________________       
@@ -1203,14 +1213,21 @@
        par(ask = FALSE)
        
         TIN_plot_list <-  mapply(Plot_sedmap_TIN_FUNC, pond_grid_results_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
-       
+        boyce_plot <- TIN_plot_list[["Boyce"]]
+        levine_plot <- TIN_plot_list[["Levine"]]
+        ggsave("Output_Figures/Sediment_Volume/Boyce_TIN_20nov2023.png", boyce_plot, height = 6, width = 9)
+        ggsave("Output_Figures/Sediment_Volume/Levine_TIN_20nov2023.png",  levine_plot, height = 6, width = 9)
+        
        # IDW 
          par(ask = TRUE)  #Setting par$ask equal to TRUE allows you to flip through all of the plots one at a a time 
          mapply(Plot_sedmap_IDW_FUNC, pond_grid_results_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
          par(ask = FALSE)
          
          IDW_plot_list <- mapply(Plot_sedmap_IDW_FUNC, pond_grid_results_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
-         IDW_plot_list[1]
+         boyce_plot <- IDW_plot_list[["Boyce"]]
+         levine_plot <- IDW_plot_list[["Levine"]]
+         ggsave("Output_Figures/Sediment_Volume/Boyce_IDW_20nov2023.png", boyce_plot, height = 6, width = 9)
+         ggsave("Output_Figures/Sediment_Volume/Levine_IDW_20nov2023.png", levine_plot, height = 6, width = 9)
        
        # TPRS 
         #  par(ask = TRUE)  #Setting par$ask equal to TRUE allows you to flip through all of the plots one at a a time 
@@ -1226,7 +1243,11 @@
          par(ask = FALSE)
          
          SOAP_plot_list <- mapply(Plot_sedmap_SOAP_FUNC, pond_grid_results_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
-         SOAP_plot_list[3]
+         boyce_plot <- SOAP_plot_list[["Boyce"]]
+         levine_plot <- SOAP_plot_list[["Levine"]]
+         
+         ggsave("Output_Figures/Sediment_Volume/Boyce_SOAP_20nov2023.png", boyce_plot, height = 6, width = 9)
+         ggsave("Output_Figures/Sediment_Volume/Levine_SOAP_20nov2023.png", levine_plot, height = 6, width = 9)
          
     # 13.6 Plot each model for a subset of pond
          # Write a function to save all maps from a list 
