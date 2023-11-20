@@ -64,10 +64,10 @@
       sediment_depths$Depth_to_btm_of_sediment_cm <- as.numeric(sediment_depths$Depth_to_btm_of_sediment_cm)
       sediment_depths <- subset(sediment_depths, select = c( "Pond", "Measurement_Number", "Depth_to_top_of_Sediment_cm", "Depth_to_btm_of_sediment_cm"))
       
-    # Remove points that have negative sediment depth values 
-      sediment_depths$sed_thickness <- sediment_depths$Depth_to_btm_of_sediment_cm - sediment_depths$Depth_to_top_of_Sediment_cm
-      sediment_depths <- sediment_depths[!sediment_depths$sed_thickness < 0 , ]
-      sediment_depths
+    # Remove points that have negative sediment depth values --> no move this down after connected to lat long 
+      # sediment_depths$sed_thickness <- sediment_depths$Depth_to_btm_of_sediment_cm - sediment_depths$Depth_to_top_of_Sediment_cm
+      # sediment_depths <- sediment_depths[!sediment_depths$sed_thickness < 0 , ]
+      # sediment_depths
       
     # Set to 1 any sediment depth values that were measured to be 0 later down in function 
       
