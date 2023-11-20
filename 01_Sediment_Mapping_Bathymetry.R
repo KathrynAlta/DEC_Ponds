@@ -64,6 +64,14 @@
       sediment_depths$Depth_to_btm_of_sediment_cm <- as.numeric(sediment_depths$Depth_to_btm_of_sediment_cm)
       sediment_depths <- subset(sediment_depths, select = c( "Pond", "Measurement_Number", "Depth_to_top_of_Sediment_cm", "Depth_to_btm_of_sediment_cm"))
       
+      # Checking typos 
+      sd_df <- as.data.frame(sediment_depths)
+      head(sd_df)
+      sd_df$sed_thick <- sd_df$Depth_to_btm_of_sediment_cm - sd_df$Depth_to_top_of_Sediment_cm
+      sd_df_check <- sd_df[sd_df$sed_thick <= 0 , ]
+      sd_df_check <- sd_df_check[!is.na(sd_df_check$Pond),]
+      
+      
       # Individual depth files 
          # harrison_meas_depths <- read_xlsx("Depth_Measurements/Harrison_Pond_Depth_Measurements.xlsx")
          # applegate_meas_depths <- read_xlsx("Depth_Measurements/Applegate_Pond_Depth_Measurements.xlsx")
