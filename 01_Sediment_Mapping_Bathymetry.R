@@ -407,8 +407,8 @@
   # 2.2) Write a function to connect the measured depths to the lat long in the shape file 
         
             # Dummy data to write function pond_points_list, meas_depths_list
-            pond_points <- pond_points_list[["Boyce"]]
-            measured_depths <- meas_depths_list[["Boyce"]]
+            pond_points <- pond_points_list[["Harrison"]]
+            measured_depths <- meas_depths_list[["Harrison"]]
             
         Connect_Depth_LatLong_FUNC <- function(pond_points, measured_depths){
           
@@ -486,6 +486,8 @@
      mapply(Plot_Sed_Thick_FUNC, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
      par(ask = FALSE)
    
+     basic_map_list <-  mapply(Plot_Sed_Thick_FUNC, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+     basic_map_list[["Harrison"]]
 # 4. Add the coordinates of the boundary as columns and set the depth at the boundary to zero 
 #_______________________________________________________________________________    
   # 4.1 ) For all ponds cast geometry to another type, change from polygon to points 
@@ -1213,7 +1215,7 @@
        par(ask = FALSE)
        
         TIN_plot_list <-  mapply(Plot_sedmap_TIN_FUNC, pond_grid_results_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
-        boyce_plot <- TIN_plot_list[["Boyce"]]
+        Harrison_plot <- TIN_plot_list[["Harrison"]]
         levine_plot <- TIN_plot_list[["Levine"]]
         ggsave("Output_Figures/Sediment_Volume/Boyce_TIN_20nov2023.png", boyce_plot, height = 6, width = 9)
         ggsave("Output_Figures/Sediment_Volume/Levine_TIN_20nov2023.png",  levine_plot, height = 6, width = 9)
