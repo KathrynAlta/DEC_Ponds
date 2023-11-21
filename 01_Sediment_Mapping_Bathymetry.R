@@ -806,8 +806,6 @@
         pond_grid_list_TIN_water <- pond_grid_list
         TIN_water_depth <- mapply(TIN_bathym_FUNC, pond_full_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
     
-       ###### 
-    
 # 7. Inverse Distance Weighting (IDW) 
 # _____________________________________________________________________________  
    
