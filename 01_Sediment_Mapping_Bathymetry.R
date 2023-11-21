@@ -926,6 +926,46 @@
             # mapply structure: output_list <- mapply(Name_FUNC, first_list, second_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
         TPRS_bathym_FIT_list <- mapply(CreateTPRSmodel_bathym_FUNC, pond_full_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
       
+            # Apply to ponds one at a time to see what works 
+              check_full <- pond_full_list[[26]]
+              check_result <- CreateTPRSmodel_bathym_FUNC(check_full)
+              head(check_result)
+              
+            # Run for the ponds that work 
+                  # Edwards 
+                  edwards_full <- pond_full_list[[4]]
+                  TPRS_bathym_FIT_edwards <- CreateTPRSmodel_bathym_FUNC(edwards_full)
+                  
+                  # Mt Pleasant SE 
+                  mtplse_full <- pond_full_list[[6]]
+                  TPRS_bathym_FIT_mtpleasantse <- CreateTPRSmodel_bathym_FUNC(mtplse_full)
+                  
+                  # Harrison 
+                  harrison_full <- pond_full_list[[7]]
+                  TPRS_bathym_FIT_harrison <- CreateTPRSmodel_bathym_FUNC(harrison_full)
+                  
+                  # Aquadro 
+                  aquadro_full <- pond_full_list[[9]]
+                  TPRS_bathym_FIT_aquadro <- CreateTPRSmodel_bathym_FUNC(aquadro_full)
+                  
+                  # Ecovillage 
+                  ecovillage_full <- pond_full_list[[11]]
+                  TPRS_bathym_FIT_ecovillage <- CreateTPRSmodel_bathym_FUNC(ecovillage_full)
+                  
+                  # Applegate 
+                  applegate_full <- pond_full_list[[13]]
+                  TPRS_bathym_FIT_applegate <- CreateTPRSmodel_bathym_FUNC(applegate_full)
+                  
+                  # Conley 
+                  conley_full <- pond_full_list[[24]]
+                  TPRS_bathym_FIT_conley <- CreateTPRSmodel_bathym_FUNC(conley_full)
+                  
+                  # Hahn
+                  hahn_full <- pond_full_list[[25]]
+                  TPRS_bathym_FIT_hahn <- CreateTPRSmodel_bathym_FUNC(hahn_full)
+                  
+              
+        
     # 8.1.2) Use that TPRS model to get predictions and add them to the grid  
       # NOTE --> If this spits an error reinstall mgcv package and try again (no idea why that works but it does)
           # install.packages("mgcv")
