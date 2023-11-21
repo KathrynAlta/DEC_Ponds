@@ -1169,7 +1169,7 @@
                     # applegate_grid <- PredictSOAP_bathym_FUNC(SOAP_bathym_applegate_FIT, applegate_grid)
                     
           # Use mapply to apply prediction function across list of ponds
-                install.packages("mgcv")
+                # install.packages("mgcv")
                 library(mgcv)
                 pond_grid_list_SOAP_water <- pond_grid_list
                 pond_grid_list_SOAP <- mapply(PredictSOAP_bathym_FUNC, SOAP_bathym_FIT_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
@@ -1212,7 +1212,7 @@
         
         pond_grid_results_list <- mapply(Compile_estimates_FUNC, pond_grid_list_SOAP, IDW_sed_thickness, IDW_water_depth, TIN_sed_thickness, TIN_water_depth, USE.NAMES = TRUE, SIMPLIFY = FALSE)
             
-        # write_xlsx(pond_grid_results_list , "Output_Files/Sediment_Volume/pond_grid_results_list_BiggerGrid_102723.xlsx")
+        # write_xlsx(pond_grid_results_list , "Output_Files/Sediment_Volume/pond_grid_results_list_21nov2023.xlsx")
         
         
 #_______________________________________________________________________________
@@ -1231,11 +1231,18 @@
       
   # Write a function to calculate sediment volume for each pond 
         
+        
+        # Dummy Data to trouble shoot 
+        pond_polygon_area <- pond_polygon_area_list[["Harrison"]] 
+        pond_results <- pond_grid_results_list[["Harrison"]]
+        head(pond_polygon_area)
+        head(pond_results)
+        
         # FUNC 
        sed_vol_calc_FUNC <- function(pond_polygon_area, pond_results){
          
          pond_results <- as.data.frame(pond_results)
-         names(pond_results) <- c("X", "Y", "Geometry", "Pond_Name", "SOAP_water_depth", "SOAP_sed_thickness", "IDW_sed_thickness", "IDW_water_depth", "TIN_sed_thickness", "TIN_water_depth")
+         names(pond_results) <- c("X", "Y", "Pond_Name", "SOAP_water_depth", "SOAP_sed_thickness", "IDW_sed_thickness", "IDW_water_depth", "TIN_sed_thickness", "TIN_water_depth", "Geometry")
          pond_results <- subset(pond_results, select = c("Pond_Name", "SOAP_water_depth", "SOAP_sed_thickness", "IDW_sed_thickness", "IDW_water_depth", "TIN_sed_thickness", "TIN_water_depth"))
          
          pond_polygon_area_df <- as.data.frame(pond_polygon_area)
@@ -1260,10 +1267,10 @@
        }
     
        # Apply Function to calcualte sediment volume for each pond and put together into a df
-        pond_summary_sed_vol <- mapply(sed_vol_calc_FUNC, pond_polygon_area_list, pond_grid_results_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
-        pond_summary_sed_vol <- Reduce(full_join,pond_summary_sed_vol)
+        pond_summary_sed_vol_list <- mapply(sed_vol_calc_FUNC, pond_polygon_area_list, pond_grid_results_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+        pond_summary_sed_vol <- Reduce(full_join, pond_summary_sed_vol_list )
         
-        # write_xlsx(pond_summary_sed_vol , "Output_Files/Sediment_Volume/pond_summary_sed_vol_112023.xlsx")
+        # write_xlsx(pond_summary_sed_vol , "Output_Files/Sediment_Volume/pond_summary_sed_vol_21nov2023.xlsx")
        
  
 #_______________________________________________________________________________       
@@ -1290,7 +1297,7 @@
         plot_vol_est_by_model
        
        
-      # ggsave("Output_Figures/Sediment_Volume/Estimates_sed_vol_by_model.png", plot_vol_est_by_model, height = 6, width = 9)
+      # ggsave("Output_Figures/Sediment_Volume/Estimates_sed_vol_by_model_21nov2023.png", plot_vol_est_by_model, height = 6, width = 9)
        
        # Plot estimated volume for each pond for each model 
        plot_vol_est_by_model_facet <- ggplot(pond_sum_long, aes(x=model, y=sed_volume, fill=model)) +
@@ -1301,7 +1308,7 @@
          ggtitle("Estimated Sediment Volume by Model by Pond")
        plot_vol_est_by_model_facet
        
-       # ggsave("Output_Figures/Sediment_Volume/Estimates_sed_vol_by_model_facet.png", plot_vol_est_by_model_facet, height = 6, width = 9)
+       # ggsave("Output_Figures/Sediment_Volume/Estimates_sed_vol_by_model_facet_21nov2023.png", plot_vol_est_by_model_facet, height = 6, width = 9)
        
    
 #_______________________________________________________________________________ 
