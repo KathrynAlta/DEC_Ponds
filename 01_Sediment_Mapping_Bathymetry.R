@@ -158,7 +158,7 @@
       transmute(source = "measured", pond = "Stick_and_Stone") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
-    englishsh_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/English_Shallow_Points.shp")   %>%   # Pull in shape file
+    englishsh_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/English_Shallow_Points_KG.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "English_Shallow") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature 
     
@@ -182,7 +182,7 @@
       transmute(source = "measured", pond = "Lucas") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature
     
-    collmer_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Collmer_Points.shp")   %>%   # Pull in shape file
+    collmer_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Collmer_Points_1524.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Collmer") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature
     
