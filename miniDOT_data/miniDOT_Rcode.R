@@ -154,3 +154,33 @@ plot_do_white <- do_white %>%
 plot_do_white
 
 
+
+
+## Merge data ####
+
+do_edwards$pond <- as.factor("edwards")
+do_harrison$pond <- as.factor("harrison")
+do_howarth$pond <- as.factor("howarth")
+do_levine$pond <- as.factor("levine")
+do_mtpleasantse$pond <- as.factor("mtpleasantse")
+do_shelterbelt$pond <- as.factor("shelterbelt")
+do_white$pond <- as.factor("white")
+do_boyce$pond <- as.factor("boyce")
+
+
+data <- bind_rows(do_edwards, do_harrison, do_howarth, do_levine, 
+                  do_mtpleasantse, do_shelterbelt, do_white) 
+head(data)
+tail(data)
+
+plot_all <- data %>% 
+  ggplot(aes(x=time2, y=do_perc, color=pond)) + 
+  geom_hline(yintercept=100, linetype='dotted')+
+  #geom_point(size=0.5) + 
+  geom_smooth()+
+  scale_x_datetime(breaks=date_breaks(width="7 days"), 
+                   labels=date_format("%m/%d", tz="America/new_york"))+ theme_bw() +
+  theme(text = element_text(size=12), axis.text.x = element_text(angle=-40))+
+  scale_colour_brewer(palette="Set1")+
+  xlab("Time") + ylab("DO percent") #+ ylim(c(90,160))
+plot_all # + facet_wrap(~pond)
