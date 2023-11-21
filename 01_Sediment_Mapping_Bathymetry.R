@@ -74,6 +74,8 @@
       # Checking typos 
       sd_df <- as.data.frame(sediment_depths)
       head(sd_df)
+      sd_df$Pond <- as.factor(sd_df$Pond)
+      levels(sd_df$Pond)
       sd_df$sed_thick <- sd_df$Depth_to_btm_of_sediment_cm - sd_df$Depth_to_top_of_Sediment_cm
       sd_df_check <- sd_df[sd_df$sed_thick <= 0 , ]
       sd_df_check <- sd_df_check[!is.na(sd_df_check$Pond),]
@@ -174,9 +176,9 @@
       transmute(source = "measured", pond = "Carpenter") %>% # Subset to only columns that you need 
       st_transform(26920) # Transform or convert coordinates of simple feature
     
-    walnut_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Walnut_Ridge_Points.shp")   %>%   # Pull in shape file
-      transmute(source = "measured", pond = "Walnut_Ridge") %>% # Subset to only columns that you need 
-      st_transform(26920) # Transform or convert coordinates of simple feature
+    # walnut_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Walnut_Ridge_Points.shp")   %>%   # Pull in shape file
+      # transmute(source = "measured", pond = "Walnut_Ridge") %>% # Subset to only columns that you need 
+      # st_transform(26920) # Transform or convert coordinates of simple feature
     
     lucas_points <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files_Peri/Lucas_Points.shp")   %>%   # Pull in shape file
       transmute(source = "measured", pond = "Lucas") %>% # Subset to only columns that you need 
@@ -306,10 +308,10 @@
       st_transform(26920) %>%
       st_zm()
     
-    walnut_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Walnutridge_Polygon.shp") %>%  # read in polygon of pond 
-      transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
-      st_transform(26920) %>%
-      st_zm()
+    # walnut_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Walnutridge_Polygon.shp") %>%  # read in polygon of pond 
+      # transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
+      # st_transform(26920) %>%
+      # st_zm()
     
     lucas_polygon <- read_sf("/Users/kag326/Documents/ArcGIS/Projects/DEC_Farm_Residential_Ponds/Output_Shape_Files/Lucas_Polygon.shp") %>%  # read in polygon of pond 
       transmute(source = "boundary", depth = 0) %>%  #Saying that the depth at the edge of the pond is zero 
@@ -445,7 +447,7 @@
                              aquadro_points, longhouse_points, ecovillage_points, dybowski_points, 
                              applegate_points, mtpleasantne_points, barber_points, stickstone_points,
                              englishsh_points, engst_points, rogers_points, carpenter_points, 
-                             walnut_points, lucas_points, collmer_points, vesa_points, 
+                             lucas_points, collmer_points, vesa_points, 
                              conley_points, hahn_points, marks_points)
     
     
@@ -455,7 +457,7 @@
                                   "Aquadro", "Longhouse", "Ecovillage", "Dybowski", 
                                   "Applegate", "Mt_Pleasant_NE", "Barber", "Stick_and_Stone",
                                   "English_Shallow", "Engst", "Rodgers", "Carpenter", 
-                                  "Walnut_Ridge", "Lucas", "Collmer", "Vesa", 
+                                  "Lucas", "Collmer", "Vesa", 
                                   "Conley", "Hahn", "Marks")
     
     # Remove the Z component 
@@ -485,7 +487,7 @@
                                 aquadro_polygon, longhouse_polygon, ecovillage_polygon, dybowski_polygon, 
                                 applegate_polygon, mtpleasantne_polygon, barber_polygon, stickstone_polygon,
                                 englishsh_polygon, engst_polygon, rogers_polygon, carpenter_polygon, 
-                                walnut_polygon, lucas_polygon, collmer_polygon, vesa_polygon, 
+                                lucas_polygon, collmer_polygon, vesa_polygon, 
                                 conley_polygon, hahn_polygon, marks_polygon)
     
      names(pond_polygon_list ) <- c("Boyce", "White", "Howarth", "Edwards",
@@ -493,7 +495,7 @@
                                     "Aquadro", "Longhouse", "Ecovillage", "Dybowski", 
                                     "Applegate", "Mt_Pleasant_NE", "Barber", "Stick_and_Stone",
                                     "English_Shallow", "Engst", "Rodgers", "Carpenter", 
-                                    "Walnut_Ridge", "Lucas", "Collmer", "Vesa", 
+                                    "Lucas", "Collmer", "Vesa", 
                                     "Conley", "Hahn", "Marks")
     
         # Intensive Only 
@@ -513,7 +515,7 @@
     # 2.1 Formatt the Sediment Depth Data 
       
         # Remove ponds that you have sediment data for but that we did not include in study 
-        sediment_depths <- sediment_depths[!sediment_depths$Pond %in% c("Artibee", "Bensons", "Thru_the_Woods", "Whitmore", "English_Deep" ), ]
+        sediment_depths <- sediment_depths[!sediment_depths$Pond %in% c("Artibee", "Bensons", "Thru_the_Woods", "Whitmore", "English_Deep", "Walnut_Ridge" ), ]
         sediment_depths <- sediment_depths[!is.na(sediment_depths$Pond) , ]
         
               # Subset to only intensive 
@@ -530,7 +532,7 @@
                                                        "Aquadro", "Longhouse", "Ecovillage", "Dybowski", 
                                                        "Applegate", "Mt_Pleasant_NE", "Barber", "Stick_and_Stone",
                                                       "English_Shallow", "Engst", "Rodgers", "Carpenter", 
-                                                       "Walnut_Ridge", "Lucas", "Collmer", "Vesa", 
+                                                       "Lucas", "Collmer", "Vesa", 
                                                        "Conley", "Hahn", "Marks")]
         
         # Intensive Only 
@@ -608,9 +610,7 @@
       
       # Run function over the two lists 
       meas_depths_latlong_list <- mapply(Connect_Depth_LatLong_FUNC, pond_points_list, meas_depths_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
-      # Output is a list of dataframes with a df for each pond (I am a genius)
-      
-    ## * see if this works feeding into next steps 
+      # Output is a list of dataframes with a df for each pond (I am a genius) 
     
 # 3. Plot measured depths and thickness on a basic map  
 #_______________________________________________________________________________   
@@ -801,7 +801,7 @@
         pond_grid_list_TIN_sed <- pond_grid_list
         TIN_sed_thickness <- mapply(TIN_sed_FUNC, pond_full_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
           # Note that in this configuration you will have one pond_grid_list that you will pass through each model and update it as you go 
-  
+        
       # Water Depth 
         pond_grid_list_TIN_water <- pond_grid_list
         TIN_water_depth <- mapply(TIN_bathym_FUNC, pond_full_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
