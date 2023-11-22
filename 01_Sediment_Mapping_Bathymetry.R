@@ -895,9 +895,9 @@
                 # TPRS_bathym_applegate_FIT <- mgcv::gam(Water_Depth_m ~ s(X, Y, k = 60), data = applegate_full, method = "REML")
                 
       # Write a function to create the model for bathymetry 
-        CreateTPRSmodel_bathym_FUNC <- function(pond_full){
-          output_FIT <- mgcv::gam(Water_Depth_m ~ s(X, Y, k = 60), data = pond_full, method = "REML")
-        }
+        # CreateTPRSmodel_bathym_FUNC <- function(pond_full){
+        #   output_FIT <- mgcv::gam(Water_Depth_m ~ s(X, Y, k = 60), data = pond_full, method = "REML")
+        # }
         
             # Apply that function to one pond at a time (check)
                #  TPRS_bathym_harrison_FIT <- CreateTPRSmodel_bathym_FUNC(harrison_full)
@@ -924,115 +924,159 @@
             
         # Apply that function to the list of ponds 
             # mapply structure: output_list <- mapply(Name_FUNC, first_list, second_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
-        TPRS_bathym_FIT_list <- mapply(CreateTPRSmodel_bathym_FUNC, pond_full_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+       # TPRS_bathym_FIT_list <- mapply(CreateTPRSmodel_bathym_FUNC, pond_full_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
       
             # Apply to ponds one at a time to see what works 
-              check_full <- pond_full_list[[26]]
-              check_result <- CreateTPRSmodel_bathym_FUNC(check_full)
-              head(check_result)
+            #   check_full <- pond_full_list[[26]]
+            #   check_result <- CreateTPRSmodel_bathym_FUNC(check_full)
+            #   head(check_result)
               
             # Run for the ponds that work 
                   # Edwards 
-                  edwards_full <- pond_full_list[[4]]
-                  TPRS_bathym_FIT_edwards <- CreateTPRSmodel_bathym_FUNC(edwards_full)
+                  # edwards_full <- pond_full_list[[4]]
+                  # TPRS_bathym_FIT_edwards <- CreateTPRSmodel_bathym_FUNC(edwards_full)
                   
                   # Mt Pleasant SE 
-                  mtplse_full <- pond_full_list[[6]]
-                  TPRS_bathym_FIT_mtpleasantse <- CreateTPRSmodel_bathym_FUNC(mtplse_full)
+                  # mtplse_full <- pond_full_list[[6]]
+                  # TPRS_bathym_FIT_mtpleasantse <- CreateTPRSmodel_bathym_FUNC(mtplse_full)
                   
                   # Harrison 
-                  harrison_full <- pond_full_list[[7]]
-                  TPRS_bathym_FIT_harrison <- CreateTPRSmodel_bathym_FUNC(harrison_full)
+                  # harrison_full <- pond_full_list[[7]]
+                  # TPRS_bathym_FIT_harrison <- CreateTPRSmodel_bathym_FUNC(harrison_full)
                   
                   # Aquadro 
-                  aquadro_full <- pond_full_list[[9]]
-                  TPRS_bathym_FIT_aquadro <- CreateTPRSmodel_bathym_FUNC(aquadro_full)
+                  # aquadro_full <- pond_full_list[[9]]
+                  # TPRS_bathym_FIT_aquadro <- CreateTPRSmodel_bathym_FUNC(aquadro_full)
                   
                   # Ecovillage 
-                  ecovillage_full <- pond_full_list[[11]]
-                  TPRS_bathym_FIT_ecovillage <- CreateTPRSmodel_bathym_FUNC(ecovillage_full)
+                  # ecovillage_full <- pond_full_list[[11]]
+                  # TPRS_bathym_FIT_ecovillage <- CreateTPRSmodel_bathym_FUNC(ecovillage_full)
                   
                   # Applegate 
-                  applegate_full <- pond_full_list[[13]]
-                  TPRS_bathym_FIT_applegate <- CreateTPRSmodel_bathym_FUNC(applegate_full)
+                  # applegate_full <- pond_full_list[[13]]
+                  # TPRS_bathym_FIT_applegate <- CreateTPRSmodel_bathym_FUNC(applegate_full)
                   
                   # Conley 
-                  conley_full <- pond_full_list[[24]]
-                  TPRS_bathym_FIT_conley <- CreateTPRSmodel_bathym_FUNC(conley_full)
+                  # conley_full <- pond_full_list[[24]]
+                  # TPRS_bathym_FIT_conley <- CreateTPRSmodel_bathym_FUNC(conley_full)
                   
                   # Hahn
-                  hahn_full <- pond_full_list[[25]]
-                  TPRS_bathym_FIT_hahn <- CreateTPRSmodel_bathym_FUNC(hahn_full)
+                  # hahn_full <- pond_full_list[[25]]
+                  # TPRS_bathym_FIT_hahn <- CreateTPRSmodel_bathym_FUNC(hahn_full)
                   
               
         
     # 8.1.2) Use that TPRS model to get predictions and add them to the grid  
       # NOTE --> If this spits an error reinstall mgcv package and try again (no idea why that works but it does)
           # install.packages("mgcv")
-          library(mgcv)
+          # library(mgcv)
           
            # Predict One pond at a time (check)
-           harrison_grid$TPRS_water_depth <- predict(TPRS_bathym_harrison_FIT, newdata = harrison_grid, type = "response")  
-           aquadro_grid$TPRS_water_depth <- predict(TPRS_bathym_aquadro_FIT, newdata = aquadro_grid, type = "response")  
-           applegate_grid$TPRS_water_depth <- predict(TPRS_bathym_applegate_FIT, newdata = applegate_grid, type = "response")  
-         
+               # harrison_grid$TPRS_water_depth <- predict(TPRS_bathym_harrison_FIT, newdata = harrison_grid, type = "response")  
+               # aquadro_grid$TPRS_water_depth <- predict(TPRS_bathym_aquadro_FIT, newdata = aquadro_grid, type = "response")  
+               # applegate_grid$TPRS_water_depth <- predict(TPRS_bathym_applegate_FIT, newdata = applegate_grid, type = "response")  
+             
       # Write a function to Predict Bathymetry -- to use the TPRS model for each pond to predict water depth for each pond in the list 
-          PredictTPRS_bathym_FUNC <- function(TPRS_bathym_FIT, pond_grid){
-            pond_grid$TPRS_water_depth <- predict(TPRS_bathym_FIT, newdata = pond_grid, type = "response")
-            output <- pond_grid
-          }
+          # PredictTPRS_bathym_FUNC <- function(TPRS_bathym_FIT, pond_grid){
+           #  pond_grid$TPRS_water_depth <- predict(TPRS_bathym_FIT, newdata = pond_grid, type = "response")
+           #  output <- pond_grid
+          # }
           
               # Apply that function one pond at a time (check)
-              harrison_grid <- PredictTPRS_bathym_FUNC(TPRS_bathym_harrison_FIT, harrison_grid)
-              applegate_grid <- PredictTPRS_bathym_FUNC(TPRS_bathym_applegate_FIT, applegate_grid)
-              aquadro_grid <- PredictTPRS_bathym_FUNC(TPRS_bathym_aquadro_FIT, aquadro_grid)
+              # harrison_grid <- PredictTPRS_bathym_FUNC(TPRS_bathym_harrison_FIT, harrison_grid)
+              # applegate_grid <- PredictTPRS_bathym_FUNC(TPRS_bathym_applegate_FIT, applegate_grid)
+              # aquadro_grid <- PredictTPRS_bathym_FUNC(TPRS_bathym_aquadro_FIT, aquadro_grid)
               
       # Apply that TPRS bathrym prediction function across the list of ponds 
-          pond_grid_list <- mapply(PredictTPRS_bathym_FUNC, TPRS_bathym_FIT_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+          # pond_grid_list <- mapply(PredictTPRS_bathym_FUNC, TPRS_bathym_FIT_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
           # Note that in this configuration you will have one pond_grid_list that you will pass through each model and update it as you go 
           
   # 8.2) SEDIMENT THICKNESS 
        
     # 8.2.1) Create a model for Sediment thickness usign TPRS 
-          
-          # Trouble shooting 10/24
-          harrison_full <- as.data.frame(pond_full_list["Harrison"])
-          test_full <- as.data.frame(pond_full_list["Applegate"])
-          names(test_full) <- c("source", "Pond_Name", "Water_Depth_m", "Sed_Thickness_m", "X", "Y", "geometry")
-          head(test_full)
-          TPRS_sedmap_boyce_FIT <- mgcv::gam(Sed_Thickness_m ~ s(X, Y, k = 60), data = test_full, method = "REML")
-          
-          
-          # create a model for sediment thickness using TPRS one pond at a time (check)
-           TPRS_sedmap_harrison_FIT <- mgcv::gam(Sed_Thickness_m ~ s(X, Y, k = 60), data = harrison_full, method = "REML")
-           TPRS_sedmap_aquadro_FIT <- mgcv::gam(Sed_Thickness_m ~ s(X, Y, k = 60), data = aquadro_full, method = "REML")
-           TPRS_sedmap_applegate_FIT <- mgcv::gam(Sed_Thickness_m ~ s(X, Y, k = 60), data = applegate_full, method = "REML")
-           
-           TPRS_sedmap_harrison_FIT <- mgcv::gam(Harrison.Sed_Thickness_m ~ s(Harrison.X, Harrison.Y, k = 60), data = harrison_full, method = "REML")
-           TPRS_sedmap_boyce_FIT <- mgcv::gam(Sed_Thickness_m ~ s(X, Y, k = 60), data = boyce_full, method = "REML")
-           
            
     # Write a function to create the model for sediment thickness for the full list of ponds  
            CreateTPRSmodel_seddepth_FUNC <- function(pond_full){
              output_FIT <- mgcv::gam(Sed_Thickness_m ~ s(X, Y, k = 60), data = pond_full, method = "REML")
            }
            
-           # Apply that function to one pond at a time (check)
-           TPRS_seddepth_harrison_FIT <- CreateTPRSmodel_seddepth_FUNC(harrison_full)
-           TPRS_seddepth_applegate_FIT <- CreateTPRSmodel_seddepth_FUNC(applegate_full)
-           TPRS_seddepth_aquadro_FIT <- CreateTPRSmodel_seddepth_FUNC(aquadro_full)
+           # Apply to ponds one at a time to see what works 
+              #  check_full <- pond_full_list[[26]]
+              #  check_result <- CreateTPRSmodel_seddepth_FUNC(check_full)
+              #  head(check_result)
+           
+           # Apply that function to the ponds that work 
+               # Edwards 
+               edwards_full <- pond_full_list[[4]]
+               TPRS_sed_FIT_edwards <- CreateTPRSmodel_seddepth_FUNC(edwards_full)
+               
+               # Mt Pleasant SE  
+               mtpleasantse_full <- pond_full_list[[6]]
+               TPRS_sed_FIT_mtpleasantse <- CreateTPRSmodel_seddepth_FUNC(mtpleasantse_full)
+               
+               # Harrison  
+               harrison_full <- pond_full_list[[7]]
+               TPRS_sed_FIT_harrison <- CreateTPRSmodel_seddepth_FUNC(harrison_full)
+               
+               # Aquadro  
+               aquadro_full <- pond_full_list[[9]]
+               TPRS_sed_FIT_aquadro <- CreateTPRSmodel_seddepth_FUNC(aquadro_full)
+               
+               # Ecovillage   
+               ecovillage_full <- pond_full_list[[11]]
+               TPRS_sed_FIT_ecovillage <- CreateTPRSmodel_seddepth_FUNC(ecovillage_full)
+               
+               # Applegate   
+               applegate_full <- pond_full_list[[13]]
+               TPRS_sed_FIT_applegate <- CreateTPRSmodel_seddepth_FUNC(applegate_full)
+               
+               # Conley  
+               conley_full <- pond_full_list[[24]]
+               TPRS_sed_FIT_conley <- CreateTPRSmodel_seddepth_FUNC(conley_full)
+               
+               # Hahn 
+               hahn_full <- pond_full_list[[25]]
+               TPRS_sed_FIT_hahn <- CreateTPRSmodel_seddepth_FUNC(hahn_full)
+               
+      # Put ponds that work together into a FIT list 
+          TPRS_seddepth_FIT_list <- list(TPRS_sed_FIT_edwards, TPRS_sed_FIT_mtpleasantse, TPRS_sed_FIT_harrison, 
+                                         TPRS_sed_FIT_aquadro, TPRS_sed_FIT_ecovillage, TPRS_sed_FIT_applegate, 
+                                         TPRS_sed_FIT_conley, TPRS_sed_FIT_hahn)
+          
+          names(TPRS_seddepth_FIT_list) <- c("Edwards", "Mt_Pleasant_SE", "Harrison", 
+                                             "Aquadro", "Ecovillage", "Applegate", 
+                                             "Conley", "Hahn")
+          
+      # Make pond grid list for ponds that work for TPRS 
+          # Pull out the 8 ponds that work one at a time then put them back together 
+              edwards_grid <- pond_grid_list[["Edwards"]]
+              mtpleasantse_grid <- pond_grid_list[["Mt_Pleasant_SE"]]
+              harrison_grid <- pond_grid_list[["Harrison"]]
+              aquadro_grid <- pond_grid_list[["Aquadro"]]
+              ecovillage_grid <- pond_grid_list[["Ecovillage"]]
+              applegate_grid <- pond_grid_list[["Applegate"]]
+              conley_grid <- pond_grid_list[["Conley"]]
+              hahn_grid <- pond_grid_list[["Hahn"]]
+              
+          pond_grid_list_TPRS <- list(edwards_grid, mtpleasantse_grid, harrison_grid, 
+                                      aquadro_grid, ecovillage_grid, applegate_grid, 
+                                      conley_grid, hahn_grid)
+          names(pond_grid_list_TPRS) <- c("Edwards", "Mt_Pleasant_SE", "Harrison", 
+                                             "Aquadro", "Ecovillage", "Applegate", 
+                                             "Conley", "Hahn")
+           
            
     # Apply that function to the list of ponds 
-     # mapply structure: output_list <- mapply(Name_FUNC, first_list, second_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
-     TPRS_seddepth_FIT_list <- mapply(CreateTPRSmodel_seddepth_FUNC, pond_full_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+     #  mapply structure: output_list <- mapply(Name_FUNC, first_list, second_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+     #  TPRS_seddepth_FIT_list <- mapply(CreateTPRSmodel_seddepth_FUNC, pond_full_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
      
            
   # 8.2.2) Use the model for each pond to predct sediment thickness and add them to the grid
            
            # Predict one pond at a time (check)  
-             harrison_grid$TPRS_sed_depth <- predict(TPRS_seddepth_harrison_FIT, newdata = harrison_grid, type = "response")  
-             aquadro_grid$TPRS_sed_depth <- predict(TPRS_seddepth_aquadro_FIT, newdata = aquadro_grid, type = "response")  
-             applegate_grid$TPRS_sed_depth <- predict(TPRS_seddepth_applegate_FIT, newdata = applegate_grid, type = "response")  
+             # harrison_grid$TPRS_sed_depth <- predict(TPRS_seddepth_harrison_FIT, newdata = harrison_grid, type = "response")  
+             # aquadro_grid$TPRS_sed_depth <- predict(TPRS_seddepth_aquadro_FIT, newdata = aquadro_grid, type = "response")  
+             # applegate_grid$TPRS_sed_depth <- predict(TPRS_seddepth_applegate_FIT, newdata = applegate_grid, type = "response")  
          
       # Write a function to Predict Sediment Thickness-- to use the TPRS model for each pond to predict water depth for each pond in the list 
              PredictTPRS_seddepth_FUNC <- function(TPRS_seddepth_FIT, pond_grid){
@@ -1041,7 +1085,9 @@
              }
           
        # Apply that TPRS prediction function across the list of ponds 
-       pond_grid_list <- mapply(PredictTPRS_seddepth_FUNC, TPRS_seddepth_FIT_list, pond_grid_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+             # install.packages("mgcv")
+             library(mgcv)
+       pond_grid_list_TPRS_result <- mapply(PredictTPRS_seddepth_FUNC, TPRS_seddepth_FIT_list, pond_grid_list_TPRS, USE.NAMES = TRUE, SIMPLIFY = FALSE)
           # Note that in this configuration you will have one pond_grid_list that you will pass through each model and update it as you go 
        
    
