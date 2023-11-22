@@ -1319,16 +1319,16 @@
                                             "Aquadro", "Ecovillage", "Applegate", 
                                             "Conley", "Hahn")
             # Compile with TPRS results 
+            Other_result_df <- Other_result_list[["Aquadro"]]
+            TPRS_result_df <- TPRS_result_list[["Aquadro"]]
+            
             Compile_estimates_TPRS_FUNC <- function(Other_result_df, TPRS_result_df){
-              names(TPRS_result_df) <- c("X", "Y", "Geometry", "Pond_Name", "TPRS_sed_depth")
-              output <- full_join(Other_result_df, TPRS_result_df)
+              names(TPRS_result_df) <- c("X", "Y", "Geometry", "Pond_Name", "TPRS_sed_thickness")
+              compiled <- cbind(Other_result_df, TPRS_result_df)
+              output <- subset(compiled, select = c("X", "Y", "Geometry", "Pond_Name", "IDW_sed_thickness", "TIN_sed_thickness", "SOAP_sed_thickness","TPRS_sed_thickness"))
             }
             
             pond_grid_results_list_TPRS <- mapply(Compile_estimates_TPRS_FUNC, Other_result_list, TPRS_result_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
-            
-        
-        names(TPRS_result_list[["Harrison"]])
-        names(Other_result_list[["Harrison"]])
         
 #_______________________________________________________________________________
 # 11. Compute Volume of water and volume of sediment 
