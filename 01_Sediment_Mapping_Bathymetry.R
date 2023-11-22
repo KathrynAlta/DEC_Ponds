@@ -1086,8 +1086,8 @@
           
        # Apply that TPRS prediction function across the list of ponds 
              # install.packages("mgcv")
-             library(mgcv)
-       pond_grid_list_TPRS_result <- mapply(PredictTPRS_seddepth_FUNC, TPRS_seddepth_FIT_list, pond_grid_list_TPRS, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+             # library(mgcv)
+       TPRS_result_list <- mapply(PredictTPRS_seddepth_FUNC, TPRS_seddepth_FIT_list, pond_grid_list_TPRS, USE.NAMES = TRUE, SIMPLIFY = FALSE)
           # Note that in this configuration you will have one pond_grid_list that you will pass through each model and update it as you go 
        
    
@@ -1300,6 +1300,35 @@
             
         # write_xlsx(pond_grid_results_list , "Output_Files/Sediment_Volume/pond_grid_results_list_21nov2023.xlsx")
         
+    # Compile TPRS for the ponds where TPRS works 
+        
+        # Make a list of the results for each pond for all of the other models (not including TPRS) for the ponds that work for TPRS 
+            edwards_results_other <- pond_grid_results_list[["Edwards"]]
+            mtpleasantse_results_other <- pond_grid_results_list[["Mt_Pleasant_SE"]]
+            harrison_results_other <- pond_grid_results_list[["Harrison"]]
+            aquadro_results_other <- pond_grid_results_list[["Aquadro"]]
+            ecovillage_results_other <- pond_grid_results_list[["Ecovillage"]]
+            applegate_results_other <- pond_grid_results_list[["Applegate"]]
+            conley_results_other <- pond_grid_results_list[["Conley"]]
+            hahn_results_other <- pond_grid_results_list[["Hahn"]]
+            
+            Other_result_list <- list(edwards_results_other, mtpleasantse_results_other, harrison_results_other, 
+                                      aquadro_results_other, ecovillage_results_other, applegate_results_other, 
+                                      conley_results_other, hahn_results_other)
+            names(Other_result_list) <- c("Edwards", "Mt_Pleasant_SE", "Harrison", 
+                                            "Aquadro", "Ecovillage", "Applegate", 
+                                            "Conley", "Hahn")
+            # Compile with TPRS results 
+            Compile_estimates_TPRS_FUNC <- function(Other_result_df, TPRS_result_df){
+              names(TPRS_result_df) <- c("X", "Y", "Geometry", "Pond_Name", "TPRS_sed_depth")
+              output <- full_join(Other_result_df, TPRS_result_df)
+            }
+            
+            pond_grid_results_list_TPRS <- mapply(Compile_estimates_TPRS_FUNC, Other_result_list, TPRS_result_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+            
+        
+        names(TPRS_result_list[["Harrison"]])
+        names(Other_result_list[["Harrison"]])
         
 #_______________________________________________________________________________
 # 11. Compute Volume of water and volume of sediment 
