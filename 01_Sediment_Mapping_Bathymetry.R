@@ -1334,6 +1334,14 @@
 # 11. Compute Volume of water and volume of sediment 
    
    # 11.1 Compute Sediment Volume 
+            
+            # List of polygons for ponds that work for TPRS 
+              pond_polygon_list_TPRS <- list(edwards_polygon, mtpleasantse_polygon, harrison_polygon, 
+                                             aquadro_polygon, ecovillage_polygon, applegate_polygon, 
+                                             conley_polygon, hahn_polygon)
+              names(pond_polygon_list_TPRS) <- c("Edwards", "Mt_Pleasant_SE", "Harrison", 
+                                            "Aquadro", "Ecovillage", "Applegate", 
+                                            "Conley", "Hahn")
         
     # Calculate pond areas and save a separate list 
         Calc_Pond_Area_FUNC <- function(pond_boundary){
@@ -1342,6 +1350,7 @@
         }
         
         pond_polygon_area_list <- mapply(Calc_Pond_Area_FUNC, pond_polygon_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+        pond_polygon_area_list_TPRS <- mapply(Calc_Pond_Area_FUNC, pond_polygon_list_TPRS, USE.NAMES = TRUE, SIMPLIFY = FALSE)
         
       
   # Write a function to calculate sediment volume for each pond 
@@ -1374,18 +1383,52 @@
              TIN_sed_volume = mean(TIN_sed_thickness) * surface_area,
              IDW_mean_sed_depth = mean(IDW_sed_thickness),
              IDW_sed_volume = mean(IDW_sed_thickness) * surface_area,
-             #TPRS_mean_sed_depth = mean(TPRS_sed_depth),
+             # TPRS_mean_sed_depth = mean(TPRS_sed_depth),
              # TPRS_sed_volume = mean(TPRS_sed_depth) * pond_boundary_area, 
              SOAP_mean_sed_depth = mean(SOAP_sed_thickness),
              SOAP_sed_volume = mean(SOAP_sed_thickness) * surface_area, 
            )
        }
     
-       # Apply Function to calcualte sediment volume for each pond and put together into a df
+    # Apply Function to calcualte sediment volume for each pond and put together into a df
         pond_summary_sed_vol_list <- mapply(sed_vol_calc_FUNC, pond_polygon_area_list, pond_grid_results_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
         pond_summary_sed_vol <- Reduce(full_join, pond_summary_sed_vol_list )
         
-        # write_xlsx(pond_summary_sed_vol , "Output_Files/Sediment_Volume/pond_summary_sed_vol_21nov2023.xlsx")
+        # For subset up of ponds that work for TPRS 
+        
+              # Dummy data 
+                pond_polygon_area <- pond_polygon_area_list_TPRS["Harrison"]
+                pond_results <- pond_grid_results_list_TPRS[["Harrison"]]
+              
+              # FUNC 
+              sed_vol_calc_TRPS_FUNC <- function(pond_polygon_area, pond_results){
+                
+                pond_results <- as.data.frame(pond_results)
+                
+                pond_polygon_area_df <- as.data.frame(pond_polygon_area)
+                names(pond_polygon_area_df) <- "Surface_Area"
+                surface_area <- pond_polygon_area_df$Surface_Area
+                
+                pond_name <- as.character(pond_results[1, "Pond_Name"])  # save pond name to use in the title of the plot 
+                pond_name_form <- pond_name[1] # format pond name 
+                
+                output <- pond_results %>% 
+                  summarise(
+                    Pond_Name = pond_name_form,
+                    # TIN_mean_sed_depth = mean(TIN_sed_thickness),
+                    TIN_sed_volume = mean(TIN_sed_thickness) * surface_area,
+                    # IDW_mean_sed_depth = mean(IDW_sed_thickness),
+                    IDW_sed_volume = mean(IDW_sed_thickness) * surface_area,
+                    # TPRS_mean_sed_depth = mean(TPRS_sed_depth),
+                    TPRS_sed_volume = mean(TPRS_sed_thickness) * surface_area, 
+                    # SOAP_mean_sed_depth = mean(SOAP_sed_thickness),
+                    SOAP_sed_volume = mean(SOAP_sed_thickness) * surface_area, 
+                  )
+              }
+        pond_summary_sed_vol_list <- mapply(sed_vol_calc_TRPS_FUNC, pond_polygon_area_list_TPRS, pond_grid_results_list_TPRS, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+        pond_summary_sed_vol <- Reduce(full_join, pond_summary_sed_vol_list )
+        
+        # write_xlsx(pond_summary_sed_vol , "Output_Files/Sediment_Volume/pond_summary_sed_vol_TPRS_22nov2023.xlsx")
        
  
 #_______________________________________________________________________________       
@@ -1396,9 +1439,10 @@
       # Format as long instead of wide format for plotting
          pond_sum <- pond_summary_sed_vol
          names(pond_sum)
-         pond_sum <- subset(pond_sum, select = c("Pond_Name", "TIN_sed_volume","IDW_sed_volume" , "SOAP_sed_volume"))
+         pond_sum <- subset(pond_sum, select = c("Pond_Name", "TIN_sed_volume","IDW_sed_volume" , "TPRS_sed_volume", "SOAP_sed_volume"))
          names(pond_sum)[names(pond_sum) == "TIN_sed_volume"] <- "TIN"
          names(pond_sum)[names(pond_sum) == "IDW_sed_volume"] <- "IDW"
+         names(pond_sum)[names(pond_sum) == "TPRS_sed_volume"] <- "TPRS"
          names(pond_sum)[names(pond_sum) == "SOAP_sed_volume"] <- "SOAP"
          head(pond_sum)
          pond_sum_long <- gather(pond_sum, model, sed_volume, TIN:SOAP, factor_key=TRUE)
@@ -1412,7 +1456,7 @@
         plot_vol_est_by_model
        
        
-      # ggsave("Output_Figures/Sediment_Volume/Estimates_sed_vol_by_model_21nov2023.png", plot_vol_est_by_model, height = 6, width = 9)
+      # ggsave("Output_Figures/Sediment_Volume/Estimates_sed_vol_by_model_tprs_22nov2023.png", plot_vol_est_by_model, height = 6, width = 9)
        
        # Plot estimated volume for each pond for each model 
        plot_vol_est_by_model_facet <- ggplot(pond_sum_long, aes(x=model, y=sed_volume, fill=model)) +
@@ -1423,7 +1467,7 @@
          ggtitle("Estimated Sediment Volume by Model by Pond")
        plot_vol_est_by_model_facet
        
-       # ggsave("Output_Figures/Sediment_Volume/Estimates_sed_vol_by_model_facet_21nov2023.png", plot_vol_est_by_model_facet, height = 6, width = 9)
+       # ggsave("Output_Figures/Sediment_Volume/Estimates_sed_vol_by_model_facet_tprs_22nov2023.png", plot_vol_est_by_model_facet, height = 6, width = 9)
        
    
 #_______________________________________________________________________________ 
