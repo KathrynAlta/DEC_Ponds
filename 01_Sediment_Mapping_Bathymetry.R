@@ -1001,9 +1001,9 @@
            }
            
            # Apply to ponds one at a time to see what works 
-              #  check_full <- pond_full_list[[26]]
-              #  check_result <- CreateTPRSmodel_seddepth_FUNC(check_full)
-              #  head(check_result)
+              check_full <- pond_full_list[[26]]
+              check_result <- CreateTPRSmodel_seddepth_FUNC(check_full)
+              head(check_result)
            
            # Apply that function to the ponds that work 
                # Edwards 
