@@ -1472,6 +1472,25 @@
    
 #_______________________________________________________________________________ 
 # 13. Plotting 
+       
+       # Subset Meas Depth List to only the ponds that run for TPRS 
+          edwards_meas_depth <- meas_depths_latlong_list[["Edwards"]]
+          mtpleasantse_meas_depth <- meas_depths_latlong_list[["Mt_Pleasant_SE"]]
+          harrison_meas_depth <- meas_depths_latlong_list[["Harrison"]]
+          aquadro_meas_depth <- meas_depths_latlong_list[["Aquadro"]]
+          ecovillage_meas_depth <- meas_depths_latlong_list[["Ecovillage"]]
+          applegate_meas_depth <- meas_depths_latlong_list[["Applegate"]]
+          conley_meas_depth <- meas_depths_latlong_list[["Conley"]]
+          hahn_meas_depth <- meas_depths_latlong_list[["Hahn"]]
+          
+          meas_depths_latlong_list_TPRS <- list(edwards_meas_depth, mtpleasantse_meas_depth, harrison_meas_depth, 
+                                                aquadro_meas_depth, ecovillage_meas_depth, applegate_meas_depth, 
+                                                conley_meas_depth, hahn_meas_depth)
+          
+          names(meas_depths_latlong_list_TPRS) <- c("Edwards", "Mt_Pleasant_SE", "Harrison", 
+                                             "Aquadro", "Ecovillage", "Applegate", 
+                                             "Conley", "Hahn")
+       
    
    # 13.1 Write a Function to plot Sediment depth -- TIN 
        Plot_sedmap_TIN_FUNC <- function(name_grid, name_boundary, pond_depths){
@@ -1539,6 +1558,8 @@
         ggsave("Output_Figures/Sediment_Volume/Boyce_TIN_20nov2023.png", boyce_plot, height = 6, width = 9)
         ggsave("Output_Figures/Sediment_Volume/Levine_TIN_20nov2023.png",  levine_plot, height = 6, width = 9)
         
+              
+        
        # IDW 
          par(ask = TRUE)  #Setting par$ask equal to TRUE allows you to flip through all of the plots one at a a time 
          mapply(Plot_sedmap_IDW_FUNC, pond_grid_results_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
@@ -1549,14 +1570,15 @@
          levine_plot <- IDW_plot_list[["Levine"]]
          ggsave("Output_Figures/Sediment_Volume/Boyce_IDW_20nov2023.png", boyce_plot, height = 6, width = 9)
          ggsave("Output_Figures/Sediment_Volume/Levine_IDW_20nov2023.png", levine_plot, height = 6, width = 9)
-       
-       # TPRS 
-        #  par(ask = TRUE)  #Setting par$ask equal to TRUE allows you to flip through all of the plots one at a a time 
-        #  mapply(Plot_sedmap_TPRS_FUNC, pond_grid_results_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
-        #  par(ask = FALSE)
          
-        #  TPRS_plot_list <- mapply(Plot_sedmap_TPRS_FUNC, pond_grid_results_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
-        #  TPRS_plot_list[2]
+              
+       # TPRS 
+        par(ask = TRUE)  #Setting par$ask equal to TRUE allows you to flip through all of the plots one at a a time 
+        mapply(Plot_sedmap_TPRS_FUNC, pond_grid_results_list_TPRS, pond_polygon_list_TPRS, meas_depths_latlong_list_TPRS, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+        par(ask = FALSE)
+         
+        TPRS_plot_list <- mapply(Plot_sedmap_TPRS_FUNC, pond_grid_results_list_TPRS, pond_polygon_list_TPRS, meas_depths_latlong_list_TPRS, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+        TPRS_plot_list[2]
        
        # SOAP
          par(ask = TRUE)  #Setting par$ask equal to TRUE allows you to flip through all of the plots one at a a time 
@@ -1569,10 +1591,27 @@
          
          ggsave("Output_Figures/Sediment_Volume/Boyce_SOAP_20nov2023.png", boyce_plot, height = 6, width = 9)
          ggsave("Output_Figures/Sediment_Volume/Levine_SOAP_20nov2023.png", levine_plot, height = 6, width = 9)
+                
+                
+                
+    # Plot Subset for TPRS 
+        # IDW
+        IDW_plot_list_TPRS <- mapply(Plot_sedmap_IDW_FUNC,pond_grid_results_list_TPRS, pond_polygon_list_TPRS, meas_depths_latlong_list_TPRS, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+        
+        # TIN 
+        TIN_plot_list_TPRS <-  mapply(Plot_sedmap_TIN_FUNC, pond_grid_results_list_TPRS, pond_polygon_list_TPRS, meas_depths_latlong_list_TPRS, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+        
          
-    # 13.6 Plot each model for a subset of pond
-         # Write a function to save all maps from a list 
-         
+        # SOAP 
+        SOAP_plot_list_TPRS <- mapply(Plot_sedmap_SOAP_FUNC, pond_grid_results_list_TPRS, pond_polygon_list_TPRS, meas_depths_latlong_list_TPRS, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+        
+        
+        # TPRS 
+        TPRS_plot_list <- mapply(Plot_sedmap_TPRS_FUNC, pond_grid_results_list_TPRS, pond_polygon_list_TPRS, meas_depths_latlong_list_TPRS, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+        save_plot <- TPRS_plot_list[[8]]
+        save_plot
+        ggsave("Output_Figures/Sediment_Volume/TPRS_Subset/Hahn_TPRS_22nov2023.png", save_plot, height = 6, width = 9)
+        
        
        
   
