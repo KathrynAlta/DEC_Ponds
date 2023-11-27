@@ -1350,7 +1350,7 @@
         }
         
         pond_polygon_area_list <- mapply(Calc_Pond_Area_FUNC, pond_polygon_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
-        pond_polygon_area_list_TPRS <- mapply(Calc_Pond_Area_FUNC, pond_polygon_list_TPRS, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+        # pond_polygon_area_list_TPRS <- mapply(Calc_Pond_Area_FUNC, pond_polygon_list_TPRS, USE.NAMES = TRUE, SIMPLIFY = FALSE)
         
       
   # Write a function to calculate sediment volume for each pond 
@@ -1553,10 +1553,11 @@
        par(ask = FALSE)
        
         TIN_plot_list <-  mapply(Plot_sedmap_TIN_FUNC, pond_grid_results_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
-        Harrison_plot <- TIN_plot_list[["Harrison"]]
+        Marks_plot <- TIN_plot_list[["Marks"]]
+        Marks_plot
         levine_plot <- TIN_plot_list[["Levine"]]
-        ggsave("Output_Figures/Sediment_Volume/Boyce_TIN_20nov2023.png", boyce_plot, height = 6, width = 9)
-        ggsave("Output_Figures/Sediment_Volume/Levine_TIN_20nov2023.png",  levine_plot, height = 6, width = 9)
+        ggsave("Output_Figures/Sediment_Volume/Marks_TIN_27nov2023.png", Marks_plot, height = 6, width = 9)
+        # ggsave("Output_Figures/Sediment_Volume/Levine_TIN_20nov2023.png",  levine_plot, height = 6, width = 9)
         
               
         
@@ -1566,10 +1567,11 @@
          par(ask = FALSE)
          
          IDW_plot_list <- mapply(Plot_sedmap_IDW_FUNC, pond_grid_results_list, pond_polygon_list, meas_depths_latlong_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
-         boyce_plot <- IDW_plot_list[["Boyce"]]
+         marks_plot <- IDW_plot_list[["Marks"]]
+         marks_plot
          levine_plot <- IDW_plot_list[["Levine"]]
-         ggsave("Output_Figures/Sediment_Volume/Boyce_IDW_20nov2023.png", boyce_plot, height = 6, width = 9)
-         ggsave("Output_Figures/Sediment_Volume/Levine_IDW_20nov2023.png", levine_plot, height = 6, width = 9)
+         ggsave("Output_Figures/Sediment_Volume/Marks_IDW_27nov2023.png", marks_plot, height = 6, width = 9)
+         # ggsave("Output_Figures/Sediment_Volume/Levine_IDW_20nov2023.png", levine_plot, height = 6, width = 9)
          
               
        # TPRS 
