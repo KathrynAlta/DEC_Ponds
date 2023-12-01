@@ -53,7 +53,7 @@
     
     # Load Depths data 
     # sediment_depths <- read_xlsx("~/OneDrive/Holgerson_Lab/DEC_Ponds/Input_Files/DEC_Ponds_Sediment_Mapping_Depths.xlsx")
-    sediment_depths <- read_xlsx("Input_Files/DEC_Ponds_Sediment_Mapping_Depths.xlsx")
+    sediment_depths <- read_xlsx("Input_Files/DEC_Ponds_Sediment_Mapping_Depths_01dec2023.xlsx")
     # Formatt 
       names(sediment_depths)[names(sediment_depths) == "Pond Name"] <- "Pond"
       names(sediment_depths)[names(sediment_depths) == "Site Number"] <- "Measurement_Number"
@@ -1298,37 +1298,37 @@
         
         pond_grid_results_list <- mapply(Compile_estimates_FUNC, pond_grid_list_SOAP, IDW_sed_thickness, IDW_water_depth, TIN_sed_thickness, TIN_water_depth, USE.NAMES = TRUE, SIMPLIFY = FALSE)
             
-        # write_xlsx(pond_grid_results_list , "Output_Files/Sediment_Volume/pond_grid_results_list_21nov2023.xlsx")
+        write_xlsx(pond_grid_results_list , "Output_Files/Sediment_Volume/pond_grid_results_list_01dec2023.xlsx")
         
     # Compile TPRS for the ponds where TPRS works 
         
         # Make a list of the results for each pond for all of the other models (not including TPRS) for the ponds that work for TPRS 
-            edwards_results_other <- pond_grid_results_list[["Edwards"]]
-            mtpleasantse_results_other <- pond_grid_results_list[["Mt_Pleasant_SE"]]
-            harrison_results_other <- pond_grid_results_list[["Harrison"]]
-            aquadro_results_other <- pond_grid_results_list[["Aquadro"]]
-            ecovillage_results_other <- pond_grid_results_list[["Ecovillage"]]
-            applegate_results_other <- pond_grid_results_list[["Applegate"]]
-            conley_results_other <- pond_grid_results_list[["Conley"]]
-            hahn_results_other <- pond_grid_results_list[["Hahn"]]
+            # edwards_results_other <- pond_grid_results_list[["Edwards"]]
+            # mtpleasantse_results_other <- pond_grid_results_list[["Mt_Pleasant_SE"]]
+            # harrison_results_other <- pond_grid_results_list[["Harrison"]]
+            # aquadro_results_other <- pond_grid_results_list[["Aquadro"]]
+            # ecovillage_results_other <- pond_grid_results_list[["Ecovillage"]]
+            # applegate_results_other <- pond_grid_results_list[["Applegate"]]
+            # conley_results_other <- pond_grid_results_list[["Conley"]]
+            # hahn_results_other <- pond_grid_results_list[["Hahn"]]
             
-            Other_result_list <- list(edwards_results_other, mtpleasantse_results_other, harrison_results_other, 
-                                      aquadro_results_other, ecovillage_results_other, applegate_results_other, 
-                                      conley_results_other, hahn_results_other)
-            names(Other_result_list) <- c("Edwards", "Mt_Pleasant_SE", "Harrison", 
-                                            "Aquadro", "Ecovillage", "Applegate", 
-                                            "Conley", "Hahn")
+            # Other_result_list <- list(edwards_results_other, mtpleasantse_results_other, harrison_results_other, 
+            #                           aquadro_results_other, ecovillage_results_other, applegate_results_other, 
+            #                           conley_results_other, hahn_results_other)
+            # names(Other_result_list) <- c("Edwards", "Mt_Pleasant_SE", "Harrison", 
+            #                                 "Aquadro", "Ecovillage", "Applegate", 
+            #                                 "Conley", "Hahn")
             # Compile with TPRS results 
-            Other_result_df <- Other_result_list[["Aquadro"]]
-            TPRS_result_df <- TPRS_result_list[["Aquadro"]]
+            # Other_result_df <- Other_result_list[["Aquadro"]]
+            # TPRS_result_df <- TPRS_result_list[["Aquadro"]]
             
-            Compile_estimates_TPRS_FUNC <- function(Other_result_df, TPRS_result_df){
-              names(TPRS_result_df) <- c("X", "Y", "Geometry", "Pond_Name", "TPRS_sed_thickness")
-              compiled <- cbind(Other_result_df, TPRS_result_df)
-              output <- subset(compiled, select = c("X", "Y", "Geometry", "Pond_Name", "IDW_sed_thickness", "TIN_sed_thickness", "SOAP_sed_thickness","TPRS_sed_thickness"))
-            }
+            # Compile_estimates_TPRS_FUNC <- function(Other_result_df, TPRS_result_df){
+            #   names(TPRS_result_df) <- c("X", "Y", "Geometry", "Pond_Name", "TPRS_sed_thickness")
+            #   compiled <- cbind(Other_result_df, TPRS_result_df)
+            #   output <- subset(compiled, select = c("X", "Y", "Geometry", "Pond_Name", "IDW_sed_thickness", "TIN_sed_thickness", "SOAP_sed_thickness","TPRS_sed_thickness"))
+            # }
             
-            pond_grid_results_list_TPRS <- mapply(Compile_estimates_TPRS_FUNC, Other_result_list, TPRS_result_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+            # pond_grid_results_list_TPRS <- mapply(Compile_estimates_TPRS_FUNC, Other_result_list, TPRS_result_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
         
 #_______________________________________________________________________________
 # 11. Compute Volume of water and volume of sediment 
@@ -1336,12 +1336,12 @@
    # 11.1 Compute Sediment Volume 
             
             # List of polygons for ponds that work for TPRS 
-              pond_polygon_list_TPRS <- list(edwards_polygon, mtpleasantse_polygon, harrison_polygon, 
-                                             aquadro_polygon, ecovillage_polygon, applegate_polygon, 
-                                             conley_polygon, hahn_polygon)
-              names(pond_polygon_list_TPRS) <- c("Edwards", "Mt_Pleasant_SE", "Harrison", 
-                                            "Aquadro", "Ecovillage", "Applegate", 
-                                            "Conley", "Hahn")
+              # pond_polygon_list_TPRS <- list(edwards_polygon, mtpleasantse_polygon, harrison_polygon, 
+              #                                aquadro_polygon, ecovillage_polygon, applegate_polygon, 
+              #                                conley_polygon, hahn_polygon)
+              # names(pond_polygon_list_TPRS) <- c("Edwards", "Mt_Pleasant_SE", "Harrison", 
+              #                               "Aquadro", "Ecovillage", "Applegate", 
+              #                               "Conley", "Hahn")
         
     # Calculate pond areas and save a separate list 
         Calc_Pond_Area_FUNC <- function(pond_boundary){
@@ -1366,7 +1366,7 @@
        sed_vol_calc_FUNC <- function(pond_polygon_area, pond_results){
          
          pond_results <- as.data.frame(pond_results)
-         names(pond_results) <- c("X", "Y", "Pond_Name", "SOAP_water_depth", "SOAP_sed_thickness", "IDW_sed_thickness", "IDW_water_depth", "TIN_sed_thickness", "TIN_water_depth", "Geometry")
+         names(pond_results) <- c("X", "Y", "Geometry","Pond_Name", "SOAP_water_depth", "SOAP_sed_thickness", "IDW_sed_thickness", "IDW_water_depth", "TIN_sed_thickness", "TIN_water_depth")
          pond_results <- subset(pond_results, select = c("Pond_Name", "SOAP_water_depth", "SOAP_sed_thickness", "IDW_sed_thickness", "IDW_water_depth", "TIN_sed_thickness", "TIN_water_depth"))
          
          pond_polygon_area_df <- as.data.frame(pond_polygon_area)
@@ -1393,42 +1393,43 @@
     # Apply Function to calcualte sediment volume for each pond and put together into a df
         pond_summary_sed_vol_list <- mapply(sed_vol_calc_FUNC, pond_polygon_area_list, pond_grid_results_list, USE.NAMES = TRUE, SIMPLIFY = FALSE)
         pond_summary_sed_vol <- Reduce(full_join, pond_summary_sed_vol_list )
+        head(pond_summary_sed_vol)
         
-        # For subset up of ponds that work for TPRS 
-        
-              # Dummy data 
-                pond_polygon_area <- pond_polygon_area_list_TPRS["Harrison"]
-                pond_results <- pond_grid_results_list_TPRS[["Harrison"]]
+              # For subset up of ponds that work for TPRS 
               
-              # FUNC 
-              sed_vol_calc_TRPS_FUNC <- function(pond_polygon_area, pond_results){
-                
-                pond_results <- as.data.frame(pond_results)
-                
-                pond_polygon_area_df <- as.data.frame(pond_polygon_area)
-                names(pond_polygon_area_df) <- "Surface_Area"
-                surface_area <- pond_polygon_area_df$Surface_Area
-                
-                pond_name <- as.character(pond_results[1, "Pond_Name"])  # save pond name to use in the title of the plot 
-                pond_name_form <- pond_name[1] # format pond name 
-                
-                output <- pond_results %>% 
-                  summarise(
-                    Pond_Name = pond_name_form,
-                    # TIN_mean_sed_depth = mean(TIN_sed_thickness),
-                    TIN_sed_volume = mean(TIN_sed_thickness) * surface_area,
-                    # IDW_mean_sed_depth = mean(IDW_sed_thickness),
-                    IDW_sed_volume = mean(IDW_sed_thickness) * surface_area,
-                    # TPRS_mean_sed_depth = mean(TPRS_sed_depth),
-                    TPRS_sed_volume = mean(TPRS_sed_thickness) * surface_area, 
-                    # SOAP_mean_sed_depth = mean(SOAP_sed_thickness),
-                    SOAP_sed_volume = mean(SOAP_sed_thickness) * surface_area, 
-                  )
-              }
-        pond_summary_sed_vol_list <- mapply(sed_vol_calc_TRPS_FUNC, pond_polygon_area_list_TPRS, pond_grid_results_list_TPRS, USE.NAMES = TRUE, SIMPLIFY = FALSE)
-        pond_summary_sed_vol <- Reduce(full_join, pond_summary_sed_vol_list )
-        
-        # write_xlsx(pond_summary_sed_vol , "Output_Files/Sediment_Volume/pond_summary_sed_vol_TPRS_22nov2023.xlsx")
+                    # Dummy data 
+                      pond_polygon_area <- pond_polygon_area_list_TPRS["Harrison"]
+                      pond_results <- pond_grid_results_list_TPRS[["Harrison"]]
+                    
+                    # FUNC 
+                    sed_vol_calc_TRPS_FUNC <- function(pond_polygon_area, pond_results){
+                      
+                      pond_results <- as.data.frame(pond_results)
+                      
+                      pond_polygon_area_df <- as.data.frame(pond_polygon_area)
+                      names(pond_polygon_area_df) <- "Surface_Area"
+                      surface_area <- pond_polygon_area_df$Surface_Area
+                      
+                      pond_name <- as.character(pond_results[1, "Pond_Name"])  # save pond name to use in the title of the plot 
+                      pond_name_form <- pond_name[1] # format pond name 
+                      
+                      output <- pond_results %>% 
+                        summarise(
+                          Pond_Name = pond_name_form,
+                          # TIN_mean_sed_depth = mean(TIN_sed_thickness),
+                          TIN_sed_volume = mean(TIN_sed_thickness) * surface_area,
+                          # IDW_mean_sed_depth = mean(IDW_sed_thickness),
+                          IDW_sed_volume = mean(IDW_sed_thickness) * surface_area,
+                          # TPRS_mean_sed_depth = mean(TPRS_sed_depth),
+                          TPRS_sed_volume = mean(TPRS_sed_thickness) * surface_area, 
+                          # SOAP_mean_sed_depth = mean(SOAP_sed_thickness),
+                          SOAP_sed_volume = mean(SOAP_sed_thickness) * surface_area, 
+                        )
+                    }
+              pond_summary_sed_vol_list <- mapply(sed_vol_calc_TRPS_FUNC, pond_polygon_area_list_TPRS, pond_grid_results_list_TPRS, USE.NAMES = TRUE, SIMPLIFY = FALSE)
+              pond_summary_sed_vol <- Reduce(full_join, pond_summary_sed_vol_list )
+              
+        write_xlsx(pond_summary_sed_vol , "Output_Files/Sediment_Volume/pond_summary_sed_vol_TPRS_01dec2023.xlsx")
        
  
 #_______________________________________________________________________________       
