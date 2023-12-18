@@ -49,6 +49,10 @@
     selected_row <- do_conversion[do_conversion$Temp_C == round(eureka_temp) , ]
     DOmgl_at_100perc <- as.numeric(selected_row["DO_mgL"])
     
+    df.query('f == "2"')['a']
+    df.query('Temp_C == "eureka_temp"')['do_conversion']
+    
+    
     eureka_data <- mud_eureka
     
     DO_at_temp_FUNC <- function(eureka_data){
@@ -63,9 +67,31 @@
     apply(mud_eureka, 1, DO_at_temp_FUNC)
     
     check <- DO_at_temp_FUNC(eureka_data = mud_eureka)
-    # Check the code that you used for compiling/grabbing the right HOBO temp in the LGR flux code 
     
     # Then multiply the DO% by the mg/L 
+    
+###############
+# Trying to Calculate Cross sectional area of a pond 
+    
+    # Example calculating cross sectional area of a river 
+    x_profile <- seq(0, 500, 25)
+    y_profile <- c(50, 73, 64, 59, 60, 64, 82, 78, 79, 76, 72, 
+                   68, 63, 65, 62, 61, 56, 50, 44, 39, 25)
+    
+    library(sf)
+    
+    #Create matrix with coordinates
+    m <- matrix(c(0, x_profile, 500, 0, 0, -y_profile, 0, 0),
+                byrow = FALSE, ncol = 2)
+    
+    #Create a polygon
+    poly <- st_polygon(list(m))
+    
+    # Calcualte the area
+    st_area(poly)
+    
+    # 
+    water_level<-c(40, 38, 25, 33, 40, 42, 50, 39)
     
     
     
