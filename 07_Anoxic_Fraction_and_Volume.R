@@ -74,6 +74,7 @@
 # Trying to Calculate Cross sectional area of a pond 
     
     # Example calculating cross sectional area of a river 
+    #  https://stackoverflow.com/questions/46650208/calculate-area-of-cross-section-as-function-of-height 
     x_profile <- seq(0, 500, 25)
     y_profile <- c(50, 73, 64, 59, 60, 64, 82, 78, 79, 76, 72, 
                    68, 63, 65, 62, 61, 56, 50, 44, 39, 25)
@@ -87,14 +88,38 @@
     #Create a polygon
     poly <- st_polygon(list(m))
     
+    plot(poly)
+    
     # Calcualte the area
     st_area(poly)
     
     # 
     water_level<-c(40, 38, 25, 33, 40, 42, 50, 39)
     
+    # function computes the intersection of the profile with a line at the specified depth 
+    #     from the bottom of the profile
     
+    profile <- poly
     
+    filler <- function(depth, profile, xprof, yprof, xdelta=100, ydelta=100){
+      d = -(max(yprof))+depth
+      xr = range(xprof)
+      yr = range(-yprof)
+      xdelta = 100
+      xc = xr[c(1,2,2,1,1)] + c(-xdelta, xdelta, xdelta, -xdelta, -xdelta)
+      yc = c(d, d, min(yr)-ydelta, min(yr)-ydelta, d)
+      water = st_polygon(list(cbind(xc,yc)))
+      st_intersection(profile, water)
+    }
+    
+    # Plot Results 
+    plot(poly)
+    plot(filler(40, poly, x_profile, y_profile), add=TRUE, col="green")
+    plot(filler(30, poly, x_profile, y_profile), add=TRUE, col="red")
+    plot(filler(15, poly, x_profile, y_profile), add=TRUE, col="blue")
+    
+    # Get area 
+    st_area(filler(40, poly, x_profile, y_profile))
     
     
     

@@ -8,7 +8,7 @@
 
 # 0. Set up R environment and Load Data 
 
-    #Set working directory: 
+    #Set working directory: s
    setwd("~/DEC_Ponds") 
     #setwd("~/OneDrive/Holgerson_Lab/DEC_Ponds") # Mac 
     getwd()
