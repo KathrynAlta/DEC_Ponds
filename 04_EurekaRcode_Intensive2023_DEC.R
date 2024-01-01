@@ -4,29 +4,33 @@ library(scales)
 library(cowplot)
 
 ## Load data ####
-setwd("C:/Users/mah543/Dropbox/Cornell/Research/DEC_CarbonGrant/FarmResidPonds/EurekaData_2023")  #work
-setwd("C:/Users/Meredith/Dropbox/Cornell/Research/DEC_CarbonGrant/FarmResidPonds/EurekaData_2023") #Home
 
 round1 <- read.csv("DEC_Eureka_Intensive_Round1_compiled.csv", strip.white=T, na.strings="NA") 
 round2 <- read.csv("DEC_Eureka_Intensive_Round2_compiled.csv", strip.white=T, na.strings="NA") 
 round3 <- read.csv("DEC_Eureka_Intensive_Round3_compiled.csv", strip.white=T, na.strings="NA") 
 round4 <- read.csv("DEC_Eureka_Intensive_Round4_compiled.csv", strip.white=T, na.strings="NA") 
 round5 <- read.csv("DEC_Eureka_Intensive_Round5_compiled.csv", strip.white=T, na.strings="NA") 
+round6 <- read.csv("DEC_Eureka_Intensive_Round6_compiled.csv", strip.white=T, na.strings="NA") 
+round7 <- read.csv("DEC_Eureka_Intensive_Round7_compiled.csv", strip.white=T, na.strings="NA") 
 
 round1$sampleround <- "Round 1, April"
 round2$sampleround <- "Round 2, May"
 round3$sampleround <- "Round 3, June"
 round4$sampleround <- "Round 4, July"
 round5$sampleround <- "Round 5, August"
+round6$sampleround <- "Round 6, September"
+round7$sampleround <- "Round 7, October"
 
 head(round1)
 head(round2)
 head(round3)
 head(round4)
 head(round5)
+head(round6)
+head(round7)
 
 ##* Bind datasets ####
-eureka <- rbind(round1,round2,round3,round4,round5)
+eureka <- rbind(round1,round2,round3,round4,round5, round6, round7)
 head(eureka)
 tail(eureka)
 
@@ -54,9 +58,9 @@ do_perc <- eureka %>%
   ggplot(aes(x=do_perc, y=depth_m, color=pond)) + 
   geom_point(aes(color=pond))+ geom_path(aes(color=pond))+
   scale_y_reverse()+  ylab("Depth (m)") + theme_bw() +
-  geom_vline(xintercept=100, linetype="dashed") 
+  geom_vline(xintercept=100, linetype="dashed")  
   #scale_color_manual(values=c("#88A0A8", "#88A0A8", "#88A0A8", "#0A1045", 
-  #                            "#88A0A8", "#0A1045", "#0A1045", "#0A1045"))
+   #                           "#88A0A8", "#0A1045", "#0A1045", "#0A1045"))
 do_perc + facet_wrap(~sampleround) 
 
 

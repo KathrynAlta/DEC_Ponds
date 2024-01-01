@@ -16,7 +16,7 @@ do_levine <- read.csv("miniDOT_data/RawData/Levine_2023.csv", strip.white=T, na.
 do_mtpleasantse <- read.csv("miniDOT_data/RawData/MtPleasantSE_2023.csv", strip.white=T, na.strings="na")
 do_shelterbelt <- read.csv("miniDOT_data/RawData/Shelterbelt_2023.csv", strip.white=T, na.strings="na")
 do_white <- read.csv("miniDOT_data/RawData/White_2023.csv", strip.white=T, na.strings="na")
-#do_boyce <- read.csv("miniDOT_data/RawData/Boyce_2023", strip.white=T, na.strings="na")
+do_boyce <- read.csv("miniDOT_data/RawData/Boyce_2023.csv", strip.white=T, na.strings="na")
 
 
 
@@ -46,7 +46,6 @@ do_boyce$time2 <- as.POSIXct(do_boyce$datetime, "%Y-%m-%d %H:%M", tz="America/ne
 ##*Edwards ####
 head(do_edwards)
 
-
 plot_do_edwards <- do_edwards %>% 
   ggplot(aes(x=time2, y=do_perc)) + 
   geom_hline(yintercept=100, linetype='dotted', col = 'blue')+
@@ -62,7 +61,6 @@ plot_do_edwards
 ##*Harrison ####
 head(do_harrison)
 
-
 plot_do_harrison <- do_harrison %>% 
   ggplot(aes(x=time2, y=do_perc)) + 
   geom_hline(yintercept=100, linetype='dotted', col = 'blue')+
@@ -76,7 +74,6 @@ plot_do_harrison
 
 ##*Howarth ####
 head(do_howarth)
-
 
 plot_do_howarth <- do_howarth %>% 
   ggplot(aes(x=time2, y=do_perc)) + 
@@ -93,7 +90,6 @@ plot_do_howarth
 ##*Levine ####
 head(do_levine)
 
-
 plot_do_levine <- do_levine %>% 
   ggplot(aes(x=time2, y=do_perc)) + 
   geom_hline(yintercept=100, linetype='dotted', col = 'blue')+
@@ -108,7 +104,6 @@ plot_do_levine
 
 ##*Mt Pleasant SE ####
 head(do_mtpleasantse)
-
 
 plot_do_mtpleasantse <- do_mtpleasantse %>% 
   ggplot(aes(x=time2, y=do_perc)) + 
@@ -125,7 +120,6 @@ plot_do_mtpleasantse
 ##*Shelterbelt ####
 head(do_shelterbelt)
 
-
 plot_do_shelterbelt <- do_shelterbelt %>% 
   ggplot(aes(x=time2, y=do_perc)) + 
   geom_hline(yintercept=100, linetype='dotted', col = 'blue')+
@@ -138,10 +132,8 @@ plot_do_shelterbelt
 
 
 
-
 ##* White ####
 head(do_white)
-
 
 plot_do_white <- do_white %>% 
   ggplot(aes(x=time2, y=do_perc)) + 
@@ -153,6 +145,20 @@ plot_do_white <- do_white %>%
   xlab("Time") + ylab("DO percent") #+ ylim(c(90,160))
 plot_do_white
 
+
+
+##* boyce ####
+head(do_boyce)
+
+plot_do_boyce <- do_boyce %>% 
+  ggplot(aes(x=time2, y=do_perc)) + 
+  geom_hline(yintercept=100, linetype='dotted', col = 'blue')+
+  geom_point(size=0.5) + #geom_path()+
+  scale_x_datetime(breaks=date_breaks(width="7 days"), 
+                   labels=date_format("%m/%d", tz="America/new_york"))+ theme_bw() +
+  theme(text = element_text(size=12), axis.text.x = element_text(angle=-40))+ 
+  xlab("Time") + ylab("DO percent") #+ ylim(c(90,160))
+plot_do_boyce
 
 
 
@@ -169,18 +175,34 @@ do_boyce$pond <- as.factor("boyce")
 
 
 data <- bind_rows(do_edwards, do_harrison, do_howarth, do_levine, 
-                  do_mtpleasantse, do_shelterbelt, do_white) 
+                  do_mtpleasantse, do_shelterbelt, do_white, do_boyce) 
 head(data)
 tail(data)
 
 plot_all <- data %>% 
   ggplot(aes(x=time2, y=do_perc, color=pond)) + 
   geom_hline(yintercept=100, linetype='dotted')+
-  #geom_point(size=0.5) + 
+  geom_point(size=0.5) + 
   geom_smooth()+
-  scale_x_datetime(breaks=date_breaks(width="7 days"), 
+  scale_x_datetime(breaks=date_breaks(width="14 days"), 
                    labels=date_format("%m/%d", tz="America/new_york"))+ theme_bw() +
   theme(text = element_text(size=12), axis.text.x = element_text(angle=-40))+
   scale_colour_brewer(palette="Set1")+
-  xlab("Time") + ylab("DO percent") #+ ylim(c(90,160))
-plot_all # + facet_wrap(~pond)
+  xlab("Time") + ylab("DO percent saturation") #+ ylim(c(90,160))
+plot_all  + facet_wrap(~pond)
+
+
+levels(data$pond)
+plot_all <- data %>% 
+  ggplot(aes(x=time2, y=do_perc, color=pond)) + 
+  geom_hline(yintercept=100, linetype='dotted')+
+  geom_point(size=0.5) + 
+  geom_smooth()+
+  scale_x_datetime(breaks=date_breaks(width="14 days"), 
+                   labels=date_format("%m/%d", tz="America/new_york"))+ theme_bw() +
+  theme(text = element_text(size=12), axis.text.x = element_text(angle=-40))+
+  scale_colour_brewer(palette="Set1")+
+  xlab("Time") + ylab("DO percent saturation") +
+  scale_color_manual(values=c("#88A0A8", "#88A0A8", "#0A1045", "#88A0A8", 
+                              "#0A1045", "#0A1045", "#0A1045", "#88A0A8")) 
+plot_all  + facet_wrap(~pond)
