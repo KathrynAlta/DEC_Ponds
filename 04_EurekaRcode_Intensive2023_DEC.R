@@ -5,13 +5,13 @@ library(cowplot)
 
 ## Load data ####
 
-round1 <- read.csv("DEC_Eureka_Intensive_Round1_compiled.csv", strip.white=T, na.strings="NA") 
-round2 <- read.csv("DEC_Eureka_Intensive_Round2_compiled.csv", strip.white=T, na.strings="NA") 
-round3 <- read.csv("DEC_Eureka_Intensive_Round3_compiled.csv", strip.white=T, na.strings="NA") 
-round4 <- read.csv("DEC_Eureka_Intensive_Round4_compiled.csv", strip.white=T, na.strings="NA") 
-round5 <- read.csv("DEC_Eureka_Intensive_Round5_compiled.csv", strip.white=T, na.strings="NA") 
-round6 <- read.csv("DEC_Eureka_Intensive_Round6_compiled.csv", strip.white=T, na.strings="NA") 
-round7 <- read.csv("DEC_Eureka_Intensive_Round7_compiled.csv", strip.white=T, na.strings="NA") 
+round1 <- read.csv("Eureka_Data/DEC_Eureka_Intensive_Round1_compiled.csv", strip.white=T, na.strings="NA") 
+round2 <- read.csv("Eureka_Data/DEC_Eureka_Intensive_Round2_compiled.csv", strip.white=T, na.strings="NA") 
+round3 <- read.csv("Eureka_Data/DEC_Eureka_Intensive_Round3_compiled.csv", strip.white=T, na.strings="NA") 
+round4 <- read.csv("Eureka_Data/DEC_Eureka_Intensive_Round4_compiled.csv", strip.white=T, na.strings="NA") 
+round5 <- read.csv("Eureka_Data/DEC_Eureka_Intensive_Round5_compiled.csv", strip.white=T, na.strings="NA") 
+round6 <- read.csv("Eureka_Data/DEC_Eureka_Intensive_Round6_compiled.csv", strip.white=T, na.strings="NA") 
+round7 <- read.csv("Eureka_Data/DEC_Eureka_Intensive_Round7_compiled.csv", strip.white=T, na.strings="NA") 
 
 round1$sampleround <- "Round 1, April"
 round2$sampleround <- "Round 2, May"
@@ -45,6 +45,7 @@ eureka$pond <- as.factor(as.character(eureka$pond))
 eureka$treatment <- ifelse(eureka$pond=="Boyce" | eureka$pond=="Edwards" | 
                              eureka$pond=="Harrison" | eureka$pond=="Levine", "Forest", "Farm")
 
+levels(eureka$pond)
 
 ## PLOTS ####
 temp <- eureka %>% 
@@ -58,10 +59,10 @@ do_perc <- eureka %>%
   ggplot(aes(x=do_perc, y=depth_m, color=pond)) + 
   geom_point(aes(color=pond))+ geom_path(aes(color=pond))+
   scale_y_reverse()+  ylab("Depth (m)") + theme_bw() +
-  geom_vline(xintercept=100, linetype="dashed")  
-  #scale_color_manual(values=c("#88A0A8", "#88A0A8", "#88A0A8", "#0A1045", 
-   #                           "#88A0A8", "#0A1045", "#0A1045", "#0A1045"))
-do_perc + facet_wrap(~sampleround) 
+  geom_vline(xintercept=100, linetype="dashed")  #+
+ # scale_color_manual(values=c("#88A0A8", "#88A0A8", "#88A0A8", "#0A1045", 
+#                              "#88A0A8", "#0A1045", "#0A1045", "#0A1045"))
+do_perc + facet_wrap(~sampleround, nrow=2) 
 
 
 ph <- eureka %>% 
