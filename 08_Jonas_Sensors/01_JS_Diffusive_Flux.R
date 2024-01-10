@@ -16,6 +16,7 @@
     load(file='JSensor_Input_Data/DIY_sensor_data.rda')
     
   # Packages 
+    
     library(lubridate)
     library(tidyverse)
     library(ggplot2)
@@ -25,6 +26,10 @@
     library(stringr)
     library(TTR)
     library(ggpubr)
+    
+    install.packages("Rtools")
+    install.packages("runVar")
+    library(runVar)
 
 #__________________________________________
 # 1. Write Function for Diffusive Flux ( from Jonas's Code) 
@@ -174,7 +179,7 @@
 #__________________________________________
 # 2. Try to Run Diffusive flux function on example data and see what it does 
     
-    result <- diffusive_flux(data, concentration_values = "pred_CH4",
+    result <- diffusive_flux(DIY_sensor_data, concentration_values = "pred_CH4",
                    station, runvar_cutoff = 0.5,
                    remove_observations_prior = 200,
                    number_of_observations_used = 400,
