@@ -231,6 +231,13 @@ eb_result <- ebullitive_flux(data = DIY_sensor_data,
                              number_of_pumpcycles_in_plot = 24,
                              smooth_data = FALSE)
 
+eb_result_J3 <- ebullitive_flux(data = JSensor_data_J3,
+                             concentration_values = "pred_CH4",
+                             station, top_selection = "max",
+                             runvar_cutoff = .5,
+                             show_plots = TRUE, IndexSpan = 30,
+                             number_of_pumpcycles_in_plot = 24,
+                             smooth_data = FALSE)
 
 
 

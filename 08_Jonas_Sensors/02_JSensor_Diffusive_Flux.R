@@ -180,7 +180,7 @@
 # 2. Run Diffusive flux function on example data from Jonas 
     
     result <- diffusive_flux(DIY_sensor_data, concentration_values = "pred_CH4",
-                   station, runvar_cutoff = 0.5,
+                   station , runvar_cutoff = 0.5,
                    remove_observations_prior = 200,
                    number_of_observations_used = 400,
                    show_plots = TRUE, IndexSpan = 30,
@@ -191,3 +191,39 @@
                    look_for_bubbles = TRUE)
     
     
+    JSensor_data_J1 <- JSensor_data[JSensor_data$sensor == "J1", ]
+    JSensor_data_J2 <- JSensor_data[JSensor_data$sensor == "J2", ]
+    JSensor_data_J3 <- JSensor_data[JSensor_data$sensor == "J3", ]
+    
+    diffusive_flux_result_J3 <- diffusive_flux(JSensor_data_J3, concentration_values = "pred_CH4",
+                             station = sensor, runvar_cutoff = 0.5,
+                             remove_observations_prior = 200,
+                             number_of_observations_used = 400,
+                             show_plots = TRUE, IndexSpan = 30,
+                             cutoff_start_value = 5,
+                             number_of_observations_required = 50,
+                             number_of_pumpcycles_in_plot = 50,
+                             smooth_data = FALSE,
+                             look_for_bubbles = TRUE)
+
+## Basic plot for Katie Brain 
+    head(JSensor_data_J1)
+    JSensor_data_J1_trim <- JSensor_data_J1[JSensor_data_J1$pred_CH4 <= 1000, ]
+    JSensor_data_J2_trim <- JSensor_data_J2[JSensor_data_J2$pred_CH4 <= 1000, ]
+    JSensor_data_J3_trim <- JSensor_data_J3[JSensor_data_J3$pred_CH4 <= 1000, ]
+    
+    J3_CH4 <- ggplot(JSensor_data_J3_trim, aes(x = datetime, y = pred_CH4)) +
+      geom_point(color = "darkmagenta" ) + theme_bw() +
+      labs(y = "CH4 concentration (ppm)",
+           x = "Datetime",
+           title = "J3")
+    
+    J3_CH4
+    
+    J3_CO2 <- ggplot(JSensor_data_J3, aes(x = datetime, y = K33_CO2)) +
+      geom_point(color = "deepskyblue4" ) + theme_bw() +
+      labs(y = "CO2 concentration (ppm)",
+           x = "Datetime",
+           title = "J3")
+    
+    J3_CO2
