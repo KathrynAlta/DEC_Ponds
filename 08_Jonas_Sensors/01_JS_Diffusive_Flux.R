@@ -174,8 +174,6 @@
 #__________________________________________
 # 2. Try to Run Diffusive flux function on example data and see what it does 
     
-    result <- diffusive_flux(DIY_sensor_data)
-    
     result <- diffusive_flux(data, concentration_values = "pred_CH4",
                    station, runvar_cutoff = 0.5,
                    remove_observations_prior = 200,
