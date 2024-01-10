@@ -6,26 +6,26 @@
 #__________________________________________
 # 0. Set Up R Environment 
 
-# Set Working Directory 
-setwd("~/DEC_Ponds/08_Jonas_Sensors")  # Desktop 
-
-# Install Jonas GitHUb
-remotes::install_github('JonasStage/FluxSeparator', force = TRUE)
-
-# Install example data from Jonas 
-load(file='JSensor_Input_Data/DIY_sensor_data.rda')
-
-# Packages 
-
-library(lubridate)
-library(tidyverse)
-library(ggplot2)
-library(tibble)
-library(purrr)
-library(dplyr)
-library(stringr)
-library(TTR)
-library(ggpubr)
+  # Set Working Directory 
+  setwd("~/DEC_Ponds/08_Jonas_Sensors")  # Desktop 
+  
+  # Install Jonas GitHUb
+  remotes::install_github('JonasStage/FluxSeparator', force = TRUE)
+  
+  # Install example data from Jonas 
+  load(file='JSensor_Input_Data/DIY_sensor_data.rda')
+  
+  # Packages 
+  
+  library(lubridate)
+  library(tidyverse)
+  library(ggplot2)
+  library(tibble)
+  library(purrr)
+  library(dplyr)
+  library(stringr)
+  library(TTR)
+  library(ggpubr)
 
 #__________________________________________
 # 1. Write a function to calculate ebullitive flux (From Jonas Code)
@@ -220,6 +220,16 @@ ebullitive_flux <- function(data,concentration_values = "pred_CH4",station, top_
   par(ask=F)
   return(bubbles_found)}
 
+#__________________________________________
+# 2. Run Ebullitive flux function on example data from Jonas 
+
+eb_result <- ebullitive_flux(data = DIY_sensor_data,
+                             concentration_values = "pred_CH4",
+                             station, top_selection = "max",
+                             runvar_cutoff = .5,
+                             show_plots = TRUE, IndexSpan = 30,
+                             number_of_pumpcycles_in_plot = 24,
+                             smooth_data = FALSE)
 
 
 
