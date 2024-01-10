@@ -10,7 +10,7 @@
   setwd("~/DEC_Ponds/08_Jonas_Sensors")  # Desktop 
   
   # Install Jonas GitHUb
-  remotes::install_github('JonasStage/FluxSeparator', force = TRUE)
+  library(FluxSeparator)
   
   # Install example data from Jonas 
   load(file='JSensor_Input_Data/DIY_sensor_data.rda')
