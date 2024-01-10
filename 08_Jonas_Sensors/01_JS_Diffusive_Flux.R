@@ -184,7 +184,7 @@
                    remove_observations_prior = 200,
                    number_of_observations_used = 400,
                    show_plots = TRUE, IndexSpan = 30,
-                   cutoff_start_value,
+                   cutoff_start_value = 5,
                    number_of_observations_required = 50,
                    number_of_pumpcycles_in_plot = 50,
                    smooth_data = FALSE,
