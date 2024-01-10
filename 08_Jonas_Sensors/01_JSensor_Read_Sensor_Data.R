@@ -11,13 +11,13 @@
     setwd("~/DEC_Ponds/08_Jonas_Sensors")  # Desktop 
     
     # Install Jonas GitHUb
-    remotes::install_github('JonasStage/FluxSeparator', force = TRUE)
+    # remotes::install_github('JonasStage/FluxSeparator', force = TRUE)
+    library(FluxSeparator)
     
     # Install example data from Jonas 
     load(file='JSensor_Input_Data/DIY_sensor_data.rda')
     
     # Packages 
-    
     library(lubridate)
     library(tidyverse)
     library(ggplot2)
@@ -27,9 +27,12 @@
     library(stringr)
     library(TTR)
     library(ggpubr)
+    library(writexl)
+    library(readxl)
+
     
 #__________________________________________
-# 1. Read Sensor Data (Code from Jonas Github)
+# 1. Write Function to Read Sensor Data and compute CH4 concentration based on calibration model(Code from Jonas Github)
     
     read_CH4_files <- function(data, files, pump_present = T, join_model_coef = T,
                                model_coef_data = model_coef) {
@@ -60,8 +63,37 @@
         select(files, datetime, RH:tempC,K33_RH:ncol(.), pred_CH4, sensor, abs_H, contains("volumen"), contains("station")) -> done_data
       return(done_data) }
     
+#__________________________________________    
+    
+    # Load and look at data from DEC Ponds 2023 surveys 
+    harrison_june_J1 <- read.csv("Input_Data_JSensors/HarrisonANDLevine_23June2023_J1.csv")
+    
+    # read in model coef
+    model_coef <- read.csv("Calibration_Coefficients/model_coef_230511.csv")
+    
+    # path to DIY sensors files
+    setwd("~/DEC_Ponds/08_Jonas_Sensors/Input_Data_JSensors")
+    path_to_files <- list.files(pattern = ".csv")
+    
+    # create data frame for path, sensor, and station (if needed).
+    data_path <- tibble(path = path_to_files,
+                        sensor = c("J1","J2","J3"),
+                        station = c(1))
     
     
+    # join with model_coef and calculate CH4 in ppm.
+    JSensor_data <- read_CH4_files(data_path,
+                   path)
+    
+#### Example using join_model_coef = FALSE ####
+    
+    # join with model_coef.
+    joined_data_path <- left_join(data_path, model_coef, by = join_by(sensor))
+    
+    # calculate CH4 in ppm.
+    read_CH4_files(joined_data_path,
+                   path,
+                   join_model_coef = FALSE)
     
     
     

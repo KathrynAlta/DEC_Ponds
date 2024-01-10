@@ -36,6 +36,9 @@
       ((pressure*concentration*volume)/(8.314*(temperature_C+ 273.15)))/area
     }
     
+#Mess with our data 
+    head(JSensor_data)
+    
     
     
     
