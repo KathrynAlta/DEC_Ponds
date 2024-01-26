@@ -198,6 +198,7 @@ plot_do_white
 ##* boyce ####   breaks_width() vs. date_b
 
 ##* Katie checking missing data in Boyce 
+setwd("~/DEC_Ponds")
 do_boyce_ <- read.csv("miniDOT_data/RawData/Boyce_2023.csv", strip.white=T, na.strings="na")
 
 
