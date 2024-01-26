@@ -21,6 +21,9 @@ do_shelterbelt <- read.csv("miniDOT_data/RawData/Shelterbelt_2023.csv", strip.wh
 do_white <- read.csv("miniDOT_data/RawData/White_2023.csv", strip.white=T, na.strings="na")
 do_boyce <- read.csv("miniDOT_data/RawData/Boyce_2023.csv", strip.white=T, na.strings="na")
 
+# Boyce data check for missing 
+
+
 
 head(do_edwards)
 head(do_harrison)
