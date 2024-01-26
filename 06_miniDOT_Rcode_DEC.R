@@ -22,7 +22,7 @@ do_white <- read.csv("miniDOT_data/RawData/White_2023.csv", strip.white=T, na.st
 do_boyce <- read.csv("miniDOT_data/RawData/Boyce_2023.csv", strip.white=T, na.strings="na")
 
 # Boyce data check for missing 
-
+setwd("~/DEC_Ponds")
 
 
 head(do_edwards)
@@ -195,7 +195,12 @@ plot_do_white
 
 
 
-##* boyce ####
+##* boyce ####   breaks_width() vs. date_b
+
+##* Katie checking missing data in Boyce 
+do_boyce_ <- read.csv("miniDOT_data/RawData/Boyce_2023.csv", strip.white=T, na.strings="na")
+
+
 head(do_boyce)
 
 boyce_samplingdate <- c("4/28/23", "5/22/23", "6/20/23", "7/18/23", 
@@ -209,8 +214,8 @@ plot_do_boyce <- do_boyce %>%
   ggplot(aes(x=time2, y=do_perc)) + 
   geom_hline(yintercept=100, linetype='dotted', col = 'blue')+
   geom_point(size=0.5) + #geom_path()+
-  scale_x_datetime(breaks=date_breaks(width="7 days"), 
-                   labels=date_format("%m/%d", tz="America/new_york"))+ theme_bw() +
+  # scale_x_datetime(breaks=date_breaks(width="7 days"), 
+                   # labels=date_format("%m/%d", tz="America/new_york"))+ theme_bw() +
   theme(text = element_text(size=12), axis.text.x = element_text(angle=-40))+ 
   xlab("Time") + ylab("DO percent") + #+ ylim(c(90,160))
   geom_point(data=boyce, x=boyce$samplingdate, y=55, color="red", size=5)
