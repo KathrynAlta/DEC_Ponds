@@ -4,6 +4,7 @@
 #Note: MH manually removed time out of water for:
    # Boyce, Edwards, Harrison
 
+setwd("~/DEC_Ponds")
 
 #load packages ####
 library(ggplot2)
@@ -19,10 +20,8 @@ do_levine <- read.csv("miniDOT_data/RawData/Levine_2023.csv", strip.white=T, na.
 do_mtpleasantse <- read.csv("miniDOT_data/RawData/MtPleasantSE_2023.csv", strip.white=T, na.strings="na")
 do_shelterbelt <- read.csv("miniDOT_data/RawData/Shelterbelt_2023.csv", strip.white=T, na.strings="na")
 do_white <- read.csv("miniDOT_data/RawData/White_2023.csv", strip.white=T, na.strings="na")
-do_boyce <- read.csv("miniDOT_data/RawData/Boyce_2023.csv", strip.white=T, na.strings="na")
+do_boyce <- read.csv("miniDOT_data/RawData/Boyce_2023_updated_26jan2024.csv", strip.white=T, na.strings="na")
 
-# Boyce data check for missing 
-setwd("~/DEC_Ponds")
 
 
 head(do_edwards)
@@ -194,16 +193,41 @@ plot_do_white <- do_white %>%
 plot_do_white
 
 
+##* Boyce ####
 
-##* boyce ####   breaks_width() vs. date_b
+    ###* Katie Checking and Re-compiling Boyce miniDOT Data #####
+    
 
-##* Katie checking missing data in Boyce 
-setwd("~/DEC_Ponds")
-do_boyce_ <- read.csv("miniDOT_data/RawData/Boyce_2023.csv", strip.white=T, na.strings="na")
-
+          # Bring in data retreived by PME 
+          do_boyce_01dec2023 <- read.table("~/K_Gannon/Data_Offload/MiniDOT/240126_DEC_Boyce/Boyce_Concat_01dec2023.TXT", skip = 9, header = F, sep = ",", fill = TRUE)
+              do_boyce_01dec2023 <- as.data.frame(do_boyce_01dec2023)
+              names(do_boyce_01dec2023) <- c("Unix.Timestamp_sec", "UTC_Date_._Time", "Eastern.Standard.Time", "Battery_Volt", "Temperature_C", "DO_mgL", "do_perc", "Q")
+              do_boyce_01dec2023$time2 <- as.POSIXct(do_boyce_01dec2023$Eastern.Standard.Time, "%Y-%m-%d %H:%M", tz="America/new_york")
+              head(do_boyce_01dec2023)
+              str(do_boyce_01dec2023)
+              
+          # Data compiled and reconcatenated 26 Jan 2024 by KG 
+          do_boyce_26jan2024 <- read.table("~/K_Gannon/Data_Offload/MiniDOT/240126_DEC_Boyce/Boyce_Concat_26jan2024.TXT", skip = 9, header = F, sep = ",", fill = TRUE)
+              do_boyce_26jan2024 <- as.data.frame(do_boyce_26jan2024)
+              names(do_boyce_26jan2024) <- c("Unix.Timestamp_sec", "UTC_Date_._Time", "Eastern.Standard.Time", "Battery_Volt", "Temperature_C", "DO_mgL", "do_perc", "Q")
+              do_boyce_26jan2024$time2 <- as.POSIXct(do_boyce_26jan2024$Eastern.Standard.Time, "%Y-%m-%d %H:%M", tz="America/new_york")
+              head(do_boyce_26jan2024)
+              str(do_boyce_26jan2024)
+              
+          # Format re-compiled data to match MH 
+              head(do_boyce_26jan2024)
+              head(do_edwards)
+              names(do_boyce_26jan2024)[names(do_boyce_26jan2024) == "Eastern.Standard.Time"] <- "datetime"
+              names(do_boyce_26jan2024)[names(do_boyce_26jan2024) == "Temperature_C"] <- "temp_c"
+              names(do_boyce_26jan2024)[names(do_boyce_26jan2024) == "DO_mgL"] <- "do_mgl"
+              do_boyce_26jan2024 <- subset(do_boyce_26jan2024, select = c("datetime", "temp_c", "do_mgl", "do_perc"))
+              head(do_boyce_26jan2024)
+              
+          # Write csv of re-compiled data 
+              write.csv(do_boyce_26jan2024, "miniDOT_data/RawData/Boyce_2023_updated_26jan2024.csv")
 
 head(do_boyce)
-
+              
 boyce_samplingdate <- c("4/28/23", "5/22/23", "6/20/23", "7/18/23", 
                         "8/14/23", "9/11/23", "10/9/23")
 boyce <- as.data.frame(boyce_samplingdate)
@@ -211,15 +235,16 @@ boyce$samplingdate <-as.POSIXct(boyce$boyce_samplingdate, "%m/%d/%y", tz="Americ
 head(boyce)
 str(boyce)
 
+# Plot 
 plot_do_boyce <- do_boyce %>% 
   ggplot(aes(x=time2, y=do_perc)) + 
   geom_hline(yintercept=100, linetype='dotted', col = 'blue')+
   geom_point(size=0.5) + #geom_path()+
-  # scale_x_datetime(breaks=date_breaks(width="7 days"), 
-                   # labels=date_format("%m/%d", tz="America/new_york"))+ theme_bw() +
+  scale_x_datetime(breaks=date_breaks(width="7 days"), 
+                   labels=date_format("%m/%d", tz="America/new_york"))+ theme_bw() +
   theme(text = element_text(size=12), axis.text.x = element_text(angle=-40))+ 
   xlab("Time") + ylab("DO percent") + #+ ylim(c(90,160))
-  geom_point(data=boyce, x=boyce$samplingdate, y=55, color="red", size=5)
+  geom_point(data=boyce, x=boyce$samplingdate, y=55, color="red", size=5) 
 plot_do_boyce
 
 
