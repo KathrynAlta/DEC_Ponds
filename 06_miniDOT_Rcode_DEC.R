@@ -189,7 +189,7 @@ plot_do_white <- do_white %>%
                    labels=date_format("%m/%d", tz="America/new_york"))+ theme_bw() +
   theme(text = element_text(size=12), axis.text.x = element_text(angle=-40))+ 
   xlab("Time") + ylab("DO percent") +#+ ylim(c(90,160))
-  geom_point(data=white, x=white$samplingdate, y=30, color="red", size=5)
+  geom_point(data=white, x=white$samplingdate, y=30, color="red", size=5) 
 plot_do_white
 
 
@@ -244,7 +244,8 @@ plot_do_boyce <- do_boyce %>%
                    labels=date_format("%m/%d", tz="America/new_york"))+ theme_bw() +
   theme(text = element_text(size=12), axis.text.x = element_text(angle=-40))+ 
   xlab("Time") + ylab("DO percent") + #+ ylim(c(90,160))
-  geom_point(data=boyce, x=boyce$samplingdate, y=55, color="red", size=5) 
+  geom_point(data=boyce, x=boyce$samplingdate, y=55, color="red", size=5) + 
+  labs(title = "Boyce DO: Data Re-compiled and Concatenated 26 Jan 2024")
 plot_do_boyce
 
 
