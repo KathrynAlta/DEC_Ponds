@@ -3,7 +3,6 @@
 ############################################################
 # Holgerson Lab, Katie Gannon
 
-# Pascal is AWESOME!!!!! 
 
 # Check Please
 # 0. Set up R environment and Load Data 
